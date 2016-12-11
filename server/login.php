@@ -1,13 +1,13 @@
 <?php
  
   if($_SERVER["REQUEST_METHOD"] == "POST") {		
-	$username = "root";
-	$password = "Hook5397hook";
-	$hostname = "localhost"; //will be IP name for website
+	$username = "sql6148835";
+	$password = "AF11rNK2Jc";
+	$hostname = "sql6.freesqldatabase.com"; //will be IP name for website
 
 	$dbhandle = mysql_connect($hostname, $username, $password) or die("Could not connect to database");
 
-	$selected = mysql_select_db("mydb", $dbhandle);
+	$selected = mysql_select_db("sql6148835", $dbhandle);
 
 	$myusername = $_POST['user'];
 	$mypassword = $_POST['pass'];
