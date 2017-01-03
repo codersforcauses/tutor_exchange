@@ -1,0 +1,18 @@
+{
+  "name": "tutor_exchange",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app/app.js",
+  "dependencies": {
+    "bower": "^1.8.0",
+    "json-server": "^0.9.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "setup": "node_modules/.bin/bower install",
+    "start": "node_modules/.bin/json-server --watch mock/db.json --static ./ --port 8080",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT"
+}
