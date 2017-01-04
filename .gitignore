@@ -1,5 +1,5 @@
 # Client mock server mock database (json-server)
-db.json
+db*.json
 
 
 # Node modules
