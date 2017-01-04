@@ -18,16 +18,19 @@ angular
         .state('login', {
           url: '/login',
           templateUrl: 'app/templates/login.html',
+          controller: 'LoginCtrl',
         })
 
         .state('login_success', {
           url: '/login_success',
           templateUrl: 'app/templates/login_success.html',
+          controller: 'LoginSuccessCtrl',
         })
 
         .state('apply', {
           url: '/apply',
           templateUrl: 'app/templates/apply.html',
+          controller: 'ApplyCtrl',
         });
     },
   ]);

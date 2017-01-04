@@ -10,19 +10,19 @@
 
           <h1>Login</h1>
   
-          <form action="" method="POST">
+          <form>
             <div class="form-group">
               <label for="text">Student Number:</label>
-              <input type="text" class="form-control" name="user" required>
+              <input type="text" class="form-control" name="id" ng-model="user.id" required>
             </div>
             <div class="form-group">
               <label for="pwd">Password:</label>
-              <input type="password" class="form-control" name="pass" required>
+              <input type="password" class="form-control" name="password" ng-model="user.password" required>
             </div>
             <div class="checkbox">
               <label><input type="checkbox"> Remember me</label>
             </div>
-            <button type="submit" class="btn btn-default">Submit</button>
+            <button type="submit" class="btn btn-default" ng-click="submit()">Submit</button>
           </form>
 
         </div>
