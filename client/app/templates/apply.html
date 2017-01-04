@@ -1,0 +1,79 @@
+<div class="container">
+<div class="row">
+
+<div class="col-sm-4">
+  <div id="login-form">
+  
+  <div>
+    <br> 
+  </div>
+
+  <h1>Apply</h1>
+ 
+  <form>
+  
+  <div class="form-group">
+      <label for="text">Student Number:</label>
+      <input type="text" class="form-control" name="user" ng-model="user.id" required>
+    </div>
+
+      <div class="form-group">
+      <label for="text">First Name:</label>
+      <input type="text" class="form-control" name="firstname" ng-model="user.firstName" required>
+    </div>
+
+      <div class="form-group">
+      <label for="text">Last Name:</label>
+      <input type="text" class="form-control" name="lastname" ng-model="user.lastName" required>
+    </div>
+
+      <div class="form-group">
+      <label for="text">Date of Birth:</label>
+      <input type="text" class="form-control" name="DOB">
+    </div>
+
+  <div class="form-group">
+  	  <label for="inputPassword" class="control-label">Password:</label>
+  
+  <div class="form-group">
+        <input type="password" class="form-control" id="inputPassword" placeholder="Password" name="pass" ng-model="user.password" required>
+        <div class="help-block">Minimum of 6 characters</div>
+   </div>
+
+  <div class="form-group">
+    	<input type="password" class="form-control" id="inputPasswordConfirm" data-match="#inputPassword" data-match-error="Whoops, these don't match" placeholder="Confirm Password" required>
+     	<div class="help-block with-errors"></div>
+      </div>
+    </div>
+
+    <div class="checkbox">
+      <label><input type="checkbox" name="checkbox"> Apply as a Tutor</label>
+  </div>
+
+  <div class="form-group">
+      <label for="text">Units:</label>
+      <input type="text" class="form-control" name="units">
+    </div>
+
+  <div class="form-group">
+      <label for="text">Postcode:</label>
+      <input type="text" class="form-control" name="postcode">
+  </div>
+    
+  <button type="submit" class="btn btn-default" ng-click="submit()">Apply</button>
+  
+  </form>
+
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</body>
+</form>
+
+</div>
+</div>
+</div>
+</div>
