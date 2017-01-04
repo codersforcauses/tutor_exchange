@@ -1,5 +1,10 @@
+# Client mock server mock database (json-server)
+*/db.json
+
+
 # Node modules
 */node_modules/
+*/npm-debug.log
 
 # Bower components
 */bower_components/
