@@ -1,3 +1,7 @@
-angular.module('tutorExchange').controller('NavbarCtrl', function($scope) {
-    $scope.isNavCollapsed = true;
-});
+angular
+  .module('tutorExchange')
+  .controller('NavbarCtrl', ['$scope',
+    function($scope) {
+      $scope.isNavCollapsed = true;
+    },
+  ]);
