@@ -8,7 +8,7 @@ First things first, **download node.js**.  Either apt-get install it or download
 
 I've told git to ignore all the 3rd party libs and tools.  We each install our own copies (not a big deal).
 
-In terminal (or command line), navigate to the client/ directory.
+In terminal (or command line), **navigate to the client/ directory***.
 
 To download node modules (locally), run:
 ```
@@ -26,8 +26,13 @@ Alternately, if you have bower installed run:
 bower install
 ```
 
+For Angular to work properly, you need to run it on a server.  I have a mock backend set up, but you need to add a file for the database.  Mac users run the following command (Windows users, you're on your own):
+```
+echo "{ \"users\": [] }" > mock/db.json
+```
 
-For Angular to work properly, you need to run it on a server.  I have a mock backend set up.  Run with:
+
+Run the mock server with:
 ```
 node run start
 ```
