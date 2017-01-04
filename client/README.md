@@ -37,3 +37,6 @@ Run the mock server with:
 node run start
 ```
 
+You can now visit the web page at: http://localhost:8080/
+You can also see the contents of the "database" at: http://localhost:8080/db
+
