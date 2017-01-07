@@ -10,7 +10,7 @@
 
   <h1>Apply</h1>
  
-  <form>
+  <form name="applyForm">
   
   <div class="form-group">
       <label for="text">Student Number:</label>
@@ -27,10 +27,11 @@
       <input type="text" class="form-control" name="lastname" ng-model="user.lastName" required>
     </div>
 
-      <div class="form-group">
-      <label for="text">Date of Birth:</label>
-      <input type="text" class="form-control" name="DOB">
+    <div class="form-group" ng-class="{ 'has-error': applyForm.DOB.$invalid }">
+        <label for="text">Date of Birth:</label>
+        <input type="text" class="form-control" name="DOB" uib-datepicker-popup="dd/MM/yyyy" ng-model="date">
     </div>
+
 
   <div class="form-group">
   	  <label for="inputPassword" class="control-label">Password:</label>

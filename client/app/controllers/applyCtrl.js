@@ -1,7 +1,12 @@
 angular
   .module('tutorExchange')
   .controller('ApplyCtrl', ['$scope', '$http', '$state', 'myData',
-    function($scope, $http, $state, myData) {
+    function($scope, $http, $state, myData, uibDateParser) {
+
+      /*UI Bootstrap Date Parsing Function*/
+      $scope.format = 'dd/MM/yyyy';
+      $scope.date = new Date();
+
 
       $scope.submit = function() {
         if (!$scope.user) {
@@ -31,12 +36,8 @@ angular
             $state.go('login_success');
           });
 
-
-
-
-
-
       };
+
     },
   ]);
 
