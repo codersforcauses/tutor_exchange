@@ -29,8 +29,18 @@
 
     <div class="form-group" ng-class="{ 'has-error': applyForm.DOB.$invalid }">
         <label for="text">Date of Birth:</label>
-        <input type="text" class="form-control" name="DOB" uib-datepicker-popup="dd/MM/yyyy" ng-model="date">
+        <input type="text" class="form-control" name="DOB" uib-datepicker-popup="dd/MM/yyyy" ng-model="date" required>
     </div>
+    <div ng-messages="applyForm.DOB.$error">
+      <div ng-message="applyForm.DOB.$invalid">
+        You forgot to enter your email address...
+      </div>
+      <div ng-message="required">
+        You did not enter your email address correctly...
+      </div>
+    </div>
+  </div>
+
 
 
   <div class="form-group">
@@ -48,17 +58,20 @@
     </div>
 
     <div class="checkbox">
-      <label><input type="checkbox" name="checkbox"> Apply as a Tutor</label>
+      <label><input type="checkbox" name="checkbox" ng-model="applytutor" ng-init="applytutor=false"> Apply as a Tutor</label>
   </div>
 
-  <div class="form-group">
-      <label for="text">Units:</label>
-      <input type="text" class="form-control" name="units">
+  <div ng-if="applytutor">
+
+    <div class="form-group">
+        <label for="text">Units:</label>
+        <input type="text" class="form-control" name="units">
     </div>
 
-  <div class="form-group">
-      <label for="text">Postcode:</label>
-      <input type="text" class="form-control" name="postcode">
+    <div class="form-group">
+        <label for="text">Postcode:</label>
+        <input type="text" class="form-control" name="postcode">
+    </div>
   </div>
     
   <button type="submit" class="btn btn-default" ng-click="submit()">Apply</button>
