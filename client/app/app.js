@@ -3,7 +3,6 @@ angular
     'ui.bootstrap',
     'ngAnimate',
     'ui.router',
-    'ngMessages',
   ])
   .config(['$urlRouterProvider', '$stateProvider',
     function($urlRouterProvider, $stateProvider) {
