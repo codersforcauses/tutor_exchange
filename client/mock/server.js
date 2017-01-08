@@ -1,6 +1,7 @@
 var express     = require('express');
 var jsonServer  = require('json-server');
-var jwt         = require('jwt-simple');
+var jwt         = require('jsonwebtoken');
+
 var low         = require('lowdb');
 var path        = require('path');
 
@@ -12,8 +13,6 @@ server.set('secret', config.secret);
 
 var db = low(path.join(__dirname, 'db.json'));
 if (!db.has('users').value()) bd.set('users, []').value();
-
-
 
 var router = jsonServer.router(path.join(__dirname, 'db.json'));
 
@@ -32,7 +31,7 @@ server.use(jsonServer.rewriter({'/db': '/api/db'}));
 server.use(function(req, res, next) {
   if (req.originalUrl === '/db') {
     next();
-  } else if (isAutherised(req)) {
+  } else if (isAuthorised(req)) {
     next();
   } else {
     res.sendStatus(401);
@@ -48,19 +47,26 @@ server.listen(port, function() {
 
 
 
-isAutherised = function(req) {
+
+isAuthorised = function(req) {
+
   var token;
 
   try {
-    token = (req.body && req.body.token) || (req.query && req.query.token) || req.headers['x-access-token'];
+    token = (req.body && req.body.token) || (req.query && req.query.token) || req.headers['authorization'];
+    //console.log('TOKEN IS: ' + token);
   } catch (err) {
     return false;
   }
 
   if (token) {
+    if (token.substring(0, 6) === 'Bearer') {
+      token = token.split(' ')[1];
+    }
+
     try {
-      var decoded = jwt.decode(token, server.get('secret'));
-      console.log(decode.iss + 'is autherised');
+      var decoded = jwt.verify(token, server.get('secret'));
+      console.log(decoded + ' is authorised');
       return true;
     } catch (err) {
       console.log('token no good');
@@ -91,17 +97,14 @@ login = function(req, res) {
     return;
   }
 
-
-  //var user = {'id': 12345678, 'password': 'password'};
-
-  var token = jwt.encode({iss: user.id}, server.get('secret'));
-
-  res.json({success: true, token: token});
-
+  user.name = db.get('users').find({'id': user.id}).value().name;
+  var token = jwt.sign(String(user.id), server.get('secret'));
+  res.json({success: true, name: user.name, role: 'student', token: token});
 };
 
+
 register = function(req, res) {
-/*
+
   var user = req.body.user;
 
   if (!user || !user.id || !user.password || !user.name) {
@@ -109,9 +112,7 @@ register = function(req, res) {
     return;
   }
 
-*/
-
-  var user = {'id': 11112222, 'password': 'password', 'name': 'Hugh Jass'};
+  //var user = {'id': 11112222, 'password': 'password', 'name': 'Hugh Jass'};
 
   if (db.get('users').find({'id': user.id}).value()) {
     res.json({success: false});
@@ -119,9 +120,7 @@ register = function(req, res) {
   }
 
   db.get('users').push(user).value();
-
-  var token = jwt.encode({iss: user.id}, server.get('secret'));
-
+  var token = jwt.sign(String(user.id), server.get('secret'));
   res.json({success: true, token: token});
 
 };
