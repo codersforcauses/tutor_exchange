@@ -10,8 +10,8 @@
 
           <h1>Login</h1>
   
-          <form>
-            <div class="form-group" ng-submit="submit(user)">
+          <form ng-submit="submit(user)">
+            <div class="form-group">
               <label for="text">Student Number:</label>
               <input type="text" class="form-control" name="id" ng-model="user.id" required>
             </div>
