@@ -17,12 +17,12 @@ if (!db.has('users').value()) bd.set('users, []').value();
 
 var router = jsonServer.router(path.join(__dirname, 'db.json'));
 
-server.use('/auth/sign_in', function(req, res) {
-  signIn(req, res);
+server.use('/auth/login', function(req, res) {
+  login(req, res);
 });
 
-server.use('/auth/sign_up', function(req, res) {
-  signUp(req, res);
+server.use('/auth/register', function(req, res) {
+  register(req, res);
 });
 
 server.use(express.static(path.join(__dirname, '..')));
@@ -72,7 +72,7 @@ isAutherised = function(req) {
 };
 
 
-signIn = function(req, res) {
+login = function(req, res) {
 /*
   var user = req.body.user;
 
@@ -101,7 +101,7 @@ signIn = function(req, res) {
 
 };
 
-signUp = function(req, res) {
+register = function(req, res) {
 /*
   var user = req.body.user;
 
