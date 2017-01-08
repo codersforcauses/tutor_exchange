@@ -63,8 +63,7 @@
 
 
     function logout() {
-      $window.sessionStorage.token = null;
-      //$window.localStorage.removeItem('jwtToken');
+      $http.defaults.headers.common.Authorization = '';
       session.destroy();
     }
 
