@@ -121,6 +121,6 @@ register = function(req, res) {
 
   db.get('users').push(user).value();
   var token = jwt.sign(String(user.id), server.get('secret'));
-  res.json({success: true, token: token});
+  res.json({success: true, name: user.name, role: 'student', token: token});
 
 };

@@ -8,7 +8,7 @@
         </div>
         <h1>Apply</h1>
         
-        <form name="applyForm" ng-submit="submitted=true && applyForm.$valid && submit()" novalidate>
+        <form name="applyForm" ng-submit="submitted=true && applyForm.$valid && submit(user)" novalidate>
           
           <div class="form-group" ng-class="{ 'has-error': applyForm.user.$invalid && (applyForm.$submitted || applyForm.user.$dirty) }">
             <label for="text">Student Number:</label>

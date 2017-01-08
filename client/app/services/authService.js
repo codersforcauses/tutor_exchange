@@ -14,7 +14,7 @@
 
     var service = {
       login:            login,
-      resgister:        register,
+      register:         register,
       logout:           logout,
       isAuthenticated:  isAuthenticated,
       isAuthorised:     isAuthorised,
@@ -46,14 +46,14 @@
 
     function register(user) {
 
-      user.id = parseInt(userId);
+      user.id = parseInt(user.id);
 
       return $http.post('/auth/register', {user: user})
         .then(function(response) {
           if (response.data.success) {
             $http.defaults.headers.common.Authorization = 'Bearer ' + response.data.token;
-            session.create(user.id, '*');
-            console.log('Registered as ' + session.getUserId());
+            session.create(user.id, response.data.name, response.data.role);
+            console.log(response.data.name +' registered as ' + session.getUserId());
           } else {
             console.log('Registration unsuccessful');
           }
