@@ -73,7 +73,7 @@ isAutherised = function(req) {
 
 
 login = function(req, res) {
-/*
+
   var user = req.body.user;
 
   if (!user || !user.id || !user.password) {
@@ -91,9 +91,8 @@ login = function(req, res) {
     return;
   }
 
-*/
 
-  var user = {'id': 12345678, 'password': 'password'};
+  //var user = {'id': 12345678, 'password': 'password'};
 
   var token = jwt.encode({iss: user.id}, server.get('secret'));
 
