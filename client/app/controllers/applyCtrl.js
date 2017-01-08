@@ -17,8 +17,6 @@ angular
           });
 
         $scope.user.name = $scope.user.firstName + ' ' + $scope.user.lastName;
-        //delete $scope.user.firstName;
-        //delete $scope.user.lastName;
 
         var data = angular.toJson($scope.user);
 
