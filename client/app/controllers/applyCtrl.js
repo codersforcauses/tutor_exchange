@@ -1,12 +1,7 @@
 angular
   .module('tutorExchange')
   .controller('ApplyCtrl', ['$scope', '$http', '$state', 'myData',
-    function($scope, $http, $state, myData, uibDateParser) {
-
-      /*UI Bootstrap Date Parsing Function*/
-      $scope.format = 'dd/MM/yyyy';
-      $scope.date = new Date();
-
+    function($scope, $http, $state, myData) {
 
       $scope.submit = function() {
         if (!$scope.user) {
@@ -22,8 +17,8 @@ angular
           });
 
         $scope.user.name = $scope.user.firstName + ' ' + $scope.user.lastName;
-        delete $scope.user.firstName;
-        delete $scope.user.lastName;
+        //delete $scope.user.firstName;
+        //delete $scope.user.lastName;
 
         var data = angular.toJson($scope.user);
 
@@ -39,5 +34,22 @@ angular
       };
 
     },
+  ])
+  .directive('passwordMatch', [function() {
+    return {
+        require: 'ngModel',
+        scope: {
+            inputPassword: '=passwordMatch',
+          },
+        link: function(scope, element, attributes, ngModel) {
+            ngModel.$validators.compareTo = function(modelValue) {
+                return modelValue == scope.inputPassword;
+              };
+            scope.$watch('inputPassword', function() {
+                ngModel.$validate();
+              });
+          },
+      }
+  },
   ]);
 
