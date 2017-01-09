@@ -2,7 +2,6 @@ var express     = require('express');
 var jsonServer  = require('json-server');
 var jwt         = require('jsonwebtoken');
 
-var low         = require('lowdb');
 var path        = require('path');
 
 var config      = require(__dirname + '/config');
@@ -11,10 +10,12 @@ var server = jsonServer.create();
 server.use(jsonServer.bodyParser);
 server.set('secret', config.secret);
 
-var db = low(path.join(__dirname, 'db.json'));
-if (!db.has('users').value()) bd.set('users, []').value();
+//var db = low(path.join(__dirname, 'db.json'));
+//if (!db.has('users').value()) bd.set('users, []').value();
 
 var router = jsonServer.router(path.join(__dirname, 'db.json'));
+
+var db = router.db;
 
 server.use('/auth/login', function(req, res) {
   login(req, res);
@@ -28,6 +29,7 @@ server.use(express.static(path.join(__dirname, '..')));
 server.use(jsonServer.defaults());
 server.use(jsonServer.rewriter({'/db': '/api/db'}));
 
+
 server.use(function(req, res, next) {
   if (req.originalUrl === '/db') {
     next();
@@ -39,6 +41,7 @@ server.use(function(req, res, next) {
 });
 
 server.use('/api', router);
+
 
 var port = process.env.PORT || 8080;
 server.listen(port, function() {
@@ -120,6 +123,8 @@ register = function(req, res) {
   }
 
   db.get('users').push(user).value();
+  //router.db.read(path.join(__dirname, 'db.json'));
+
   var token = jwt.sign(String(user.id), server.get('secret'));
   res.json({success: true, name: user.name, role: 'student', token: token});
 
