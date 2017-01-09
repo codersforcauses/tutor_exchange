@@ -11,7 +11,7 @@
   "devDependencies": {},
   "scripts": {
     "setup": "node_modules/.bin/bower install",
-    "start": "node_modules/.bin/json-server --watch mock/db.json --static ./ --snapshots ./mock --port 8080",
+    "start": "node mock/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
