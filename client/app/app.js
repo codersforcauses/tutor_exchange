@@ -6,6 +6,7 @@
       'ui.bootstrap',
       'ngAnimate',
       'ui.router',
+      'ui.select',
     ])
     .config(config);
 
