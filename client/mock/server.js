@@ -86,17 +86,17 @@ login = function(req, res) {
   var user = req.body.user;
 
   if (!user || !user.id || !user.password) {
-    res.json({success: false});
+    res.json({success: false, message: 'User id or password not submitted'});
     return;
   }
 
   if (!db.get('users').find({'id': user.id}).value()) {
-    res.json({success: false});
+    res.json({success: false, message: 'User does not exist'});
     return;
   }
 
   if (user.password !== db.get('users').find({'id': user.id}).value().password) {
-    res.json({success: false});
+    res.json({success: false, message: 'Password incorrect'});
     return;
   }
 
@@ -111,14 +111,14 @@ register = function(req, res) {
   var user = req.body.user;
 
   if (!user || !user.id || !user.password || !user.name) {
-    res.json({success: false});
+    res.json({success: false, message: 'User id, password or name not submitted'});
     return;
   }
 
   //var user = {'id': 11112222, 'password': 'password', 'name': 'Hugh Jass'};
 
   if (db.get('users').find({'id': user.id}).value()) {
-    res.json({success: false});
+    res.json({success: false, message: 'User already exists'});
     return;
   }
 
