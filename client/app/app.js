@@ -8,11 +8,12 @@
       'ui.router',
       'ui.select',
     ])
-    .config(config);
+    .config(config)
+    .run(run);
 
 
-  config.$inject = ['$urlRouterProvider', '$stateProvider'];
-  function config($urlRouterProvider, $stateProvider) {
+  config.$inject = ['$urlRouterProvider', '$stateProvider', 'USER_ROLES'];
+  function config($urlRouterProvider, $stateProvider, USER_ROLES) {
     $urlRouterProvider
       .otherwise('/');
 
@@ -32,6 +33,10 @@
         url: '/login_success',
         templateUrl: 'app/templates/login_success.html',
         controller: 'LoginSuccessCtrl',
+        data: {
+          authRequired: true,
+          authRoles:    [USER_ROLES.all],
+        },
       })
 
       .state('apply', {
@@ -39,6 +44,22 @@
         templateUrl: 'app/templates/apply.html',
         controller: 'ApplyCtrl',
       });
+  }
+
+  run.$inject = ['$rootScope', 'authService', 'USER_ROLES', '$state'];
+  function run($rootScope, authService, USER_ROLES, $state) {
+    $rootScope.$on('$stateChangeStart', function(event, next) {
+      if (next.data && next.data.authRequired) {
+        event.preventDefault();
+        if (!authService.isAuthenticated()) {
+          //console.log('YOU NEED TO LOG IN');
+          $state.go('login');
+        } else if (next.data.authRoles && !authService.isAuthorised(next.data.authRoles)) {
+          //console.log('YOU ARE NOT AUTHORISED TO SEE THAT PAGE');
+          $state.go('login');
+        }
+      }
+    });
   }
 
 })(angular);
