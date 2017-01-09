@@ -8,7 +8,7 @@
         </div>
         <h1>Apply</h1>
         
-        <form name="applyForm" novalidate>
+        <form name="applyForm" ng-submit="submitted=true && applyForm.$valid && submit(user)" novalidate>
           
           <div class="form-group" ng-class="{ 'has-error': applyForm.user.$invalid && (applyForm.$submitted || applyForm.user.$dirty) }">
             <label for="text">Student Number:</label>
@@ -60,7 +60,7 @@
             </div>
           </div>
           
-          <button type="submit" class="btn btn-default" ng-click="submitted=true && applyForm.$valid && submit()">Submit</button>
+          <button type="submit" class="btn btn-default">Submit</button>
           
         </form>
       </div>
