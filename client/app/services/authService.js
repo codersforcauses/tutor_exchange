@@ -6,8 +6,8 @@
     .factory('authService', authService);
 
 
-  authService.$inject = ['$http', 'session'];
-  function authService($http, session) {
+  authService.$inject = ['$http', 'session', 'USER_ROLES'];
+  function authService($http, session, USER_ROLES) {
 
     var data = {
     };
@@ -77,7 +77,8 @@
       if (!angular.isArray(roles)) {
         roles = [roles];
       }
-      return (isAuthenticated() && roles.indexOf(Session.getUserRole) !== -1);
+      return (isAuthenticated() &&
+        (roles.indexOf(session.getUserRole) !== -1 || roles.indexOf(USER_ROLES.all) !== -1));
     }
 
   }

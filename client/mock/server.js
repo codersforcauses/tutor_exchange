@@ -1,21 +1,21 @@
 var express     = require('express');
 var jsonServer  = require('json-server');
 var jwt         = require('jsonwebtoken');
-
 var path        = require('path');
 
 var config      = require(__dirname + '/config');
+
+var REQUIRE_AUTH = true;
 
 var server = jsonServer.create();
 server.use(jsonServer.bodyParser);
 server.set('secret', config.secret);
 
-//var db = low(path.join(__dirname, 'db.json'));
-//if (!db.has('users').value()) bd.set('users, []').value();
 
 var router = jsonServer.router(path.join(__dirname, 'db.json'));
-
 var db = router.db;
+if (!db.has('users').value()) bd.set('users, []').value();
+
 
 server.use('/auth/login', function(req, res) {
   login(req, res);
@@ -23,6 +23,11 @@ server.use('/auth/login', function(req, res) {
 
 server.use('/auth/register', function(req, res) {
   register(req, res);
+});
+
+server.use('/auth/vip', function(req, res) {
+  REQUIRE_AUTH = false;
+  res.end('Entering VIP mode: you now have access to all areas.');
 });
 
 server.use(express.static(path.join(__dirname, '..')));
@@ -33,7 +38,7 @@ server.use(jsonServer.rewriter({'/db': '/api/db'}));
 server.use(function(req, res, next) {
   if (req.originalUrl === '/db') {
     next();
-  } else if (isAuthorised(req)) {
+  } else if (!REQUIRE_AUTH || isAuthorised(req)) {
     next();
   } else {
     res.sendStatus(401);
