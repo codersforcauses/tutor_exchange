@@ -45,13 +45,18 @@
           </div>
           <div class="checkbox"><label><input type="checkbox" name="checkbox" ng-model="applytutor" ng-init="applytutor=false"> Apply as a Tutor</label></div>
           <div ng-if="applytutor">
-            <div class="form-group">
+            <div class="form-group" ng-class="{ 'has-error': applyForm.units.$invalid && (applyForm.$submitted || applyForm.units.$dirty) }">
               <label for="text">Units:</label>
-              <input type="text" class="form-control" name="units">
+              <ui-select multiple tagging required tagging-label="false" name="units" ng-model="user.units" theme="bootstrap">
+              <ui-select-match placeholder="Select for Units to Tutor..">{{$item}}</ui-select-match>
+              <ui-select-choices repeat="unit in availableUnits | filter:$select.search">
+              {{unit}}
+              </ui-select-choices>
+              </ui-select>
             </div>
-            <div class="form-group">
+            <div class="form-group" ng-class="{ 'has-error': applyForm.postcode.$invalid && (applyForm.$submitted || applyForm.postcode.$dirty) }">
               <label for="text">Postcode:</label>
-              <input type="text" class="form-control" name="postcode">
+              <input type="text" class="form-control" name="postcode" ng-pattern="/^[0-9]{4}$/" ng-model="user.postcode" required>
             </div>
           </div>
           

@@ -1,7 +1,8 @@
 angular
   .module('tutorExchange')
-  .controller('ApplyCtrl', ['$scope', '$http', '$state', 'myData',
-    function($scope, $http, $state, myData) {
+  .controller('ApplyCtrl', ['$scope', '$http', '$state', 'myData', 'UWA_UNITS',
+    function($scope, $http, $state, myData, UWA_UNITS) {
+      $scope.availableUnits = UWA_UNITS;
 
       $scope.submit = function() {
         if (!$scope.user) {

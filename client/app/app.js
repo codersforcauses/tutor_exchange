@@ -3,6 +3,7 @@ angular
     'ui.bootstrap',
     'ngAnimate',
     'ui.router',
+    'ui.select',
   ])
   .config(['$urlRouterProvider', '$stateProvider',
     function($urlRouterProvider, $stateProvider) {
