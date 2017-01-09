@@ -50,13 +50,13 @@
   function run($rootScope, authService, USER_ROLES, $state) {
     $rootScope.$on('$stateChangeStart', function(event, next) {
       if (next.data && next.data.authRequired) {
-        event.preventDefault();
         if (!authService.isAuthenticated()) {
           //console.log('YOU NEED TO LOG IN');
+          event.preventDefault();
           $state.go('login');
         } else if (next.data.authRoles && !authService.isAuthorised(next.data.authRoles)) {
           //console.log('YOU ARE NOT AUTHORISED TO SEE THAT PAGE');
-          $state.go('login');
+          event.preventDefault();
         }
       }
     });
