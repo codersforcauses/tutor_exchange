@@ -1,37 +1,29 @@
-angular
-  .module('tutorExchange')
-  .controller('ApplyCtrl', ['$scope', '$http', '$state', 'myData', 'UWA_UNITS',
-    function($scope, $http, $state, myData, UWA_UNITS) {
-      $scope.availableUnits = UWA_UNITS;
+(function(angular) {
+  'use strict';
 
-      $scope.submit = function() {
-        if (!$scope.user) {
-          return;
-        }
+  angular
+    .module('tutorExchange')
+    .controller('ApplyCtrl', ApplyCtrl);
 
-        $http.get('/users?id=' + $scope.user.id)
-          .then(function(response) {
-            if (response.data.length > 0) {
-              console.log('User already exists');
-              return;
-            }
-          });
 
-        $scope.user.name = $scope.user.firstName + ' ' + $scope.user.lastName;
+  ApplyCtrl.$inject = ['$scope', 'authService', '$state', 'UWA_UNITS'];
+  function ApplyCtrl($scope, authService, $state, UWA_UNITS) {
+    
+    $scope.availableUnits = UWA_UNITS;
 
-        var data = angular.toJson($scope.user);
+    $scope.submit = function(user) {
 
-        console.log(data);
+      user.id = parseInt(user.id);
+      user.name = user.firstName + ' ' + user.lastName;
+      delete user.firstName;
+      delete user.lastName;
 
-        $http.post('/users', data)
-          .then(function() {
-            console.log('New user!!!');
-            myData.set($scope.user);
-            $state.go('login_success');
-          });
+      authService
+        .register(user)
+        .then(function(result) {
+          if (authService.isAuthenticated()) $state.go('login_success');
+        });
+    };
+  }
 
-      };
-
-    },
-  ]);
-
+})(angular);
