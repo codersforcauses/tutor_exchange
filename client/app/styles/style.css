@@ -36,3 +36,8 @@ footer{
     overflow-y: hidden;
 }
 
+.ngMessageBox{
+	color:#f44242;
+	padding-bottom:10px;
+}
+
