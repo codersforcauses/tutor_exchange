@@ -14,7 +14,7 @@ server.set('secret', config.secret);
 
 var router = jsonServer.router(path.join(__dirname, 'db.json'));
 var db = router.db;
-if (!db.has('users').value()) bd.set('users, []').value();
+if (!db.has('users').value()) db.set('users, []').value();
 
 
 server.use('/auth/login', function(req, res) {
