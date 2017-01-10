@@ -2,10 +2,12 @@ var express     = require('express');
 var mysql       = require('mysql');
 var router      = express.Router();
 var path        = require('path');
+
+var config      = require(__dirname + '/config');
 /*var jsonServer  = require('json-server');*/
 /*var jwt         = require('jsonwebtoken');
 
-var config      = require(__dirname + '/config');
+
 
 var REQUIRE_AUTH = true;*/
 
@@ -24,14 +26,7 @@ app.use('/',router);
 
 app.use(express.static(path.join(__dirname, '..')));
 
-/*You will need to change this*/
-var connection = mysql.createConnection({
-    host: '127.0.0.1',
-    port: '3306',
-    user: 'root',
-    password: 'root',
-    database: 'testdb',
-  });
+var connection = mysql.createConnection(config.mysqlSettings);
 
 connection.connect (function(error) {
   if (!!error) {
@@ -53,6 +48,6 @@ app.use('/auth/test',function(req,res) {
       });
 });
 
-app.listen(8080,function() {
-  console.log('Live at Port 443');
+app.listen(config.mysqlSettings.port,function() {
+  console.log('Live at Port ' + config.mysqlSettings.port);
 });
