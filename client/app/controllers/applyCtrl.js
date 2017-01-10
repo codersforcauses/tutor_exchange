@@ -21,8 +21,8 @@
           if (authService.isAuthenticated()) {
             $state.go('login_success');
           } else {
-            $scope.applyForm.$setValidity('serverError', false);
             $scope.errorMsg = result.data.message;
+            $scope.applyForm.$setPristine();
           }
         });
     };

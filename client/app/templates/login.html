@@ -7,7 +7,7 @@
         </div>
         <h1>Login</h1>
         
-        <form name="loginForm" ng-submit="submit(user)" novalidate>
+        <form name="loginForm" ng-submit="submitted=true && loginForm.$valid && submit(user)" novalidate>
           <div class="form-group" ng-class="{ 'has-error': loginForm.id.$error && loginForm.$submitted}">
             <label for="text">Student Number:</label>
             <input type="text" class="form-control" name="id" ng-model="user.id" required>
@@ -19,9 +19,7 @@
           <div class="checkbox">
             <label><input type="checkbox"> Remember me</label>
           </div>
-          <div class="ngMessageBox" ng-messages="loginForm.$error">
-            <div ng-message="serverError">{{errorMsg}}</div>
-          </div>
+          <div class="errorMessageBox">{{errorMsg}}</div>
           <button type="submit" class="btn btn-default">Submit</button>
         </form>
       </div>
