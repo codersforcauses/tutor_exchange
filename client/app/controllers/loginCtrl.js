@@ -13,7 +13,12 @@
       authService
         .login(parseInt(user.id), user.password)
         .then(function(result) {
-          if (authService.isAuthenticated()) $state.go('login_success');
+          if (authService.isAuthenticated()) {
+            $state.go('login_success');
+          } else {
+            $scope.loginForm.$setValidity('serverError', false);
+            $scope.errorMsg = result.data.message;
+          }
         });
     };
   }

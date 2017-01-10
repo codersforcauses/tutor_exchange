@@ -7,6 +7,7 @@
       'ngAnimate',
       'ui.router',
       'ui.select',
+      'ngMessages',
     ])
     .config(config)
     .run(run);
