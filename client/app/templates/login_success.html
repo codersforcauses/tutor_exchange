@@ -1,22 +1,12 @@
 <div class="container">
-	<h1>Welcome {{user.name}}</h1>
+	<h1>Welcome {{session.name}}</h1>
 	<br>
-<<<<<<< HEAD
-	<div id="dashboard-navbar">
-		<a href="#">Dashboard</a>&emsp;<a href="#">Profile</a>&emsp;<a href="#">Tutor Search</a>&emsp;<a href="#">My Sessions</a>
-	</div>
-
 	<h3>Upcoming Sessions</h3>
-	<p ng-if="!user.sessions">It appears you have no upcoming sessions! <a href="#">Click here</a> to find a Tutor</p>
+	<p>It appears you have no upcoming sessions! <a href="#">Click here</a> to find a Tutor</p>
 	<br>
-	<p>Currently Logged in as: {{user.name}} Student Number: {{user.id}}. Account Type: {{user.type}}<a href="#" ng-click="logout()">Logout</a></p>
-
+	<h4><a href="#!/profile">View your Profile</a></h4>
+	<br>
+	<h4>Logged in as: </h4><p>{{session.name}}</p> <p>Student Number: {{session.id}}</p> <p>Account Type: {{session.role}}</p><a href="#" ng-click="logout()">Logout</a>
 </div>
-=======
-	<a ng-click="logout()">Logout</a>
-<<<<<<< HEAD
 </div>
->>>>>>> master
-=======
 </div>
->>>>>>> master

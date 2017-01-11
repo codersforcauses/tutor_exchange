@@ -8,11 +8,13 @@
 
   LoginSuccessCtrl.$inject = ['$scope', 'session', 'authService', '$state', '$http'];
   function LoginSuccessCtrl($scope, session, authService, $state, $http) {
-    $scope.user = {name: session.getUserName()};
+    $scope.session = {
+      id: session.getUserId(),
+      name: session.getUserName(),
+      role: session.getUserRole(),
+    };
 
     $scope.logout = function() {
-
-      //authService.logout();
       $state.go('home');
 
       $http.get('/api/users?id=' + session.getUserId())
