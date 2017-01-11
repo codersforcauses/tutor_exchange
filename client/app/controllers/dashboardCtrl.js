@@ -3,11 +3,11 @@
 
   angular
     .module('tutorExchange')
-    .controller('LoginSuccessCtrl', LoginSuccessCtrl);
+    .controller('DashboardCtrl', DashboardCtrl);
 
 
-  LoginSuccessCtrl.$inject = ['$scope', 'session', 'authService', '$state', '$http'];
-  function LoginSuccessCtrl($scope, session, authService, $state, $http) {
+  DashboardCtrl.$inject = ['$scope', 'session', 'authService', '$state', '$http'];
+  function DashboardCtrl($scope, session, authService, $state, $http) {
     $scope.session = {
       id: session.getUserId(),
       name: session.getUserName(),

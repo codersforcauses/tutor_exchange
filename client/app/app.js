@@ -30,10 +30,10 @@
         controller: 'LoginCtrl',
       })
 
-      .state('login_success', {
-        url: '/login_success',
-        templateUrl: 'app/templates/login_success.html',
-        controller: 'LoginSuccessCtrl',
+      .state('dashboard', {
+        url: '/dashboard',
+        templateUrl: 'app/templates/dashboard.html',
+        controller: 'DashboardCtrl',
         data: {
           authRequired: true,
           authRoles:    [USER_ROLES.all],

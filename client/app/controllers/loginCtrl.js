@@ -13,7 +13,7 @@
         .login(parseInt(user.id), user.password)
         .then(function(result) {
           if (authService.isAuthenticated()) {
-            $state.go('login_success');
+            $state.go('dashboard');
           } else {
             $scope.errorMsg = result.data.message;
             $scope.loginForm.$setPristine();
