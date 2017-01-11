@@ -6,8 +6,8 @@
     .controller('DashboardCtrl', DashboardCtrl);
 
 
-  DashboardCtrl.$inject = ['$scope', 'session', 'authService', '$state', '$http'];
-  function DashboardCtrl($scope, session, authService, $state, $http) {
+  DashboardCtrl.$inject = ['$scope', 'session', 'authService', '$state', '$http', 'userFunctions'];
+  function DashboardCtrl($scope, session, authService, $state, $http, userFunctions) {
     $scope.session = {
       id: session.getUserId(),
       name: session.getUserName(),
@@ -15,14 +15,7 @@
     };
 
     $scope.logout = function() {
-      $state.go('home');
-
-      $http.get('/api/users?id=' + session.getUserId())
-        .then(function(response) {
-          console.log(response.data[0].name + ' has left the building');
-          authService.logout();
-        });
-
+      userFunctions.logoutUser();
     };
   }
 

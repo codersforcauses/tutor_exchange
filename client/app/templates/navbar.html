@@ -16,6 +16,7 @@
           <li><a href="#about">ABOUT</a></li>
           <li ng-show="loggedinuser === undefined"><a href="#!/apply">APPLY</a></li>
           <li ng-show="loggedinuser === undefined"><a href="#!/login">LOGIN</a></li>
+          <li ng-show="loggedinuser === '*'"><a href="#" ng-click="logout()">LOGOUT</a></li>
         </ul>
       </div>
     </div>

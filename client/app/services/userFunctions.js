@@ -6,12 +6,13 @@
     .factory('userFunctions', userFunctions);
 
 
-  userFunctions.$inject = ['$http', 'session', 'USER_ROLES'];
-  function userFunctions($http, session, USER_ROLES) {
+  userFunctions.$inject = ['$http', '$state', 'session', 'USER_ROLES', 'authService'];
+  function userFunctions($http, $state, session, USER_ROLES, authService) {
 
     var service = {
       getDetails: getDetails,
       updateDetails: updateDetails,
+      logoutUser: logoutUser,
     };
 
     return service;
@@ -26,7 +27,18 @@
           });
     }
     function updateDetails() {
-      return {test: 'test'};
+      // TODO
+      return {};
+    }
+    function logoutUser() {
+      $state.go('home');
+
+      $http.get('/api/users?id=' + session.getUserId())
+        .then(function(response) {
+          console.log(response.data[0].name + ' has left the building');
+          authService.logout();
+        });
+
     }
 
   }
