@@ -40,6 +40,16 @@
         },
       })
 
+      .state('profile', {
+        url: '/profile',
+        templateUrl: 'app/templates/profile.html',
+        controller: 'ProfileCtrl',
+        data: {
+          authRequired: true,
+          authRoles:    [USER_ROLES.all],
+        },
+      })
+
       .state('apply', {
         url: '/apply',
         templateUrl: 'app/templates/apply.html',

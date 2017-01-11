@@ -6,14 +6,24 @@
     .controller('ApplyCtrl', ApplyCtrl);
 
 
-  ApplyCtrl.$inject = ['$scope', 'authService', '$state', 'UWA_UNITS'];
-  function ApplyCtrl($scope, authService, $state, UWA_UNITS) {
+  ApplyCtrl.$inject = ['$scope', 'authService', '$state', 'UWA_UNITS', 'USER_ROLES'];
+  function ApplyCtrl($scope, authService, $state, UWA_UNITS, USER_ROLES) {
     $scope.availableUnits = UWA_UNITS;
 
     $scope.submit = function(user) {
 
       user.id = parseInt(user.id);
       user.name = user.firstName + ' ' + user.lastName;
+
+      if (user.tutor) {
+        user.accountType = USER_ROLES.tutor;
+      } else {
+        user.accountType = USER_ROLES.student;
+      }
+
+      delete user.firstName;
+      delete user.lastName;
+      delete user.tutor;
 
       authService
         .register(user)
