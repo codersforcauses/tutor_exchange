@@ -8,18 +8,12 @@
 
   LoginCtrl.$inject = ['$scope', 'authService', '$state'];
   function LoginCtrl($scope, authService, $state) {
-
-    $scope.$watch('$scope.loginFrom', function(newValue, oldValue) {
-      $scope.loginForm.$setValidity('serverError', true);
-    });
-
-
     $scope.submit = function(user) {
       authService
         .login(parseInt(user.id), user.password)
         .then(function(result) {
           if (authService.isAuthenticated()) {
-            $state.go('login_success');
+            $state.go('dashboard');
           } else {
             $scope.errorMsg = result.data.message;
             $scope.loginForm.$setPristine();
