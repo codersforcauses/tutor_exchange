@@ -13,8 +13,8 @@
         <ul class="nav navbar-nav navbar-right">
           <li><a href="#about">ABOUT</a></li>
           <li><a href="#services">SERVICES</a></li>
-          <li><a href="#!/apply">APPLY</a></li>
-          <li><a href="#!/login">LOGIN</a></li>
+          <li ng-show="loggedinuser === undefined"><a href="#!/apply">APPLY</a></li>
+          <li ng-show="loggedinuser === undefined"><a href="#!/login">LOGIN</a></li>
         </ul>
       </div>
     </div>

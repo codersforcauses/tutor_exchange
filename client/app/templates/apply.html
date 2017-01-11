@@ -9,7 +9,6 @@
         <h1>Apply</h1>
         
         <form name="applyForm" ng-submit="submitted=true && applyForm.$valid && submit(user)" novalidate>
-          
           <div class="form-group" ng-class="{ 'has-error': applyForm.user.$invalid && (applyForm.$submitted || applyForm.user.$dirty) }">
             <label for="text">Student Number:</label>
             <input type="text" class="form-control" name="user" ng-pattern="/^[0-9]{8}$/" ng-model="user.id" required>
@@ -59,13 +58,13 @@
               <input type="text" class="form-control" name="postcode" ng-pattern="/^[0-9]{4}$/" ng-model="user.postcode" required>
             </div>
           </div>
-          
+          <div class="errorMessageBox">{{errorMsg}}</div>
           <button type="submit" class="btn btn-default">Submit</button>
-          
-        </form>
-      </div>
+        </form>        
+      </form>
     </div>
   </div>
+</div>
 </div>
 </div>
 </body>

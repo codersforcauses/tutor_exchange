@@ -1,32 +1,29 @@
-
 <div class="container">
   <div class="row">
-
     <div class="col-sm-4">
-        <div id="login-form">
-          <div>
-            <br> 
-          </div>
-
-          <h1>Login</h1>
-  
-          <form ng-submit="submit(user)">
-            <div class="form-group">
-              <label for="text">Student Number:</label>
-              <input type="text" class="form-control" name="id" ng-model="user.id" required>
-            </div>
-            <div class="form-group">
-              <label for="pwd">Password:</label>
-              <input type="password" class="form-control" name="password" ng-model="user.password" required>
-            </div>
-            <div class="checkbox">
-              <label><input type="checkbox"> Remember me</label>
-            </div>
-            <button type="submit" class="btn btn-default">Submit</button>
-          </form>
-
+      <div id="login-form">
+        <div>
+          <br>
         </div>
+        <h1>Login</h1>
+        
+        <form name="loginForm" ng-submit="submitted=true && loginForm.$valid && submit(user)" novalidate>
+          <div class="form-group" ng-class="{ 'has-error': loginForm.id.$error && loginForm.$submitted}">
+            <label for="text">Student Number:</label>
+            <input type="text" class="form-control" name="id" ng-model="user.id" required>
+          </div>
+          <div class="form-group" ng-class="{ 'has-error': loginForm.password.$error && loginForm.$submitted}">
+            <label for="pwd">Password:</label>
+            <input type="password" class="form-control" name="password" ng-model="user.password" required>
+          </div>
+          <div class="checkbox">
+            <label><input type="checkbox"> Remember me</label>
+          </div>
+          <div class="errorMessageBox">{{errorMsg}}</div>
+          <button type="submit" class="btn btn-default">Submit</button>
+        </form>
       </div>
     </div>
   </div>
+</div>
 </div>
