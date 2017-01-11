@@ -6,9 +6,10 @@
     .controller('ApplyCtrl', ApplyCtrl);
 
 
-  ApplyCtrl.$inject = ['$scope', 'authService', '$state', 'UWA_UNITS', 'USER_ROLES'];
-  function ApplyCtrl($scope, authService, $state, UWA_UNITS, USER_ROLES) {
+  ApplyCtrl.$inject = ['$scope', 'authService', '$state', 'UWA_UNITS', 'USER_ROLES', 'TUTOR_LANGUAGES'];
+  function ApplyCtrl($scope, authService, $state, UWA_UNITS, USER_ROLES, TUTOR_LANGUAGES) {
     $scope.availableUnits = UWA_UNITS;
+    $scope.tutorLanguages = TUTOR_LANGUAGES;
 
     $scope.submit = function(user) {
 
