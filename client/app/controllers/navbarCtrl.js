@@ -12,10 +12,10 @@
       userFunctions.logoutUser();
     };
     $scope.$on('$stateChangeStart', function(event, next) {
-        if (next.data && next.data.authRoles && authService.isAuthenticated()) {
-          $scope.loggedinuser = next.data.authRoles[0];
+        if (authService.isAuthenticated()) {
+          $scope.isLoggedIn = true;
         } else {
-          delete $scope.loggedinuser;
+          $scope.isLoggedIn = false;
         }
       });
   }
