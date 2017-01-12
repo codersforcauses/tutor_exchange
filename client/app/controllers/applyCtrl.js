@@ -8,6 +8,10 @@
 
   ApplyCtrl.$inject = ['$scope', 'authService', '$state', 'UWA_UNITS', 'USER_ROLES', 'TUTOR_LANGUAGES'];
   function ApplyCtrl($scope, authService, $state, UWA_UNITS, USER_ROLES, TUTOR_LANGUAGES) {
+    if (authService.isAuthenticated()) {
+      $state.go('dashboard');// Already Logged in
+    }
+
     $scope.availableUnits = UWA_UNITS;
     $scope.tutorLanguages = TUTOR_LANGUAGES;
 
