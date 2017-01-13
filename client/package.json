@@ -11,7 +11,7 @@
   "devDependencies": {},
   "scripts": {
     "setup": "node_modules/.bin/bower install",
-    "start": "node mock/server.js",
+    "start": "node api/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
