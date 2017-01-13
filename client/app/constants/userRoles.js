@@ -5,10 +5,10 @@
   angular
     .module('tutorExchange')
     .constant('USER_ROLES', {
-      all:      '*',
-      student:  'student',
-      tutor:    'tutor',
-      guild:    'guild',
+      student: 'student',
+      pendingTutor: 'pendingTutor',
+      tutor: 'tutor',
+      guild: 'guild',
     });
 
 })(angular);

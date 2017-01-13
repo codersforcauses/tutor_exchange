@@ -22,6 +22,8 @@
 
       if (user.tutor) {
         user.accountType = USER_ROLES.tutor;
+        user.verified = false;
+        user.visible = true;
       } else {
         user.accountType = USER_ROLES.student;
       }

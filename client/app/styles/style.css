@@ -9,11 +9,6 @@ footer{
 	padding-bottom:15px;
 }
 
-#row1{
-	padding-left:50px;
-	padding-right:50px;
-}
-
 .navbar{
 	color: #ffffff !important;
 	margin-bottom: 0;
@@ -41,3 +36,10 @@ footer{
 	padding-bottom:10px;
 }
 
+.form-group p.verificationStatus.pending, .form-group p.profileVisible.hidden{
+	color:#ff6100;
+}
+
+.form-group p.verificationStatus.verified, .form-group p.profileVisible.visible{
+	color:#63c617;
+}

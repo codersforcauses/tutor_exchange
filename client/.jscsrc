@@ -6,5 +6,6 @@
     "requireCapitalizedComments":			false,
     "requireSpaceBeforeBinaryOperators":	false,
     "requireSpaceAfterBinaryOperators":		false,
-    "maximumLineLength": 100,
+    "requireSpaceAfterLineComment": 		false,
+    "maximumLineLength": 150,
 }
