@@ -48,6 +48,6 @@ app.use('/auth/test',function(req,res) {
       });
 });
 
-app.listen(config.mysqlSettings.port,function() {
-  console.log('Live at Port ' + config.mysqlSettings.port);
+app.listen(config.server.port,function() {
+  console.log('Live at Port ' + config.server.port);
 });

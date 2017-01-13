@@ -8,4 +8,8 @@ module.exports = {
     password: 'root',
     database: 'testdb',
   },
+
+  server: {
+  	port: '8080',
+  },
 };
