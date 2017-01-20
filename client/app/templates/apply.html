@@ -1,7 +1,7 @@
 <div class="container">
   <div class="row">
     <div class="col-sm-4">
-      <div id="login-form">
+      <div id="apply-form">
         <br>
         <h1>Apply</h1>
         <form name="applyForm" ng-submit="submitted=true && applyForm.$valid && submit(user)" novalidate>
@@ -40,7 +40,6 @@
           </div>
           <div class="form-group">
             <label for="inputPassword" class="control-label">Password:</label>
-            
             <div class="form-group" ng-class="{ 'has-error': applyForm.pass.$invalid && (applyForm.$submitted || applyForm.pass.$dirty)}">
               <input type="password" class="form-control" ng-minlength="6" placeholder="Password" name="pass" ng-model="user.password" required>
               <div class="help-block">Minimum of 6 characters</div>
@@ -48,24 +47,23 @@
             <div class="form-group" ng-class="{ 'has-error': applyForm.confirm.$invalid && (applyForm.$submitted || applyForm.confirm.$dirty)}">
               <input type="password" class="form-control" name="confirm" placeholder="Confirm Password" ng-minlength="6" ng-model="password.confirm" password-match="user.password" required>
             </div>
-            
           </div>
           <div class="checkbox"><label><input type="checkbox" name="checkbox" ng-model="user.tutor" ng-init="user.tutor=false"> Apply as a Tutor</label></div>
           <div ng-if="user.tutor">
             <div class="form-group" ng-class="{ 'has-error': applyForm.units.$invalid && (applyForm.$submitted || applyForm.units.$dirty) }">
               <label for="text">Units:</label>
-              <ui-select multiple tagging required tagging-label="false" name="units" ng-model="user.units" theme="bootstrap">
+              <ui-select multiple required tagging-label="false" name="units" ng-model="user.units" theme="bootstrap">
               <ui-select-match placeholder="Search for Units to Tutor..">{{$item}}</ui-select-match>
-              <ui-select-choices repeat="unit in availableUnits | filter:$select.search">
+              <ui-select-choices  repeat="unit in availableUnits | filter: $select.search | limitTo: ($select.search.length <= 3) ? 0 : undefined">
               {{unit}}
               </ui-select-choices>
               </ui-select>
             </div>
             <div class="form-group" ng-class="{ 'has-error': applyForm.languages.$invalid && (applyForm.$submitted || applyForm.languages.$dirty) }">
               <label for="text">Languages:</label>
-              <ui-select multiple tagging required tagging-label="false" name="languages" ng-model="user.languages" theme="bootstrap">
+              <ui-select multiple required tagging-label="false" name="languages" ng-model="user.languages" theme="bootstrap">
               <ui-select-match placeholder="Search for Languages spoken..">{{$item}}</ui-select-match>
-              <ui-select-choices repeat="lang in tutorLanguages | filter:$select.search">
+              <ui-select-choices repeat="lang in tutorLanguages | filter:$select.search | limitTo: ($select.search.length <= 0) ? 0 : undefined">
               {{lang}}
               </ui-select-choices>
               </ui-select>
