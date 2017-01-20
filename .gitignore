@@ -1,6 +1,9 @@
 # Client mock server mock database (json-server)
 db*.json
 
+# Server config file
+config.js
+
 
 # Node modules
 node_modules/
