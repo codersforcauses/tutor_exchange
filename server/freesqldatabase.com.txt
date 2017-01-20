@@ -1,0 +1,17 @@
+Site Login details: visit http://www.freesqldatabase.com/
+
+username: 
+prem.aghera@gmail.com
+password:
+tutorexchange
+
+
+PHPmyAdmin login details: (only use the link provided after you log in to freesql database under the header phpMyAdmin for database administration and use the details below to log in)
+
+Hostname: sql6.freesqldatabase.com
+Database name: sql6148835
+Database username: sql6148835
+Database password: AF11rNK2Jc
+
+Port number: 3306
+
