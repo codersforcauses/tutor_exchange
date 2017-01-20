@@ -37,8 +37,7 @@ connection.connect (function(error) {
 });
 
 app.use('/auth/test',function(req,res) {
-  connection.query('SELECT * from testtable', function(err, rows, fields) {
-        connection.end();
+  connection.query('SELECT * from student', function(err, rows, fields) {
         if (err) {
           res.send(err);
         } else {
