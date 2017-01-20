@@ -1,0 +1,11 @@
+{
+    "preset": "node-style-guide",
+    
+    "requireMultiLineTernary":				false,
+    "requireCurlyBraces":					false,
+    "requireCapitalizedComments":			false,
+    "requireSpaceBeforeBinaryOperators":	false,
+    "requireSpaceAfterBinaryOperators":		false,
+    "requireSpaceAfterLineComment": 		false,
+    "maximumLineLength": 150,
+}

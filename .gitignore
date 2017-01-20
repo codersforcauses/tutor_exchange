@@ -63,3 +63,6 @@ Temporary Items
 .apdisk
 
 client/mock/db.json
+client/api/config.js
+client/api/server.js
+client/package.json
