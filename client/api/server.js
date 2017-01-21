@@ -30,7 +30,8 @@ server.use('/auth/vip', function(req, res) {
   res.end('Entering VIP mode: you now have access to all areas.');
 });
 
-server.use(express.static(path.join(__dirname, '..')));
+server.use(express.static(path.join(__dirname, '../app')));
+server.use('/bower_components', express.static(path.join(__dirname, '../bower_components')));
 server.use(jsonServer.defaults());
 server.use(jsonServer.rewriter({'/db': '/api/db'}));
 
