@@ -5,16 +5,16 @@
         TUTOR EXCHANGE (AWESOME WEB APP)
         </title>
         <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
-        <link rel="stylesheet" href="app/styles/style.css">
+        <link rel="stylesheet" href="styles/style.css">
         <link rel="stylesheet" href="bower_components/angular-ui-select/dist/select.css">
     </head>
     <body ng-app="tutorExchange">
         <!-- Navbar Here -->
-        <div ng-include="'app/templates/navbar.html'"></div>
+        <div ng-include="'templates/navbar.html'"></div>
         <!-- Content Here -->
         <div ui-view=""></div>
         <!-- Footer Here -->
-        <div ng-include="'app/templates/footer.html'"></div>
+        <div ng-include="'templates/footer.html'"></div>
         <!-- Vendor scripts -->
         <script src="bower_components/angular/angular.min.js"></script>
         <script src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
@@ -24,19 +24,19 @@
         <script src="bower_components/angular-ui-select/dist/select.js"></script>
         <script src="bower_components/angular-messages/angular-messages.min.js"></script>
         <!-- App scripts -->
-        <script src="app/app.js"></script>
-        <script src="app/controllers/navbarCtrl.js"></script>
-        <script src="app/controllers/loginCtrl.js"></script>
-        <script src="app/services/myData.js"></script>
-        <script src="app/controllers/dashboardCtrl.js"></script>
-        <script src="app/controllers/applyCtrl.js"></script>
-        <script src="app/controllers/profileCtrl.js"></script>
-        <script src="app/services/session.js"></script>
-        <script src="app/services/authService.js"></script>
-        <script src="app/directives/passwordMatch.js"></script>
-        <script src="app/constants/availableUnits.js"></script>
-        <script src="app/constants/tutorLanguages.js"></script>
-        <script src="app/constants/userRoles.js"></script>
-        <script src="app/services/userFunctions.js"></script>
+        <script src="app.js"></script>
+        <script src="controllers/navbarCtrl.js"></script>
+        <script src="controllers/loginCtrl.js"></script>
+        <script src="services/myData.js"></script>
+        <script src="controllers/dashboardCtrl.js"></script>
+        <script src="controllers/applyCtrl.js"></script>
+        <script src="controllers/profileCtrl.js"></script>
+        <script src="services/session.js"></script>
+        <script src="services/authService.js"></script>
+        <script src="directives/passwordMatch.js"></script>
+        <script src="constants/availableUnits.js"></script>
+        <script src="constants/tutorLanguages.js"></script>
+        <script src="constants/userRoles.js"></script>
+        <script src="services/userFunctions.js"></script>
     </body>
 </html>
