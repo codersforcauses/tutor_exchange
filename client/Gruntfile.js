@@ -27,16 +27,16 @@ module.exports = function(grunt) {
     // Concat files
     concat: {
       options: {
-        // separator: ';',  // might break css files.
+        separator: ';',  // might break css files.
       },
       js: {
         src: ['app/**/*.js'],
         dest: 'dist/<%= pkg.name %>.js',
       },
-      css: {
-        src: ['app/**/*.css'],
-        dest: 'dist/<%= pkg.name %>.css',
-      },
+      //css: {
+      //  src: ['app/**/*.css'],
+      //  dest: 'dist/style.css',
+      //},
     },
 
     // Minify concatenated js files
@@ -58,10 +58,21 @@ module.exports = function(grunt) {
       },
       css: {
         files: {
-          'dist/<%= pkg.name %>.min.css': ['<%= concat.css.dest %>'],
+          //'dist/style.min.css': ['<%= concat.css.dest %>'],
+          'dist/style.min.css': ['app/**/*.css'],
         },
       },
     },
+
+    // Change index to include newly created files
+    processhtml: {
+      index: {
+        files: {
+          'dist/index.html': ['app/index.html'],
+        },
+      },
+    },
+
 
   });
 
@@ -73,8 +84,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-cssmin');
+  grunt.loadNpmTasks('grunt-processhtml');
 
   // CREATE TASKS
-  grunt.registerTask('default', ['copy', 'concat', 'uglify', 'cssmin']);
+  grunt.registerTask('default', ['copy', 'concat', 'uglify', 'cssmin', 'processhtml']);
 
 };
