@@ -87,6 +87,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-processhtml');
 
   // CREATE TASKS
-  grunt.registerTask('default', ['copy', 'concat', 'uglify', 'cssmin', 'processhtml']);
+  grunt.registerTask('default', ['jshint', 'copy', 'concat', 'uglify', 'cssmin', 'processhtml']);
 
 };
