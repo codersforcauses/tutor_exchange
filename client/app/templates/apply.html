@@ -5,14 +5,19 @@
         <br>
         <h1>Apply</h1>
         <form name="applyForm" ng-submit="submitted=true && applyForm.$valid && submit(user)" novalidate>
-          <div class="form-group" ng-class="{ 'has-error': applyForm.user.$invalid && (applyForm.$submitted || applyForm.user.$dirty) }">
+          <div class="form-group">
+            <div class="help-block">Choose Signup Method:</div>
+            <label class="radio-inline"><input type="radio" name="radioType" ng-model="signupType" value="ID" required>Student ID</label>
+            <label class="radio-inline"><input type="radio" name="radioType" ng-model="signupType" value="email" required>Email Address</label>
+          </div>
+          <div ng-if="signupType == 'ID'" class="form-group" ng-class="{ 'has-error': applyForm.user.$invalid && (applyForm.$submitted || applyForm.user.$dirty) }">
             <label for="text">Student Number:</label>
             <input type="text" class="form-control" name="user" ng-pattern="/^[0-9]{8}$/" ng-model="user.id" required>
             <div class="help-block">Must be a valid 8-digit UWA Student ID</div>
           </div>
-          <div class="form-group" ng-class="{ 'has-error': applyForm.email.$invalid && applyForm.$submitted}">
+          <div ng-if="signupType == 'email'" class="form-group" ng-class="{ 'has-error': applyForm.email.$invalid && applyForm.$submitted}">
             <label for="text">Email:</label>
-            <input type="email" class="form-control" name="email" ng-model="user.email">
+            <input type="email" class="form-control" name="email" ng-model="user.email" required>
           </div>
           <div class="form-group" ng-class="{ 'has-error': applyForm.firstname.$invalid && applyForm.$submitted}">
             <label for="text">First Name:</label>
@@ -30,9 +35,9 @@
               <option value="Other">Other</option>
             </select>
           </div>
-          <div class="form-group" ng-class="{ 'has-error': applyForm.DOB.$invalid && applyForm.$submitted}">
+          <div class="form-group" ng-class="{ 'has-error': applyForm.datePicker.$invalid && applyForm.$submitted}">
             <label for="text">Date of Birth:</label>
-            <input type="date" class="form-control" name="DOB" ng-model="user.DOB" required>
+            <div ng-include="'templates/datePicker.html'" date-check></div>
           </div>
           <div class="form-group" ng-class="{ 'has-error': applyForm.contactnum.$invalid && applyForm.$submitted}">
             <label for="text">Contact Number:</label>
