@@ -36,10 +36,11 @@ footer{
 	padding-bottom:10px;
 }
 
-.form-group p.verificationStatus.pending, .form-group p.profileVisible.hidden{
+.form-group p.verificationStatus.pending, .form-group p.profileVisible.private{
 	color:#ff6100;
 }
 
 .form-group p.verificationStatus.verified, .form-group p.profileVisible.visible{
 	color:#63c617;
 }
+

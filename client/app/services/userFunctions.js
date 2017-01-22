@@ -20,16 +20,25 @@
     function getDetails(userId) {
       return $http.get('/api/users?id=' + userId)
       .then(function(response) {
-          return response;
-        })
-        .catch(function(error) {
+          if (!response.data) {
             console.log('Error Occured Fetching User Details');
-          });
+          } else if (response.data.length == 0) {
+            console.log('User does not Exist');
+          }
+          return response;
+        });
     }
-    function updateDetails() {
-      // TODO
-      return {};
+
+    function updateDetails(user) {
+      return $http.post('/api/updateprofile', {user: user})
+        .then(function(response) {
+          if (!response.data.success) {
+            console.log('Error Occured Updating User Details');
+          }
+          return response;
+        });
     }
+
     function logoutUser() {
       $http.get('/api/users?id=' + session.getUserId())
         .then(function(response) {
