@@ -26,10 +26,7 @@
         user.accountType = USER_ROLES.student;
       }
 
-      delete user.firstName;
-      delete user.lastName;
-      delete user.tutor;
-
+      /*Check Date of Birth is Valid using MomentJS*/
       var inputDOB = user.dayDOB + '/' + user.monthDOB + '/' + user.yearDOB;
       if (moment(inputDOB, ['DD/MM/YYYY'], true).isValid()) {
         user.DOB = inputDOB;
@@ -37,6 +34,13 @@
         $scope.errorMsg = 'Date of Birth is Invalid';
         return;
       }
+
+      delete user.firstName;
+      delete user.lastName;
+      delete user.tutor;
+      delete user.dayDOB;
+      delete user.monthDOB;
+      delete user.yearDOB;
 
 
       authService
