@@ -30,6 +30,13 @@
               <option value="Other">Other</option>
             </select>
           </div>
+          <div class="form-group" ng-class="{ 'has-error': applyForm.sex.$invalid && applyForm.$submitted}">
+            <label for="text">Campus:</label>
+            <select type="text" class="form-control" name="campus" ng-model="user.campus" required>
+              <option value="Crawley">Crawley</option>
+              <option value="Albany">Albany</option>
+            </select>
+          </div>
           <div class="form-group" ng-class="{ 'has-error': applyForm.DOB.$invalid && applyForm.$submitted}">
             <label for="text">Date of Birth:</label>
             <input type="date" class="form-control" name="DOB" ng-model="user.DOB" required>
