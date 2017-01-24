@@ -21,18 +21,18 @@
     $stateProvider
       .state('home', {
         url: '/',
-        templateUrl: 'app/templates/home.html',
+        templateUrl: 'templates/home.html',
       })
 
       .state('login', {
         url: '/login',
-        templateUrl: 'app/templates/login.html',
+        templateUrl: 'templates/login.html',
         controller: 'LoginCtrl',
       })
 
       .state('dashboard', {
         url: '/dashboard',
-        templateUrl: 'app/templates/dashboard.html',
+        templateUrl: 'templates/dashboard.html',
         controller: 'DashboardCtrl',
         data: {
           authRequired: true,
@@ -42,7 +42,7 @@
 
       .state('profile', {
         url: '/profile',
-        templateUrl: 'app/templates/profile.html',
+        templateUrl: 'templates/profile.html',
         controller: 'ProfileCtrl',
         data: {
           authRequired: true,
@@ -52,7 +52,7 @@
 
       .state('apply', {
         url: '/apply',
-        templateUrl: 'app/templates/apply.html',
+        templateUrl: 'templates/apply.html',
         controller: 'ApplyCtrl',
       });
   }
