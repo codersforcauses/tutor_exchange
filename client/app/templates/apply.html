@@ -1,6 +1,6 @@
 <div class="container">
   <div class="row">
-    <div class="col-sm-4">
+    <div class="col-md-3">
       <div id="apply-form">
         <br>
         <h1>Apply</h1>
@@ -44,7 +44,7 @@
           </div>
           <div class="form-group" ng-class="{ 'has-error': applyForm.datePicker.$invalid && applyForm.$submitted}">
             <label for="text">Date of Birth:</label>
-            <div ng-include="'templates/datePicker.html'" date-check></div>
+            <div class="form-inline" ng-include="'templates/datePicker.html'"></div>
           </div>
           <div class="form-group" ng-class="{ 'has-error': applyForm.contactnum.$invalid && applyForm.$submitted}">
             <label for="text">Contact Number:</label>
