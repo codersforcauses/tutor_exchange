@@ -44,3 +44,9 @@ footer{
 	color:#63c617;
 }
 
+.form-inline > .form-control{
+	display:inline-block !important;
+	width: inherit !important;
+	margin-right:3px;
+}
+
