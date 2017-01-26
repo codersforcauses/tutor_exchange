@@ -30,7 +30,8 @@ server.use('/auth/vip', function(req, res) {
   res.end('Entering VIP mode: you now have access to all areas.');
 });
 
-server.use(express.static(path.join(__dirname, '..')));
+server.use(express.static(path.join(__dirname, '../app')));
+server.use('/bower_components', express.static(path.join(__dirname, '../bower_components')));
 server.use(jsonServer.defaults());
 server.use(jsonServer.rewriter({'/db': '/api/db'}));
 
@@ -45,8 +46,11 @@ server.use(function(req, res, next) {
   }
 });
 
-server.use('/api', router);
+server.use('/api/updateprofile', function(req, res) {
+  updateprofile(req, res);
+});
 
+server.use('/api', router);
 
 var port = process.env.PORT || 8080;
 server.listen(port, function() {
@@ -132,5 +136,21 @@ register = function(req, res) {
 
   var token = jwt.sign(String(user.id), server.get('secret'));
   res.json({success: true, name: user.name, role: 'student', token: token});
+
+};
+
+updateprofile = function(req, res) {
+
+  var user = req.body.user;
+
+  if (!user || !user.id) {
+    res.json({success: false, message: 'Invalid Request'});
+    return;
+  }
+
+  if (isAuthorised(req)) {
+    db.get('users').find({id: user.id}).assign(user).value()
+    res.json({success: true});
+  }
 
 };

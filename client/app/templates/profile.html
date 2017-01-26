@@ -4,7 +4,7 @@
       <div id="login-form">
         <br>
         <h1>Profile</h1>
-        <form name="applyForm" novalidate>
+        <form name="profileForm" novalidate>
           <div class="form-group">
             <label for="text">Account Type:</label>
             {{user.accountType}}
@@ -31,24 +31,44 @@
           </div>
           <div class="form-group">
             <label for="text">Contact Number:</label>
-            {{user.phone}}
+            <p ng-if="!editMode" ng-bind="user.phone"></p>
+            <input ng-if="editMode" type="text" class="form-control" ng-model="edituser.phone">
           </div>
           <div ng-if="user.accountType === 'tutor'">
             <div class="form-group">
               <label for="text">Units:</label>
-              <p ng-repeat="u in user.units">{{u}}</p>
+              <p ng-if="!editMode" ng-repeat="u in user.units">{{u}}</p>
+              <div ng-if="editMode" class="form-group" ng-class="{ 'has-error': profileForm.units.$invalid && profileForm.units.$dirty }">
+                <ui-select multiple required tagging-label="false" name="units" ng-model="edituser.units" theme="bootstrap">
+                <ui-select-match placeholder="Search for Units to Tutor..">{{$item}}</ui-select-match>
+                <ui-select-choices  repeat="unit in availableUnits | filter: $select.search | limitTo: ($select.search.length <= 3) ? 0 : undefined">
+                {{unit}}
+                </ui-select-choices>
+                </ui-select>
+              </div>
             </div>
             <div class="form-group">
               <label for="text">Languages:</label>
-              <p ng-repeat="l in user.languages">{{l}}</p>
+              <p ng-if="!editMode" ng-repeat="l in user.languages">{{l}}</p>
+              <div ng-if="editMode" class="form-group" ng-class="{ 'has-error': profileForm.languages.$invalid &&  profileForm.languages.$dirty }">
+                <ui-select multiple required tagging-label="false" name="languages" ng-model="edituser.languages" theme="bootstrap">
+                <ui-select-match placeholder="Search for Languages spoken..">{{$item}}</ui-select-match>
+                <ui-select-choices repeat="lang in tutorLanguages | filter:$select.search | limitTo: ($select.search.length <= 0) ? 0 : undefined">
+                {{lang}}
+                </ui-select-choices>
+                </ui-select>
+              </div>
             </div>
-            <div class="form-group">
+            <div class="form-group" ng-class="{ 'has-error': profileForm.postcode.$invalid && profileForm.postcode.$dirty }">
               <label for="text">Postcode:</label>
-              {{user.postcode}}
+              <p ng-if="!editMode" ng-bind="user.postcode"></p>
+              <input ng-if="editMode" type="text" class="form-control" name="postcode" ng-pattern="/^[0-9]{4}$/" ng-model="edituser.postcode" required>
             </div>
             <div class="form-group">
               <label for="text">Your Bio:</label>
-              {{user.bio}}
+              <p ng-if="!editMode" ng-bind="user.bio"></p>
+              <textarea ng-if="editMode" class="form-control" rows="4" cols="50" ng-model="edituser.bio">
+              </textarea>
             </div>
             <hr>
             <div class="form-group">
@@ -58,13 +78,20 @@
             </div>
             <div class="form-group">
               <label>Profile Visibility:</label>
-              <p ng-show="!user.visible" class="profileVisible hidden">Hidden</p>
-              <p ng-show="user.visible" class="profileVisible visible">Visible</p>
+              <div ng-if="user.visible">
+                <p class="profileVisible visible">Visible&nbsp;<a ng-if="editMode" href="" ng-click="toggleVisiblity()">Make Private</a></p>
+              </div>
+              <div ng-if="!user.visible">
+                <p class="profileVisible private">Hidden&nbsp;<a ng-if="editMode" href="" ng-click="toggleVisiblity()">Make Public</a></p>
+              </div>
             </div>
+            <hr>
           </div>
           <div class="errorMessageBox">{{errorMsg}}</div>
-          <button type="submit" class="btn btn-default">Update Details</button>
-          <button type="submit" class="btn btn-default">Change your Password</button>
+          <button ng-if="!editMode" type="submit" class="btn btn-default" ng-click="edit()">Update Details</button>
+          <button ng-if="editMode" type="submit" class="btn btn-default" ng-click="profileForm.$valid && save()">Save</button>
+          <button ng-if="editMode" type="submit" class="btn btn-default" ng-click="cancel()">Cancel</button>
+          <button ng-if="!editMode" type="submit" class="btn btn-default">Change your Password</button>
         </form>
       </form>
     </div>

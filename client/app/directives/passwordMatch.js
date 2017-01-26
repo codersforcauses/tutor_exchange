@@ -17,8 +17,8 @@
                 ngModel.$validate();
               });
           },
-      }
+      };
   },
-])
+]);
 
 })(angular);

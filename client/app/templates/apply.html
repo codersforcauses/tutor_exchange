@@ -1,18 +1,23 @@
 <div class="container">
   <div class="row">
-    <div class="col-sm-4">
-      <div id="login-form">
+    <div class="col-lg-3 col-md-4">
+      <div id="apply-form">
         <br>
         <h1>Apply</h1>
         <form name="applyForm" ng-submit="submitted=true && applyForm.$valid && submit(user)" novalidate>
-          <div class="form-group" ng-class="{ 'has-error': applyForm.user.$invalid && (applyForm.$submitted || applyForm.user.$dirty) }">
+          <div class="form-group">
+            <div class="help-block">Choose Signup Method:</div>
+            <label class="radio-inline"><input type="radio" name="radioType" ng-model="signupType" value="ID" required>Student ID</label>
+            <label class="radio-inline"><input type="radio" name="radioType" ng-model="signupType" value="email" required>Email Address</label>
+          </div>
+          <div ng-if="signupType == 'ID'" class="form-group" ng-class="{ 'has-error': applyForm.user.$invalid && (applyForm.$submitted || applyForm.user.$dirty) }">
             <label for="text">Student Number:</label>
             <input type="text" class="form-control" name="user" ng-pattern="/^[0-9]{8}$/" ng-model="user.id" required>
             <div class="help-block">Must be a valid 8-digit UWA Student ID</div>
           </div>
-          <div class="form-group" ng-class="{ 'has-error': applyForm.email.$invalid && applyForm.$submitted}">
+          <div ng-if="signupType == 'email'" class="form-group" ng-class="{ 'has-error': applyForm.email.$invalid && applyForm.$submitted}">
             <label for="text">Email:</label>
-            <input type="email" class="form-control" name="email" ng-model="user.email">
+            <input type="email" class="form-control" name="email" ng-model="user.email" required>
           </div>
           <div class="form-group" ng-class="{ 'has-error': applyForm.firstname.$invalid && applyForm.$submitted}">
             <label for="text">First Name:</label>
@@ -30,9 +35,16 @@
               <option value="Other">Other</option>
             </select>
           </div>
-          <div class="form-group" ng-class="{ 'has-error': applyForm.DOB.$invalid && applyForm.$submitted}">
+          <div class="form-group" ng-class="{ 'has-error': applyForm.campus.$invalid && applyForm.$submitted}">
+            <label for="text">Campus:</label>
+            <select type="text" class="form-control" name="campus" ng-model="user.campus" required>
+              <option value="Crawley">Crawley</option>
+              <option value="Albany">Albany</option>
+            </select>
+          </div>
+          <div class="form-group" ng-class="{ 'has-error': applyForm.datePicker.$invalid && applyForm.$submitted}">
             <label for="text">Date of Birth:</label>
-            <input type="date" class="form-control" name="DOB" ng-model="user.DOB" required>
+            <div class="form-inline" ng-include="'templates/datePicker.html'"></div>
           </div>
           <div class="form-group" ng-class="{ 'has-error': applyForm.contactnum.$invalid && applyForm.$submitted}">
             <label for="text">Contact Number:</label>
@@ -40,7 +52,6 @@
           </div>
           <div class="form-group">
             <label for="inputPassword" class="control-label">Password:</label>
-            
             <div class="form-group" ng-class="{ 'has-error': applyForm.pass.$invalid && (applyForm.$submitted || applyForm.pass.$dirty)}">
               <input type="password" class="form-control" ng-minlength="6" placeholder="Password" name="pass" ng-model="user.password" required>
               <div class="help-block">Minimum of 6 characters</div>
@@ -48,24 +59,23 @@
             <div class="form-group" ng-class="{ 'has-error': applyForm.confirm.$invalid && (applyForm.$submitted || applyForm.confirm.$dirty)}">
               <input type="password" class="form-control" name="confirm" placeholder="Confirm Password" ng-minlength="6" ng-model="password.confirm" password-match="user.password" required>
             </div>
-            
           </div>
           <div class="checkbox"><label><input type="checkbox" name="checkbox" ng-model="user.tutor" ng-init="user.tutor=false"> Apply as a Tutor</label></div>
           <div ng-if="user.tutor">
             <div class="form-group" ng-class="{ 'has-error': applyForm.units.$invalid && (applyForm.$submitted || applyForm.units.$dirty) }">
               <label for="text">Units:</label>
-              <ui-select multiple tagging required tagging-label="false" name="units" ng-model="user.units" theme="bootstrap">
+              <ui-select multiple required tagging-label="false" name="units" ng-model="user.units" theme="bootstrap">
               <ui-select-match placeholder="Search for Units to Tutor..">{{$item}}</ui-select-match>
-              <ui-select-choices repeat="unit in availableUnits | filter:$select.search">
+              <ui-select-choices  repeat="unit in availableUnits | filter: $select.search | limitTo: ($select.search.length <= 3) ? 0 : undefined">
               {{unit}}
               </ui-select-choices>
               </ui-select>
             </div>
             <div class="form-group" ng-class="{ 'has-error': applyForm.languages.$invalid && (applyForm.$submitted || applyForm.languages.$dirty) }">
               <label for="text">Languages:</label>
-              <ui-select multiple tagging required tagging-label="false" name="languages" ng-model="user.languages" theme="bootstrap">
+              <ui-select multiple required tagging-label="false" name="languages" ng-model="user.languages" theme="bootstrap">
               <ui-select-match placeholder="Search for Languages spoken..">{{$item}}</ui-select-match>
-              <ui-select-choices repeat="lang in tutorLanguages | filter:$select.search">
+              <ui-select-choices repeat="lang in tutorLanguages | filter:$select.search | limitTo: ($select.search.length <= 0) ? 0 : undefined">
               {{lang}}
               </ui-select-choices>
               </ui-select>
