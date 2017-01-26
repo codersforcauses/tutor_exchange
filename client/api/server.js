@@ -45,19 +45,23 @@ connection.connect (function(error) {
 });
 
 
-app.get('/auth/register', function(req, res) {
+app.use('/auth/register', function(req, res) {
 
   var post  = {
-    studentNumber: req.body.user,
-    firstName: req.body.firstname,
-    lastName: req.body.lastname,
-    DOB: req.body.DOB,
-    phone: req.body.contactnum,
-    password: req.body.pass,
+    studentNumber: req.body.user.id,
+    sex: req.body.user.sex,
+    name: req.body.user.name,
+    DOB: req.body.user.DOB,
+    phone: req.body.user.phone,
+    password: req.body.user.password,
   };
-
   connection.query('INSERT INTO user SET ?', post, function(err, rows, fields) {
-    // ...
+    if (err) {
+      res.send(err);
+    } else {
+      res.json({success: true, message: 'pls'});
+    }
+    return;
   });
 });
 
