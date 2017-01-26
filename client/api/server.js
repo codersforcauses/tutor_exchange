@@ -29,10 +29,8 @@ app.use(express.static(path.join(__dirname, '../app')));
 app.use('/bower_components', express.static(path.join(__dirname, '../bower_components')));
 var connection = mysql.createConnection(config.mysqlSettings);
 
-// parse application/json
 app.use(bodyParser.json());
 
-// parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 
 
@@ -59,13 +57,26 @@ app.use('/auth/register', function(req, res) {
     if (err) {
       res.send(err);
     } else {
-      res.json({success: true, message: 'pls'});
+      res.json({success: true, message: 'Registration was Successful'});
     }
     return;
   });
 });
 
-
+app.use('/auth/login', function(req, res) {
+  var details = {
+    studentNumber: req.body.user.id,
+    password: req.body.user.password,
+  };
+  var query = connection.query('SELECT COUNT(*) AS count FROM user WHERE studentNumber = ? and password = ?', [details.studentNumber, details.password], function(err, rows, fields) {
+    if (err) {
+      res.send(err);
+    } else if (rows[0].count === 1) {
+      res.json({success: true, message: 'Login was Successful'});
+    }
+    return;
+  });
+});
 
 
 app.use('/auth/test',function(req,res) {
@@ -80,14 +91,6 @@ app.use('/auth/test',function(req,res) {
 });
 
 
-
-
-
-app.use('/auth/login', function(req, res) {
-  login(req, res);
-});
-
-
 //app.get('/auth/register', function(req, res){
 //  register(req, res);
 //});
@@ -95,28 +98,4 @@ app.use('/auth/login', function(req, res) {
 app.listen(config.server.port,function() {
   console.log('Live at Port ' + config.server.port);
 });
-
-
-// register = function(req, res) {
-
-//   var user = req.body.user;
-
-//   if (!user || !user.id || !user.password || !user.name) {
-//     res.json({success: false, message: 'User id, password or name not submitted'});
-//     return;
-//   }
-
-//   //var user = {'id': 11112222, 'password': 'password', 'name': 'Hugh Jass'};
-
-//   if (db.get('users').find({'id': user.id}).value()) {
-//     res.json({success: false, message: 'User already exists'});
-//     return;
-//   }
-
-//   db.get('users').push(user).value();
-//   //router.db.read(path.join(__dirname, 'db.json'));
-
-//   var token = jwt.sign(String(user.id), server.get('secret'));
-//   res.json({success: true, name: user.name, role: 'student', token: token});
-// };
 
