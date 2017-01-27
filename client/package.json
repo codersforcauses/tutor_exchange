@@ -8,6 +8,8 @@
     "jsonwebtoken": "^7.2.1"
   },
   "devDependencies": {
+    "angular": "^1.6.1",
+    "angular-mocks": "^1.6.1",
     "bower": "^1.8.0",
     "grunt": "^1.0.1",
     "grunt-contrib-concat": "^1.0.1",
@@ -19,6 +21,7 @@
     "jasmine": "^2.5.3",
     "jshint-stylish": "^2.2.1",
     "karma": "^1.4.0",
+    "karma-chrome-launcher": "^2.0.0",
     "karma-jasmine": "^1.1.0",
     "karma-phantomjs-launcher": "^1.0.2"
   },

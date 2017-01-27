@@ -27,14 +27,12 @@
     return service;
 
     function create(userId, userName, userRole) {
-      console.log('NEW SESSION');
       userData.id = userId;
       userData.name = userName;
       userData.role = userRole;
     }
 
     function destroy() {
-      console.log('END SESSION');
       userData.id = null;
       userData.name = null;
       userData.role = null;
