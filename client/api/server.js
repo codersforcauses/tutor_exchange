@@ -55,17 +55,42 @@ app.use('/auth/register', function(req, res) {
     phone: req.body.user.phone,
     password: req.body.user.password,
   };
-  connection.query('INSERT INTO user SET ?', post, function(err, rows, fields) {
+  connection.query('SELECT * FROM user WHERE studentNumber = ?', post.studentNumber, function(err, rows, fields) {
     if (err) {
       res.send(err);
+    } else if (rows.length !== 0) {
+      res.json({success: false, message: 'User already Exists'});
     } else {
-      res.json({success: true, message: 'pls'});
+      connection.query('INSERT INTO user SET ?', post, function(err, rows, fields) {
+        if (err) {
+          res.send(err);
+        } else {
+          res.json({success: true, message: 'Registration was Successful'});
+        }
+        return;
+      });
+    }
+  });
+
+});
+
+
+app.use('/auth/login', function(req, res) {
+  var details = {
+    studentNumber: req.body.user.id,
+    password: req.body.user.password,
+  };
+  var query = connection.query('SELECT COUNT(*) AS count FROM user WHERE studentNumber = ? and password = ?', [details.studentNumber, details.password], function(err, rows, fields) {
+    if (err) {
+      res.json({success: false, message: err});
+    } else if (rows[0].count === 1) {
+      res.json({success: true, message: 'Login was Successful'});
+    } else {
+      res.json({success: false, message: 'Username or Password was Incorrect'});
     }
     return;
   });
 });
-
-
 
 
 app.use('/auth/test',function(req,res) {
@@ -83,9 +108,9 @@ app.use('/auth/test',function(req,res) {
 
 
 
-app.use('/auth/login', function(req, res) {
+/*app.use('/auth/login', function(req, res) {
   login(req, res);
-});
+});*/
 
 
 //app.get('/auth/register', function(req, res){
