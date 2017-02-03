@@ -1,5 +1,5 @@
 .jumbotron{
-	background-color: #009DDC;
+	background-color: #55aa80;
 	padding: 100px;
 	color: #ffffff;
 }
@@ -12,7 +12,7 @@ footer{
 .navbar{
 	color: #ffffff !important;
 	margin-bottom: 0;
-    background-color: #0F4364;
+    background-color: #55aa80;
     border: 0;
     border-radius: 0;
     font-size: 12px !important;
@@ -43,4 +43,24 @@ footer{
 .form-group p.verificationStatus.verified, .form-group p.profileVisible.visible{
 	color:#63c617;
 }
+
+.form-inline > .form-control{
+	display:inline-block !important;
+	width: inherit !important;
+	margin-right:3px;
+}
+
+#profile-form .ng-enter, #profile-form .ng-leave {
+	--webkit-transition: none !important;
+  	transition:none !important;
+}
+
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+  	display: none !important;
+}
+
+#upgradeBtn.btn.btn-success {
+	margin-bottom:10px;
+}
+
 

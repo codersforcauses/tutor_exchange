@@ -22,7 +22,7 @@
       .then(function(response) {
           if (!response.data) {
             console.log('Error Occured Fetching User Details');
-          } else if (response.data.length == 0) {
+          } else if (response.data.length === 0) {
             console.log('User does not Exist');
           }
           return response;

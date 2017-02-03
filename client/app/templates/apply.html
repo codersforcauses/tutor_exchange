@@ -1,6 +1,6 @@
 <div class="container">
   <div class="row">
-    <div class="col-sm-4">
+    <div class="col-lg-3 col-md-4">
       <div id="apply-form">
         <br>
         <h1>Apply</h1>
@@ -9,10 +9,6 @@
             <label for="text">Student Number:</label>
             <input type="text" class="form-control" name="user" ng-pattern="/^[0-9]{8}$/" ng-model="user.id" required>
             <div class="help-block">Must be a valid 8-digit UWA Student ID</div>
-          </div>
-          <div class="form-group" ng-class="{ 'has-error': applyForm.email.$invalid && applyForm.$submitted}">
-            <label for="text">Email:</label>
-            <input type="email" class="form-control" name="email" ng-model="user.email">
           </div>
           <div class="form-group" ng-class="{ 'has-error': applyForm.firstname.$invalid && applyForm.$submitted}">
             <label for="text">First Name:</label>
@@ -30,16 +26,9 @@
               <option value="Other">Other</option>
             </select>
           </div>
-          <div class="form-group" ng-class="{ 'has-error': applyForm.sex.$invalid && applyForm.$submitted}">
-            <label for="text">Campus:</label>
-            <select type="text" class="form-control" name="campus" ng-model="user.campus" required>
-              <option value="Crawley">Crawley</option>
-              <option value="Albany">Albany</option>
-            </select>
-          </div>
-          <div class="form-group" ng-class="{ 'has-error': applyForm.DOB.$invalid && applyForm.$submitted}">
+          <div class="form-group" ng-class="{ 'has-error': applyForm.datePicker.$invalid && applyForm.$submitted}">
             <label for="text">Date of Birth:</label>
-            <input type="date" class="form-control" name="DOB" ng-model="user.DOB" required>
+            <div class="form-inline" ng-include="'templates/datePicker.html'"></div>
           </div>
           <div class="form-group" ng-class="{ 'has-error': applyForm.contactnum.$invalid && applyForm.$submitted}">
             <label for="text">Contact Number:</label>

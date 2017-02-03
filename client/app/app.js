@@ -65,6 +65,10 @@
         templateUrl: 'templates/apply.html',
         controller: 'ApplyCtrl',
       });
+      .state('about', {
+        url: '/about',
+        templateUrl: 'templates/about.html',
+      });
   }
 
   run.$inject = ['$rootScope', 'authService', 'USER_ROLES', '$state'];

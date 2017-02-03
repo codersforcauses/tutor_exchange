@@ -24,6 +24,22 @@ function ProfileCtrl($scope, session, authService, userFunctions, $state, $http,
     }
   );
 
+  $scope.upgrade = function() {
+    if ($scope.user) {
+      $scope.edituser = angular.copy($scope.user);
+      $scope.upgradeAccount = true;
+      $scope.editMode = true;
+    }
+  };
+
+  $scope.upgradeSubmit = function() {
+    /* Will need to Submit a new Application to the Guild*/
+    $scope.edituser.accountType = 'tutor';
+    $scope.edituser.visible = true;
+    $scope.save();
+    $scope.upgradeAccount = false;
+  };
+
   $scope.edit = function() {
     if ($scope.user) {
       $scope.edituser = angular.copy($scope.user);
@@ -34,6 +50,7 @@ function ProfileCtrl($scope, session, authService, userFunctions, $state, $http,
   $scope.cancel = function() {
     if ($scope.edituser) delete $scope.edituser;
     $scope.editMode = false;
+    $scope.upgradeAccount = false;
   };
 
   $scope.save = function() {
@@ -52,10 +69,8 @@ function ProfileCtrl($scope, session, authService, userFunctions, $state, $http,
   };
 
   $scope.toggleVisiblity = function() {
-    if ($scope.edituser && $scope.user) {
-      var currentVisiblity = !$scope.edituser.visible;
-      $scope.edituser.visible = currentVisiblity;
-      $scope.user.visible = currentVisiblity;
+    if ($scope.user && $scope.edituser) {
+      $scope.edituser.visible = !$scope.edituser.visible;
     }
   };
 
