@@ -50,6 +50,16 @@
         },
       })
 
+      .state('search', {
+        url: '/search',
+        templateUrl: 'templates/search.html',
+        controller: 'SearchCtrl',
+        data: {
+          authRequired: true,
+          authRoles:    [USER_ROLES.all],
+        },
+      })
+
       .state('apply', {
         url: '/apply',
         templateUrl: 'templates/apply.html',
