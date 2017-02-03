@@ -77,8 +77,7 @@
       if (!angular.isArray(roles)) {
         roles = [roles];
       }
-      return (isAuthenticated() &&
-        (roles.indexOf(session.getUserRole) !== -1 || roles.indexOf(USER_ROLES.all) !== -1));
+      return (isAuthenticated() && roles.indexOf(session.getUserRole) !== -1);
     }
 
   }
