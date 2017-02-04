@@ -36,7 +36,7 @@
         controller: 'DashboardCtrl',
         data: {
           authRequired: true,
-          authRoles:    [USER_ROLES.all],
+          authRoles: [USER_ROLES.student, USER_ROLES.pendingTutor, USER_ROLES.tutor,],
         },
       })
 
@@ -46,7 +46,7 @@
         controller: 'ProfileCtrl',
         data: {
           authRequired: true,
-          authRoles:    [USER_ROLES.all],
+          authRoles: [USER_ROLES.student, USER_ROLES.pendingTutor, USER_ROLES.tutor,],
         },
       })
 
@@ -56,7 +56,7 @@
         controller: 'SearchCtrl',
         data: {
           authRequired: true,
-          authRoles:    [USER_ROLES.all],
+          authRoles: [USER_ROLES.student, USER_ROLES.pendingTutor, USER_ROLES.tutor,],
         },
       })
 
@@ -64,7 +64,8 @@
         url: '/apply',
         templateUrl: 'templates/apply.html',
         controller: 'ApplyCtrl',
-      });
+      })
+
       .state('about', {
         url: '/about',
         templateUrl: 'templates/about.html',
