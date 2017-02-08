@@ -5,8 +5,8 @@
     .module('tutorExchange')
     .controller('NavbarCtrl', NavbarCtrl);
 
-  NavbarCtrl.$inject = ['$scope', '$location', 'authService', '$rootScope', 'USER_ROLES', 'userFunctions'];
-  function NavbarCtrl($scope, $location, authService, $rootScope, USER_ROLES, userFunctions) {
+  NavbarCtrl.$inject = ['$scope', '$location', 'authService', 'USER_ROLES', 'userFunctions'];
+  function NavbarCtrl($scope, $location, authService, USER_ROLES, userFunctions) {
     $scope.$on('$stateChangeStart', function(event, next) {
         $scope.isLoggedIn = authService.isAuthenticated();
       });
