@@ -13,16 +13,12 @@ describe('NavbarCtrl test:', function() {
 
     // Mock AuthService
     inject(function() {
-      mockAuthService.isAuthenticated = function() {
-        return true;
-      };
+      mockAuthService.isAuthenticated = function() {};
     });
 
     //Mock userFunctions
     inject(function() {
-      mockUserFunctions.logoutUser = function() {
-        return;
-      };
+      mockUserFunctions.logoutUser = function() {};
     });
 
   });
@@ -84,7 +80,7 @@ describe('NavbarCtrl test:', function() {
     });
 
     it('should call userFunctions.logout()', function() {
-      spyOn(userFunctions, 'logoutUser').and.callThrough();
+      spyOn(userFunctions, 'logoutUser');
       $scope.logout();
       expect(userFunctions.logoutUser).toHaveBeenCalled();
     });
