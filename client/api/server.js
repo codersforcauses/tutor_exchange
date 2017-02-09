@@ -1,7 +1,7 @@
 var express     = require('express');
 var bodyParser  = require('body-parser');
 var mysql       = require('mysql');
-//var jwt         = require('jsonwebtoken');
+var jwt         = require('jsonwebtoken');
 
 var config      = require(__dirname + '/config');
 
@@ -10,7 +10,7 @@ var config      = require(__dirname + '/config');
 var app = express();
 app.use(bodyParser.json()); //read json
 app.use(bodyParser.urlencoded({extended: true})); //read data sent in url
-//app.set('secret', config.secret);*/
+app.set('secret', config.secret);
 
 
 var connection = mysql.createConnection(config.mysqlSettings);
@@ -67,7 +67,8 @@ app.use('/auth/register', function(req, res) {
       }
 
       if (!req.body.user.tutor) {
-        res.json({success: true, message: 'Registration was Successful', name: post.name, role: 'student'});
+        var token = jwt.sign({id: post.studentNumber, role: 'student'}, app.get('secret'));
+        res.json({success: true, message: 'Registration was Successful', name: post.name, role: 'student', token: token});
 
       } else {
         var tutorpost = {
@@ -84,7 +85,8 @@ app.use('/auth/register', function(req, res) {
             return;
           }
 
-          res.json({success: true, message: 'Registration was Successful', name: post.name, role: 'pendingTutor'});
+          var token = jwt.sign({id: post.studentNumber, role: 'pendingTutor'}, app.get('secret'));
+          res.json({success: true, message: 'Registration was Successful', name: post.name, role: 'pendingTutor', token: token});
           return;
         });
       }
@@ -118,17 +120,22 @@ app.use('/auth/login', function(req, res) {
     connection.query('SELECT userid, verified FROM tutor WHERE studentNumber = ?', [details.studentNumber], function(err, rows, fields) {
       //console.log(rows);
 
+      var token;
+
       if (!rows) {
-        res.json({success: true, message: 'Login was Successful', name: name, role: 'student'});
+        token = jwt.sign({id: details.studentNumber, role: 'student'}, app.get('secret'));
+        res.json({success: true, message: 'Login was Successful', name: name, role: 'student', token: token});
         return;
       }
 
       if (rows[0].verified) {
-        res.json({success: true, message: 'Login was Successful', name: name, role: 'tutor'});
+        token = jwt.sign({id: details.studentNumber, role: 'tutor'}, app.get('secret'));
+        res.json({success: true, message: 'Login was Successful', name: name, role: 'tutor', token: token});
         return;
       }
 
-      res.json({success: true, message: 'Login was Successful', name: name, role: 'pendingTutor'});
+      token = jwt.sign({id: details.studentNumber, role: 'pendingTutor'}, app.get('secret'));
+      res.json({success: true, message: 'Login was Successful', name: name, role: 'pendingTutor', token: token});
     });
   });
 });
