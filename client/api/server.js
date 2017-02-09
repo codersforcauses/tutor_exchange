@@ -55,6 +55,7 @@ app.use('/auth/register', function(req, res) {
     phone: req.body.user.phone,
     password: req.body.user.password,
   };
+
   connection.query('SELECT * FROM user WHERE studentNumber = ?', post.studentNumber, function(err, rows, fields) {
     if (err) {
       res.send(err);
@@ -63,15 +64,33 @@ app.use('/auth/register', function(req, res) {
     } else {
       connection.query('INSERT INTO user SET ?', post, function(err, rows, fields) {
         if (err) {
+          console.log(err);
           res.send(err);
         } else {
-          res.json({success: true, message: 'Registration was Successful'});
+          if (req.body.user.tutor) {
+            var tutorpost = {
+              userID: req.body.user.id,
+              postcode: req.body.user.postcode,
+              // accountType: 1, //Set as pendingTutor
+            };
+            console.log(tutorpost);
+            connection.query('INSERT INTO tutor SET ?', tutorpost, function(err, rows, fields) {
+              if (err) {
+                res.send(err);
+                console.log(err);
+                return;
+              } else {
+                res.json({success: true, message: 'Registration was Successful', role: 'pendingTutor'});
+              }       
+            });
+        } else {
+            res.json({success: true, message: 'Registration was Successful', role: 'student'});
         }
+      }
         return;
       });
     }
   });
-
 });
 
 
