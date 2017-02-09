@@ -190,9 +190,7 @@ app.listen(config.server.port, function() {
 
 
 function getUser(req) {
-
   var token = (req.body && req.body.token) || (req.query && req.query.token) || (req.headers && req.headers.authorization);
-
   //console.log(token);
 
   if (!token || token.substring(0, 6) !== 'Bearer') {
