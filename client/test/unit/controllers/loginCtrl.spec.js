@@ -13,7 +13,11 @@ describe('LoginCtrl test:', function() {
       return mockAuthService.authenticated;
     };
     mockAuthService.isAuthorized = function() {
-      console.log('isAuthorized');
+      console.log('mockAuthService.isAuthorized');
+    };
+
+    mockAuthService.login = function() {
+      console.log('mockAuthService.login');
     };
   });
 
@@ -38,8 +42,12 @@ describe('LoginCtrl test:', function() {
       expect($state.go).not.toHaveBeenCalledWith('dashboard');
     });
 
-    beforeEach(function() {
+    beforeAll(function() {
       mockAuthService.authenticated = true;
+    });
+
+    afterAll(function() {
+      mockAuthService.authenticated = false;
     });
 
     it('should change state if user is already logged in', function() {
@@ -49,6 +57,26 @@ describe('LoginCtrl test:', function() {
   });
 
 
+  describe('$scope.submit:', function() {
+    it('should call authService.login with user id and student number', function() {
+      //spyOn(authService, 'login').and.callThrough();
+      //var user = {id: 11223344, password: 'password'};
+      //$scope.submit(user);
+      //expect(authService.login).toHaveBeenCalledWith(user.id, user.password);
+    });
 
+    it('should change state to dashboard if authentication is successful', function() {
+    });
+
+    it('should not change state if authentication is not successful', function() {
+    });
+
+    it('should update $scope.errorMsg if authentication is not successful', function() {
+    });
+
+    it('should clear login form if authentication is not successful', function() {
+    });
+
+  });
 
 });
