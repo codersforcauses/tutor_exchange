@@ -17,8 +17,8 @@
 
     return service;
 
-    function getDetails(userId) {
-      return $http.get('/api/users?id=' + userId)
+    function getDetails() {
+      return $http.get('/api/getprofile')
       .then(function(response) {
           if (!response.data) {
             console.log('Error Occured Fetching User Details');

@@ -141,6 +141,34 @@ app.use('/auth/login', function(req, res) {
 });
 
 
+
+app.use('/api/getprofile',function(req,res) {
+  var user = getUser(req);
+  console.log(user);
+
+  if (!user) {
+    res.json({success: false, message: 'Please log in to view profile'});
+    return;
+  }
+
+  connection.query('SELECT * FROM user WHERE studentNumber = ?', [user.id], function(err, result, fields) {
+    if (err) {
+      console.log(err);
+      res.status(503).send(err);
+      return;
+    }
+
+    if (!result) {
+      res.send('WHO ARE YOU?'); // User deleted, but still has token
+      return;
+    }
+
+    console.log(result[0]);
+    res.json(result[0]);
+  });
+});
+
+
 app.use('/auth/test',function(req,res) {
   connection.query('SELECT name from user where sex = "M"', function(err, rows, fields) {
     if (err) {
@@ -158,4 +186,30 @@ app.use('/auth/test',function(req,res) {
 app.listen(config.server.port, function() {
   console.log('Live at http://localhost:' + config.server.port);
 });
+
+
+
+function getUser(req) {
+
+  var token = (req.body && req.body.token) || (req.query && req.query.token) || (req.headers && req.headers.authorization);
+
+  //console.log(token);
+
+  if (!token || token.substring(0, 6) !== 'Bearer') {
+    return false;
+  }
+
+  token = token.split(' ')[1];
+
+  try {
+    var decoded = jwt.verify(token, app.get('secret'));
+    //console.log(decoded);
+    return {id: decoded.id, role: decoded.role};
+  } catch (err) {
+    //console.log('bad token');
+    return false;
+  }
+
+}
+
 
