@@ -2,25 +2,21 @@ describe('NavbarCtrl test:', function() {
 
   beforeEach(module('tutorExchange'));
 
+  var $scope, $location, authService, USER_ROLES, userFunctions;
+
   beforeEach(function() {
-    var mockAuthService = {};
-    var mockUserFunctions = {};
+    var mockAuthService, mockUserFunctions;
+
+    mockAuthService = {};
+    mockAuthService.isAuthenticated = function() {};
+
+    mockUserFunctions = {};
+    mockUserFunctions.logoutUser = function() {};
 
     module('tutorExchange', function($provide) {
       $provide.value('authService', mockAuthService);
       $provide.value('userFunctions', mockUserFunctions);
     });
-
-    // Mock AuthService
-    inject(function() {
-      mockAuthService.isAuthenticated = function() {};
-    });
-
-    //Mock userFunctions
-    inject(function() {
-      mockUserFunctions.logoutUser = function() {};
-    });
-
   });
 
 
