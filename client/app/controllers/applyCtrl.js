@@ -42,6 +42,9 @@
       delete user.monthDOB;
       delete user.yearDOB;
 
+      user.sex = user.sex.charAt(0);
+
+
 
       authService
         .register(user)

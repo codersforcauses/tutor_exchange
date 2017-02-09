@@ -40,12 +40,9 @@
     }
 
     function logoutUser() {
-      $http.get('/api/users?id=' + session.getUserId())
-        .then(function(response) {
-          console.log(response.data[0].name + ' has left the building');
-          authService.logout();
-          $state.go('home');
-        });
+      console.log(session.getUserName() + ' has left the building');
+      authService.logout();
+      $state.go('home');
     }
 
   }

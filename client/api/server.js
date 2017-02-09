@@ -25,7 +25,7 @@ connection.connect (function(error) {
 
 // middleware
 app.use('/*', function(req, res, next) {
-  console.log(req.originalUrl + ' ' + req.method);
+  console.log(req.method + ' ' + req.originalUrl);
   next();
 });
 
@@ -41,9 +41,10 @@ app.use('/auth/register', function(req, res) {
     studentNumber: req.body.user.id,
     sex: req.body.user.sex,
     name: req.body.user.name,
-    DOB: req.body.user.DOB,
+    DOB: '2000-01-01',//req.body.user.DOB,
     phone: req.body.user.phone,
     password: req.body.user.password,
+    passwordHash: 'hash',
   };
 
   connection.query('SELECT * FROM user WHERE studentNumber = ?', post.studentNumber, function(err, rows, fields) {
@@ -66,7 +67,7 @@ app.use('/auth/register', function(req, res) {
       }
 
       if (!req.body.user.tutor) {
-        res.json({success: true, message: 'Registration was Successful', role: 'student'});
+        res.json({success: true, message: 'Registration was Successful', name: post.name, role: 'student'});
 
       } else {
         var tutorpost = {
@@ -83,7 +84,7 @@ app.use('/auth/register', function(req, res) {
             return;
           }
 
-          res.json({success: true, message: 'Registration was Successful', role: 'pendingTutor'});
+          res.json({success: true, message: 'Registration was Successful', name: post.name, role: 'pendingTutor'});
           return;
         });
       }
@@ -97,19 +98,38 @@ app.use('/auth/login', function(req, res) {
     studentNumber: req.body.user.id,
     password: req.body.user.password,
   };
-  var query = connection.query('SELECT COUNT(*) AS count FROM user WHERE studentNumber = ? and password = ?', [details.studentNumber, details.password], function(err, rows, fields) {
+
+  connection.query('SELECT name FROM user WHERE studentNumber = ? and password = ?', [details.studentNumber, details.password], function(err, rows, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
       return;
     }
 
-    if (rows[0].count === 1) {
-      res.json({success: true, message: 'Login was Successful'});
+    if (!rows) {
+      res.json({success: false, message: 'Username or Password was Incorrect'});
       return;
     }
 
-    res.json({success: false, message: 'Username or Password was Incorrect'});
+    //console.log(rows);
+
+    var name = rows[0].name;
+
+    connection.query('SELECT userid, verified FROM tutor WHERE studentNumber = ?', [details.studentNumber], function(err, rows, fields) {
+      //console.log(rows);
+
+      if (!rows) {
+        res.json({success: true, message: 'Login was Successful', name: name, role: 'student'});
+        return;
+      }
+
+      if (rows[0].verified) {
+        res.json({success: true, message: 'Login was Successful', name: name, role: 'tutor'});
+        return;
+      }
+
+      res.json({success: true, message: 'Login was Successful', name: name, role: 'pendingTutor'});
+    });
   });
 });
 
