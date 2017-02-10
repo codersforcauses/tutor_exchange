@@ -1,12 +1,17 @@
 import sys
 import io
+import string
+import random
 
 
 def generate(username, password):
+
+	jwt_key = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(16))
+
 	lines = []
 
 	lines.append("module.exports = {")
-	lines.append("  secret: 'imasecretdonttellanyone',")
+	lines.append("  secret: '" + jwt_key + "',")
 	lines.append("")
 	lines.append("  mysqlSettings: {")
 	lines.append("    host: '127.0.0.1',")
