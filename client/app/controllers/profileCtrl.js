@@ -15,9 +15,9 @@ function ProfileCtrl($scope, session, authService, userFunctions, $state, $http,
   userFunctions
   .getDetails(session.getUserId())
   .then(function(response) {
-      if (response.data.length == 1) {
-        $scope.user = response.data[0];
-        console.log(response);
+      if (response.data) {
+        $scope.user = response.data;
+        console.log(response.data);
       } else {
         console.log('Unable to Load User Data');
       }

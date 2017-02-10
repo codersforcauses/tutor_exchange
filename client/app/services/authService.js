@@ -52,7 +52,7 @@
         .then(function(response) {
           if (response.data.success) {
             $http.defaults.headers.common.Authorization = 'Bearer ' + response.data.token;
-            session.create(user.id, response.data.name, response.data.role);
+            session.create(user.id, user.name, response.data.role);
             console.log(session.getUserName() +' registered as ' + session.getUserId());
           } else {
             console.log('Registration unsuccessful: ' + response.data.message);
@@ -77,8 +77,7 @@
       if (!angular.isArray(roles)) {
         roles = [roles];
       }
-      return (isAuthenticated() &&
-        (roles.indexOf(session.getUserRole) !== -1 || roles.indexOf(USER_ROLES.all) !== -1));
+      return (isAuthenticated() && roles.indexOf(session.getUserRole()) !== -1);
     }
 
   }
