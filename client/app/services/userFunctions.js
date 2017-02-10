@@ -17,8 +17,8 @@
 
     return service;
 
-    function getDetails(userId) {
-      return $http.get('/api/users?id=' + userId)
+    function getDetails() {
+      return $http.get('/api/getprofile')
       .then(function(response) {
           if (!response.data) {
             console.log('Error Occured Fetching User Details');
@@ -40,12 +40,9 @@
     }
 
     function logoutUser() {
-      $http.get('/api/users?id=' + session.getUserId())
-        .then(function(response) {
-          console.log(response.data[0].name + ' has left the building');
-          authService.logout();
-          $state.go('home');
-        });
+      console.log(session.getUserName() + ' has left the building');
+      authService.logout();
+      $state.go('home');
     }
 
   }
