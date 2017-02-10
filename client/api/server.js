@@ -38,7 +38,7 @@ app.use('/bower_components', express.static(__dirname + '/../bower_components'))
 app.use('/auth/register', function(req, res) {
 
   var post = {
-    studentNumber: req.body.user.id,
+    userID: req.body.user.id,
     sex: req.body.user.sex,
     name: req.body.user.name,
     DOB: '2000-01-01',//req.body.user.DOB,
@@ -47,7 +47,7 @@ app.use('/auth/register', function(req, res) {
     passwordHash: 'hash',
   };
 
-  connection.query('SELECT * FROM user WHERE studentNumber = ?', post.studentNumber, function(err, rows, fields) {
+  connection.query('SELECT * FROM user WHERE userID = ?', post.userID, function(err, rows, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
@@ -67,7 +67,7 @@ app.use('/auth/register', function(req, res) {
       }
 
       if (!req.body.user.tutor) {
-        var token = jwt.sign({id: post.studentNumber, role: 'student'}, app.get('secret'));
+        var token = jwt.sign({id: post.userID, role: 'student'}, app.get('secret'));
         res.json({success: true, message: 'Registration was Successful', name: post.name, role: 'student', token: token});
 
       } else {
@@ -85,7 +85,7 @@ app.use('/auth/register', function(req, res) {
             return;
           }
 
-          var token = jwt.sign({id: post.studentNumber, role: 'pendingTutor'}, app.get('secret'));
+          var token = jwt.sign({id: post.userID, role: 'pendingTutor'}, app.get('secret'));
           res.json({success: true, message: 'Registration was Successful', name: post.name, role: 'pendingTutor', token: token});
           return;
         });
