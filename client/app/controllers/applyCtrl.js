@@ -27,10 +27,9 @@
       }
 
       /*Check Date of Birth is Valid using MomentJS*/
-      var inputDOB = user.yearDOB + '-' + user.monthDOB + '-' + user.dayDOB;
-      console.log(inputDOB);
-      if (moment(inputDOB, ['YYYY-MM-DD'], true).isValid()) {
-        user.DOB = new Date(inputDOB);
+      var inputDOB = user.dayDOB + '/' + user.monthDOB + '/' + user.yearDOB;
+      if (moment(inputDOB, ['DD/MM/YYYY'], true).isValid()) {
+        user.DOB = inputDOB;
       } else {
         $scope.errorMsg = 'Date of Birth is Invalid';
         return;
@@ -38,12 +37,10 @@
 
       delete user.firstName;
       delete user.lastName;
+      delete user.tutor;
       delete user.dayDOB;
       delete user.monthDOB;
       delete user.yearDOB;
-
-      user.sex = user.sex.charAt(0);
-
 
 
       authService

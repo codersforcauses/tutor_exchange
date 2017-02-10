@@ -1,213 +1,156 @@
 var express     = require('express');
-var bodyParser  = require('body-parser');
-var mysql       = require('mysql');
+var jsonServer  = require('json-server');
 var jwt         = require('jsonwebtoken');
+var path        = require('path');
 
 var config      = require(__dirname + '/config');
 
+var REQUIRE_AUTH = true;
+
+var server = jsonServer.create();
+server.use(jsonServer.bodyParser);
+server.set('secret', config.secret);
 
 
-var app = express();
-app.use(bodyParser.json()); //read json
-app.use(bodyParser.urlencoded({extended: true})); //read data sent in url
-app.set('secret', config.secret);
+var router = jsonServer.router(path.join(__dirname, 'db.json'));
+var db = router.db;
+if (!db.has('users').value()) db.set('users, []').value();
 
 
-var connection = mysql.createConnection(config.mysqlSettings);
-connection.connect (function(error) {
-  if (!!error) {
-    console.log(error);
+server.use('/auth/login', function(req, res) {
+  login(req, res);
+});
+
+server.use('/auth/register', function(req, res) {
+  register(req, res);
+});
+
+server.use('/auth/vip', function(req, res) {
+  REQUIRE_AUTH = false;
+  res.end('Entering VIP mode: you now have access to all areas.');
+});
+
+server.use(express.static(path.join(__dirname, '../app')));
+server.use('/bower_components', express.static(path.join(__dirname, '../bower_components')));
+server.use(jsonServer.defaults());
+server.use(jsonServer.rewriter({'/db': '/api/db'}));
+
+
+server.use(function(req, res, next) {
+  if (req.originalUrl === '/db') {
+    next();
+  } else if (!REQUIRE_AUTH || isAuthorised(req)) {
+    next();
   } else {
-    console.log('Connected to mysql database');
+    res.sendStatus(401);
   }
 });
 
-
-// middleware
-app.use('/*', function(req, res, next) {
-  console.log(req.method + ' ' + req.originalUrl);
-  next();
+server.use('/api/updateprofile', function(req, res) {
+  updateprofile(req, res);
 });
 
+server.use('/api', router);
 
-// static routing
-app.use(express.static(__dirname + '/../app'));
-app.use('/bower_components', express.static(__dirname + '/../bower_components'));
-
-
-app.use('/auth/register', function(req, res) {
-
-  var post = {
-    userID: req.body.user.id,
-    sex: req.body.user.sex,
-    name: req.body.user.name,
-    DOB: '2000-01-01',//req.body.user.DOB,
-    phone: req.body.user.phone,
-    password: req.body.user.password,
-    passwordHash: 'hash',
-  };
-
-  connection.query('SELECT * FROM user WHERE userID = ?', post.userID, function(err, rows, fields) {
-    if (err) {
-      console.log(err);
-      res.status(503).send(err);
-      return;
-    }
-
-    if (rows.length !== 0) {
-      res.json({success: false, message: 'User already Exists'});
-      return;
-    }
-
-    connection.query('INSERT INTO user SET ?', post, function(err, rows, fields) {
-      if (err) {
-        console.log(err);
-        res.status(503).send(err);
-        return;
-      }
-
-      if (!req.body.user.tutor) {
-        var token = jwt.sign({id: post.userID, role: 'student'}, app.get('secret'));
-        res.json({success: true, message: 'Registration was Successful', name: post.name, role: 'student', token: token});
-
-      } else {
-        var tutorpost = {
-          userID: req.body.user.id,
-          postcode: req.body.user.postcode,
-          // accountType: 1, //Set as pendingTutor
-        };
-        console.log(tutorpost);
-
-        connection.query('INSERT INTO tutor SET ?', tutorpost, function(err, rows, fields) {
-          if (err) {
-            console.log(err);
-            res.status(503).send(err);
-            return;
-          }
-
-          var token = jwt.sign({id: post.userID, role: 'pendingTutor'}, app.get('secret'));
-          res.json({success: true, message: 'Registration was Successful', name: post.name, role: 'pendingTutor', token: token});
-          return;
-        });
-      }
-    });
-  });
-});
-
-
-app.use('/auth/login', function(req, res) {
-  var details = {
-    studentNumber: req.body.user.id,
-    password: req.body.user.password,
-  };
-
-  connection.query('SELECT name FROM user WHERE userID = ? and password = ?', [details.studentNumber, details.password], function(err, rows, fields) {
-    if (err) {
-      console.log(err);
-      res.status(503).send(err);
-      return;
-    }
-
-    if (!rows || !rows[0]) {
-      res.json({success: false, message: 'Username or Password was Incorrect'});
-      return;
-    }
-
-    //console.log(rows);
-
-    var name = rows[0].name;
-
-    connection.query('SELECT userid, verified FROM tutor WHERE userID = ?', [details.studentNumber], function(err, rows, fields) {
-      //console.log(rows);
-
-      var token;
-
-      if (!rows || !rows[0]) {
-        token = jwt.sign({id: details.studentNumber, role: 'student'}, app.get('secret'));
-        res.json({success: true, message: 'Login was Successful', name: name, role: 'student', token: token});
-        return;
-      }
-
-      if (rows[0].verified) {
-        token = jwt.sign({id: details.studentNumber, role: 'tutor'}, app.get('secret'));
-        res.json({success: true, message: 'Login was Successful', name: name, role: 'tutor', token: token});
-        return;
-      }
-
-      token = jwt.sign({id: details.studentNumber, role: 'pendingTutor'}, app.get('secret'));
-      res.json({success: true, message: 'Login was Successful', name: name, role: 'pendingTutor', token: token});
-    });
-  });
+var port = process.env.PORT || 8080;
+server.listen(port, function() {
+  console.log('\nMock server is running on http://localhost:' + port + '/\n');
 });
 
 
 
-app.use('/api/getprofile',function(req,res) {
-  var user = getUser(req);
-  console.log(user);
 
-  if (!user) {
-    res.json({success: false, message: 'Please log in to view profile'});
+isAuthorised = function(req) {
+
+  var token;
+
+  try {
+    token = (req.body && req.body.token) || (req.query && req.query.token) || req.headers['authorization'];
+    //console.log('TOKEN IS: ' + token);
+  } catch (err) {
+    return false;
+  }
+
+  if (token) {
+    if (token.substring(0, 6) === 'Bearer') {
+      token = token.split(' ')[1];
+    }
+
+    try {
+      var decoded = jwt.verify(token, server.get('secret'));
+      console.log(decoded + ' is authorised');
+      return true;
+    } catch (err) {
+      console.log('token no good');
+      return false;
+    }
+  }
+
+  return false;
+};
+
+
+login = function(req, res) {
+
+  var user = req.body.user;
+
+  if (!user || !user.id || !user.password) {
+    res.json({success: false, message: 'User id or password not submitted'});
     return;
   }
 
-  connection.query('SELECT * FROM user WHERE userID = ?', [user.id], function(err, result, fields) {
-    if (err) {
-      console.log(err);
-      res.status(503).send(err);
-      return;
-    }
-
-    if (!result || !result[0]) {
-      res.send('WHO ARE YOU?'); // User deleted, but still has token
-      return;
-    }
-
-    console.log(result[0]);
-    res.json(result[0]);
-  });
-});
-
-
-app.use('/auth/test',function(req,res) {
-  connection.query('SELECT name from user where sex = "M"', function(err, rows, fields) {
-    if (err) {
-      console.log(err);
-      res.status(503).send(err);
-      return;
-    }
-
-    res.send(rows);
-  });
-});
-
-
-// Serve
-app.listen(config.server.port, function() {
-  console.log('Live at http://localhost:' + config.server.port);
-});
-
-
-
-function getUser(req) {
-  var token = (req.body && req.body.token) || (req.query && req.query.token) || (req.headers && req.headers.authorization);
-  //console.log(token);
-
-  if (!token || token.substring(0, 6) !== 'Bearer') {
-    return false;
+  if (!db.get('users').find({'id': user.id}).value()) {
+    res.json({success: false, message: 'User does not exist'});
+    return;
   }
 
-  token = token.split(' ')[1];
-
-  try {
-    var decoded = jwt.verify(token, app.get('secret'));
-    //console.log(decoded);
-    return {id: decoded.id, role: decoded.role};
-  } catch (err) {
-    //console.log('bad token');
-    return false;
+  if (user.password !== db.get('users').find({'id': user.id}).value().password) {
+    res.json({success: false, message: 'Password incorrect'});
+    return;
   }
 
-}
+  user.name = db.get('users').find({'id': user.id}).value().name;
+  var token = jwt.sign(String(user.id), server.get('secret'));
+  res.json({success: true, name: user.name, role: 'student', token: token});
+};
 
 
+register = function(req, res) {
+
+  var user = req.body.user;
+
+  if (!user || !user.id || !user.password || !user.name) {
+    res.json({success: false, message: 'User id, password or name not submitted'});
+    return;
+  }
+
+  //var user = {'id': 11112222, 'password': 'password', 'name': 'Hugh Jass'};
+
+  if (db.get('users').find({'id': user.id}).value()) {
+    res.json({success: false, message: 'User already exists'});
+    return;
+  }
+
+  db.get('users').push(user).value();
+  //router.db.read(path.join(__dirname, 'db.json'));
+
+  var token = jwt.sign(String(user.id), server.get('secret'));
+  res.json({success: true, name: user.name, role: 'student', token: token});
+
+};
+
+updateprofile = function(req, res) {
+
+  var user = req.body.user;
+
+  if (!user || !user.id) {
+    res.json({success: false, message: 'Invalid Request'});
+    return;
+  }
+
+  if (isAuthorised(req)) {
+    db.get('users').find({id: user.id}).assign(user).value()
+    res.json({success: true});
+  }
+
+};
