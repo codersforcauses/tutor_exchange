@@ -1,9 +1,8 @@
-'use strict';
 var express     = require('express');
 var bodyParser  = require('body-parser');
 var mysql       = require('mysql');
 var jwt         = require('jsonwebtoken');
-var crypto = require('crypto');
+var crypto      = require('crypto');
 
 var config      = require(__dirname + '/config');
 
@@ -37,7 +36,8 @@ app.use('/bower_components', express.static(__dirname + '/../bower_components'))
 
 
 app.use('/auth/register', function(req, res) {
-  var passhashsalt = saltHashPassword(req.body.user.password);
+  var salt = req.body.user.id.toString(); // Replace with random string later
+  var passhashsalt = sha512(req.body.user.password, salt);
 
   var post = {
     userID: req.body.user.id,
@@ -47,6 +47,8 @@ app.use('/auth/register', function(req, res) {
     phone: req.body.user.phone,
     password: req.body.user.password,
     passwordHash: passhashsalt.passwordHash,
+    //salt: salt,  <- Need to store salt with password.  Salt only protects against rainbow table attacks.
+    // I'm going to salt with user id for now.
   };
 
   connection.query('SELECT * FROM user WHERE userID = ?', post.userID, function(err, rows, fields) {
@@ -97,18 +99,18 @@ app.use('/auth/register', function(req, res) {
 });
 
 app.use('/auth/login', function(req, res) {
-  var userSalt;
-  var userHash;
+
   var details = {
     studentNumber: req.body.user.id,
     password: req.body.user.password,
   };
 
-  //userSalt = rows[0].salt;
-  //userHash = rows[0].passwordHash;
-  var inputHashData = sha512(details.password, userSalt); //PROBLEM HERE
+  var inputHashData = sha512(details.password, details.studentNumber.toString()).passwordHash;  // Will need to do this in two steps.  First get salt, then check.
 
-  connection.query('SELECT name FROM user WHERE userID = ? and password = ?', [details.studentNumber, details.password], function(err, rows, fields) {
+  console.log('login with hash ' + inputHashData);
+
+  //connection.query('SELECT name FROM user WHERE userID = ? and password = ?', [details.studentNumber, details.password], function(err, rows, fields) {
+  connection.query('SELECT name FROM user WHERE userID = ? and passwordHash = ?', [details.studentNumber, inputHashData], function(err, rows, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
@@ -223,7 +225,7 @@ function getUser(req) {
  * @function
  * @param {number} length - Length of the random string.
  */
-function genRandomString(length){
+function genRandomString(length) {
   return crypto.randomBytes(Math.ceil(length/2))
     .toString('hex') /** convert to hexadecimal format */
     .slice(0,length);   /** return required number of characters */
@@ -234,7 +236,7 @@ function genRandomString(length){
  * @param {string} password - List of required fields.
  * @param {string} salt - Data to be validated.
  */
-function sha512(password, salt){
+function sha512(password, salt) {
   var hash = crypto.createHmac('sha512', salt); /** Hashing algorithm sha512 */
   hash.update(password);
   var value = hash.digest('hex');
@@ -251,5 +253,8 @@ function saltHashPassword(userpassword) {
   /*console.log('UserPassword = '+userpassword);
   console.log('Passwordhash = '+passwordData.passwordHash);
   console.log('\nSalt = '+passwordData.salt);*/
-  return passwordData;
+  return {
+    salt: salt,
+    passwordHash: value,
+  };
 }
