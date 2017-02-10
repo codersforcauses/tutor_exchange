@@ -122,7 +122,7 @@ app.use('/auth/login', function(req, res) {
 
       var token;
 
-      if (!rows) {
+      if (!rows || !rows[0]) {
         token = jwt.sign({id: details.studentNumber, role: 'student'}, app.get('secret'));
         res.json({success: true, message: 'Login was Successful', name: name, role: 'student', token: token});
         return;
