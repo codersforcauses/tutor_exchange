@@ -101,7 +101,7 @@ app.use('/auth/login', function(req, res) {
     password: req.body.user.password,
   };
 
-  connection.query('SELECT name FROM user WHERE studentNumber = ? and password = ?', [details.studentNumber, details.password], function(err, rows, fields) {
+  connection.query('SELECT name FROM user WHERE userID = ? and password = ?', [details.studentNumber, details.password], function(err, rows, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
@@ -117,7 +117,7 @@ app.use('/auth/login', function(req, res) {
 
     var name = rows[0].name;
 
-    connection.query('SELECT userid, verified FROM tutor WHERE studentNumber = ?', [details.studentNumber], function(err, rows, fields) {
+    connection.query('SELECT userid, verified FROM tutor WHERE userID = ?', [details.studentNumber], function(err, rows, fields) {
       //console.log(rows);
 
       var token;
@@ -151,7 +151,7 @@ app.use('/api/getprofile',function(req,res) {
     return;
   }
 
-  connection.query('SELECT * FROM user WHERE studentNumber = ?', [user.id], function(err, result, fields) {
+  connection.query('SELECT * FROM user WHERE userID = ?', [user.id], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
