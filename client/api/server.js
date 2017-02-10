@@ -158,7 +158,7 @@ app.use('/api/getprofile',function(req,res) {
       return;
     }
 
-    if (!result) {
+    if (!result || !result[0]) {
       res.send('WHO ARE YOU?'); // User deleted, but still has token
       return;
     }
