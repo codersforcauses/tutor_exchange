@@ -3,6 +3,16 @@ import io
 import string
 import random
 
+'''
+config_generator.py
+A python script for generating the server config file.
+I'm using python 3.3.0
+
+Usage:
+	python3 config_generator.py [mysql username] [mysql password]
+
+'''
+
 
 def generate(username, password):
 
