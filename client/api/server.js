@@ -108,7 +108,7 @@ app.use('/auth/login', function(req, res) {
       return;
     }
 
-    if (!rows) {
+    if (!rows || !rows[0]) {
       res.json({success: false, message: 'Username or Password was Incorrect'});
       return;
     }
