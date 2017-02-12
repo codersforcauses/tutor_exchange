@@ -7,7 +7,7 @@
         <form name="profileForm" novalidate>
           <div class="form-group">
             <label for="text">Account Type:</label>
-            {{user.accountType}}
+            {{accountType}}
           </div>
           <div class="form-group" ng-if="user.id">
             <label for="text">Student Number:</label>
@@ -34,7 +34,7 @@
             <p ng-if="!editMode" ng-bind="user.phone"></p>
             <input ng-if="editMode" type="text" class="form-control" ng-model="edituser.phone">
           </div>
-          <div ng-if="user.accountType === 'tutor' || upgradeAccount == true">
+          <div ng-if="accountType === 'tutor' || accountType === 'pendingTutor' || upgradeAccount == true">
             <div class="form-group">
               <label for="text">Units:</label>
               <p ng-if="!editMode" ng-repeat="u in user.units">{{u}}</p>

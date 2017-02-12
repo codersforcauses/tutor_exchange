@@ -23,6 +23,8 @@ function ProfileCtrl($scope, session, authService, userFunctions, $state, $http,
     }
   );
 
+  $scope.accountType = session.getUserRole();
+
   $scope.upgrade = function() {
     if ($scope.user) {
       $scope.edituser = angular.copy($scope.user);

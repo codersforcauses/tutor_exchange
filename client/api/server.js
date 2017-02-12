@@ -72,14 +72,11 @@ app.use('/auth/register', function(req, res) {
       if (!req.body.user.tutor) {
         var token = jwt.sign({id: post.userID, role: 'student'}, app.get('secret'));
         res.json({success: true, message: 'Registration was Successful', name: post.name, role: 'student', token: token});
-
       } else {
         var tutorpost = {
           userID: req.body.user.id,
           postcode: req.body.user.postcode,
-          // accountType: 1, //Set as pendingTutor
         };
-        console.log(tutorpost);
 
         connection.query('INSERT INTO tutor SET ?', tutorpost, function(err, rows, fields) {
           if (err) {
@@ -88,10 +85,26 @@ app.use('/auth/register', function(req, res) {
             return;
           }
 
+          // Uses the 'Bulk' Insert Function to Assign Unit/Language Relationships to Tutor.
+          if (req.body.user.id && req.body.user.units) {
+            connection.query('INSERT INTO unitTutored (tutor, unit) VALUES ?', [formatPostData(req.body.user.id,req.body.user.units)], function(err, rows, fields) {
+              if (err) {
+                console.log(err);
+                res.status(503).send(err);
+                return;
+              }
+            });
+          }
+
+          // TODO: Language
+
           var token = jwt.sign({id: post.userID, role: 'pendingTutor'}, app.get('secret'));
           res.json({success: true, message: 'Registration was Successful', name: post.name, role: 'pendingTutor', token: token});
           return;
+
         });
+        console.log(req.body.user.units);
+
       }
     });
   });
@@ -165,23 +178,76 @@ app.use('/api/getprofile',function(req,res) {
     res.json({success: false, message: 'Please log in to view profile'});
     return;
   }
+  if (user.role == 'student') {
+    connection.query('SELECT * FROM user WHERE userID = ?', [user.id], function(err, result, fields) {
+      if (err) {
+        console.log(err);
+        res.status(503).send(err);
+        return;
+      }
 
-  connection.query('SELECT * FROM user WHERE userID = ?', [user.id], function(err, result, fields) {
-    if (err) {
-      console.log(err);
-      res.status(503).send(err);
-      return;
-    }
+      if (!result || !result[0]) {
+        res.send('WHO ARE YOU?'); // User deleted, but still has token
+        return;
+      }
+      res.json(result[0]);
+    });
+  } else if (user.role == 'pendingTutor' || user.role == 'tutor') {
+    connection.query('SELECT * FROM user JOIN tutor ON user.userID = tutor.userID WHERE user.userID = ?', [user.id], function(err, result, fields) {
+      if (err) {
+        console.log(err);
+        res.status(503).send(err);
+        return;
+      }
+      if (!result || !result[0]) {
+        res.send('WHO ARE YOU?'); // User deleted, but still has token
+        return;
+      }
 
-    if (!result || !result[0]) {
-      res.send('WHO ARE YOU?'); // User deleted, but still has token
-      return;
-    }
+      // Get Unit Data
+      var tutorData = result[0];
+      connection.query('SELECT unit FROM tutor JOIN unitTutored ON tutor.userID = unitTutored.tutor WHERE tutor.userID = ?', [user.id], function(err, result, fields) {
+        if (err) {
+          console.log(err);
+          res.status(503).send(err);
+          return;
+        }
+        var unitData = [];
+        for (i = 0; i < result.length; i++) {
+          unitData[i] = result[i].unit;
+        }
+        tutorData.units = unitData;
+        res.json(tutorData);
+      });
+    });
+  }
 
-    console.log(result[0]);
-    res.json(result[0]);
-  });
 });
+
+//Fetch all Units/Languages available. Useful for Applyform and others
+
+app.use('/api/data/units',function(req,res) {
+    connection.query('SELECT * FROM unit', function(err, result, fields) {
+      if (err) {
+        console.log(err);
+        res.status(503).send(err);
+        return;
+      }
+      res.json(result);
+    });
+  });
+
+app.use('/api/data/languages',function(req,res) {
+    connection.query('SELECT * FROM language', function(err, result, fields) {
+      if (err) {
+        console.log(err);
+        res.status(503).send(err);
+        return;
+      }
+      res.json(result);
+    });
+  });
+
 
 // Serve
 app.listen(config.server.port, function() {
@@ -208,6 +274,14 @@ function getUser(req) {
   }
 }
 
+// Helper Function used for Bulk Insert
+function formatPostData(ID, array) {
+  var result = [];
+  for (i = 0; i < array.length; i++) {
+    result[i] = [ID,array[i]];
+  }
+  return result;
+}
 
 /** [from https://code.ciphertrick.com/2016/01/18/salt-hash-passwords-using-nodejs-crypto/]
  * generates random string of characters i.e salt
