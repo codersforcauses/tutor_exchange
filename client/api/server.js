@@ -36,7 +36,7 @@ app.use('/bower_components', express.static(__dirname + '/../bower_components'))
 
 
 app.use('/auth/register', function(req, res) {
- // var salt = req.body.user.id.toString(); // Replace with random string later
+  //var salt = req.body.user.id.toString(); // Replace with random string later
   //var passhashsalt = sha512(req.body.user.password, salt);
   var passhashsalt = saltHashPassword(req.body.user.password); //holds both hash and salt
 
@@ -46,10 +46,8 @@ app.use('/auth/register', function(req, res) {
     DOB: req.body.user.DOB,
     sex: req.body.user.sex,
     phone: req.body.user.phone,
-    //password: req.body.user.password,  not in current db afaik
     passwordHash: passhashsalt.passwordHash,
     passwordSalt: passhashsalt.salt,  //<- Need to store salt with password.  Salt only protects against rainbow table attacks.
-    // I'm going to salt with user id for now.
   };
 
   connection.query('SELECT * FROM user WHERE userID = ?', post.userID, function(err, rows, fields) {
@@ -130,8 +128,7 @@ app.use('/auth/login', function(req, res) {
         res.json({success: false, message: 'Username or Password was Incorrect'});
         return;
       }
-      if (rows[0].count === 1) { 
-        //res.json({success: true, message: 'Login was Successful'});
+      if (rows[0].count === 1) {
         var name = rows[0].name;
 
         connection.query('SELECT userid, verified FROM tutor WHERE userID = ?', [details.studentNumber], function(err, rows, fields) {
@@ -155,49 +152,7 @@ app.use('/auth/login', function(req, res) {
       }
       return;
     });
-  });  
-  /*var inputHashData = sha512(details.password, details.studentNumber.toString()).passwordHash;  // Will need to do this in two steps.  First get salt, then check.
-
-  console.log('login with hash ' + inputHashData);
-
-  //connection.query('SELECT name FROM user WHERE userID = ? and password = ?', [details.studentNumber, details.password], function(err, rows, fields) {
-  connection.query('SELECT name FROM user WHERE userID = ? and passwordHash = ?', [details.studentNumber, inputHashData], function(err, rows, fields) {
-    if (err) {
-      console.log(err);
-      res.status(503).send(err);
-      return;
-    }
-
-    if (!rows || !rows[0]) {
-      res.json({success: false, message: 'Username or Password was Incorrect'});
-      return;
-    }
-
-    //console.log(rows);
-
-    var name = rows[0].name;
-
-    connection.query('SELECT userid, verified FROM tutor WHERE userID = ?', [details.studentNumber], function(err, rows, fields) {
-      //console.log(rows);
-
-      var token;
-
-      if (!rows || !rows[0]) {
-        token = jwt.sign({id: details.studentNumber, role: 'student'}, app.get('secret'));
-        res.json({success: true, message: 'Login was Successful', name: name, role: 'student', token: token});
-        return;
-      }
-
-      if (rows[0].verified) {
-        token = jwt.sign({id: details.studentNumber, role: 'tutor'}, app.get('secret'));
-        res.json({success: true, message: 'Login was Successful', name: name, role: 'tutor', token: token});
-        return;
-      }
-
-      token = jwt.sign({id: details.studentNumber, role: 'pendingTutor'}, app.get('secret'));
-      res.json({success: true, message: 'Login was Successful', name: name, role: 'pendingTutor', token: token});
-    });
-  });*/
+  });
 });
 
 
@@ -228,26 +183,10 @@ app.use('/api/getprofile',function(req,res) {
   });
 });
 
-
-app.use('/auth/test',function(req,res) {
-  connection.query('SELECT name from user where sex = "M"', function(err, rows, fields) {
-    if (err) {
-      console.log(err);
-      res.status(503).send(err);
-      return;
-    }
-
-    res.send(rows);
-  });
-});
-
-
 // Serve
 app.listen(config.server.port, function() {
   console.log('Live at http://localhost:' + config.server.port);
 });
-
-
 
 function getUser(req) {
   var token = (req.body && req.body.token) || (req.query && req.query.token) || (req.headers && req.headers.authorization);
@@ -267,7 +206,6 @@ function getUser(req) {
     //console.log('bad token');
     return false;
   }
-
 }
 
 
@@ -281,6 +219,8 @@ function genRandomString(length) {
     .toString('hex') /** convert to hexadecimal format */
     .slice(0,length);   /** return required number of characters */
 }
+
+
 /**
  * hash password with sha512.
  * @function
@@ -299,10 +239,6 @@ function sha512(password, salt) {
 
 function saltHashPassword(userpassword) {
   var salt = genRandomString(16); /** Gives us salt of length 16 */
-  //console.log(typeof salt);
   var passwordData = sha512(userpassword, salt);
-  /*console.log('UserPassword = '+userpassword);
-  console.log('Passwordhash = '+passwordData.passwordHash);
-  console.log('\nSalt = '+passwordData.salt);*/
   return passwordData;
 }

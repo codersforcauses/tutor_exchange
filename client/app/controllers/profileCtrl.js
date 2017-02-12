@@ -17,7 +17,6 @@ function ProfileCtrl($scope, session, authService, userFunctions, $state, $http,
   .then(function(response) {
       if (response.data) {
         $scope.user = response.data;
-        console.log(response.data);
       } else {
         console.log('Unable to Load User Data');
       }
@@ -60,7 +59,6 @@ function ProfileCtrl($scope, session, authService, userFunctions, $state, $http,
       .then(function(response) {
         if (response.data.success) {
           $scope.editMode = false;
-          console.log(response);
         } else {
           console.log('Unable to Update User Data');
         }
