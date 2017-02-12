@@ -7,5 +7,5 @@
     "requireSpaceBeforeBinaryOperators":	false,
     "requireSpaceAfterBinaryOperators":		false,
     "requireSpaceAfterLineComment": 		false,
-    "maximumLineLength": 150,
+    "maximumLineLength": 					false,
 }

@@ -28,9 +28,9 @@
 
       /*Check Date of Birth is Valid using MomentJS*/
       var inputDOB = user.yearDOB + '-' + user.monthDOB + '-' + user.dayDOB;
-      console.log(inputDOB);
       if (moment(inputDOB, ['YYYY-MM-DD'], true).isValid()) {
         user.DOB = new Date(inputDOB);
+        //user.DOB = inputDOB;
       } else {
         $scope.errorMsg = 'Date of Birth is Invalid';
         return;
