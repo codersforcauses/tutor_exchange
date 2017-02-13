@@ -59,7 +59,7 @@
                 </ui-select>
               </div>
             </div>
-            <div class="form-group" ng-class="{ 'has-error': profileForm.postcode.$invalid && && (profileForm.$submitted || profileForm.postcode.$dirty) }">
+            <div class="form-group" ng-class="{ 'has-error': profileForm.postcode.$invalid && (profileForm.$submitted || profileForm.postcode.$dirty) }">
               <label for="text">Postcode:</label>
               <p ng-if="!editMode" ng-bind="user.postcode"></p>
               <input ng-if="editMode" type="text" class="form-control" name="postcode" ng-pattern="/^[0-9]{4}$/" ng-model="edituser.postcode" required>

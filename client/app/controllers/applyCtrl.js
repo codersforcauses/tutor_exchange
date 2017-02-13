@@ -6,13 +6,33 @@
     .controller('ApplyCtrl', ApplyCtrl);
 
 
-  ApplyCtrl.$inject = ['$scope', 'authService', '$state', 'UWA_UNITS', 'USER_ROLES', 'TUTOR_LANGUAGES'];
-  function ApplyCtrl($scope, authService, $state, UWA_UNITS, USER_ROLES, TUTOR_LANGUAGES) {
+  ApplyCtrl.$inject = ['$scope', '$http', 'authService', '$state', 'UWA_UNITS', 'USER_ROLES', 'TUTOR_LANGUAGES'];
+  function ApplyCtrl($scope, $http, authService, $state, UWA_UNITS, USER_ROLES, TUTOR_LANGUAGES) {
     if (authService.isAuthenticated()) {
       $state.go('dashboard');// Already Logged in
     }
-    $scope.availableUnits = UWA_UNITS;
-    $scope.tutorLanguages = TUTOR_LANGUAGES;
+
+    /* Might need to put these into a seperate service*/
+    $http.get('/api/data/units')
+      .then(function(response) {
+          if (!response.data) {
+            console.log('Error Occured Fetching User Details');
+          } else if (response.data.length === 0) {
+            console.log('No Units Found.');
+          }
+          $scope.availableUnits = response.data;
+        });
+
+    $http.get('/api/data/languages')
+      .then(function(response) {
+          if (!response.data) {
+            console.log('Error Occured Fetching Languages');
+          } else if (response.data.length === 0) {
+            console.log('No Languages Found.');
+          }
+          $scope.tutorLanguages = response.data;
+        });
+
 
     $scope.submit = function(user) {
       user.id = parseInt(user.id);
@@ -44,7 +64,12 @@
 
       user.sex = user.sex.charAt(0);
 
+      console.log(user);
 
+      // Set English for Default
+      if (!user.languages) {
+        user.languages = ['en'];
+      }
 
       authService
         .register(user)

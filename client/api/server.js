@@ -96,7 +96,15 @@ app.use('/auth/register', function(req, res) {
             });
           }
 
-          // TODO: Language
+          if (req.body.user.id && req.body.user.languages) {
+            connection.query('INSERT INTO languageTutored (tutor, language) VALUES ?', [formatPostData(req.body.user.id,req.body.user.languages)], function(err, rows, fields) {
+              if (err) {
+                console.log(err);
+                res.status(503).send(err);
+                return;
+              }
+            });
+          }
 
           var token = jwt.sign({id: post.userID, role: 'pendingTutor'}, app.get('secret'));
           res.json({success: true, message: 'Registration was Successful', name: post.name, role: 'pendingTutor', token: token});
@@ -204,20 +212,36 @@ app.use('/api/getprofile',function(req,res) {
         return;
       }
 
-      // Get Unit Data
+      // Get Unit and Language Data
       var tutorData = result[0];
+      var unitData = [];
+      var languageData = [];
+
       connection.query('SELECT unit FROM tutor JOIN unitTutored ON tutor.userID = unitTutored.tutor WHERE tutor.userID = ?', [user.id], function(err, result, fields) {
         if (err) {
           console.log(err);
           res.status(503).send(err);
           return;
         }
-        var unitData = [];
         for (i = 0; i < result.length; i++) {
           unitData[i] = result[i].unit;
         }
         tutorData.units = unitData;
-        res.json(tutorData);
+
+        connection.query('SELECT languageName FROM tutor JOIN languageTutored ON tutor.userID = languageTutored.tutor JOIN language ON languageTutored.language = language.languageCode WHERE tutor.userID = ?', [user.id], function(err, result, fields) {
+          if (err) {
+            console.log(err);
+            res.status(503).send(err);
+            return;
+          }
+          console.log(result[0]);
+          for (i = 0; i < result.length; i++) {
+            languageData[i] = result[i].languageName;
+          }
+
+          tutorData.languages = languageData;
+          res.json(tutorData);
+        });
       });
     });
   }
@@ -225,7 +249,6 @@ app.use('/api/getprofile',function(req,res) {
 });
 
 //Fetch all Units/Languages available. Useful for Applyform and others
-
 app.use('/api/data/units',function(req,res) {
     connection.query('SELECT * FROM unit', function(err, result, fields) {
       if (err) {
