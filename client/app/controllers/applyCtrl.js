@@ -6,33 +6,32 @@
     .controller('ApplyCtrl', ApplyCtrl);
 
 
-  ApplyCtrl.$inject = ['$scope', '$http', 'authService', '$state', 'UWA_UNITS', 'USER_ROLES', 'TUTOR_LANGUAGES'];
-  function ApplyCtrl($scope, $http, authService, $state, UWA_UNITS, USER_ROLES, TUTOR_LANGUAGES) {
+  ApplyCtrl.$inject = ['$scope', 'authService', '$state', 'userFunctions','UWA_UNITS', 'USER_ROLES', 'TUTOR_LANGUAGES'];
+  function ApplyCtrl($scope, authService, $state, userFunctions, UWA_UNITS, USER_ROLES, TUTOR_LANGUAGES) {
     if (authService.isAuthenticated()) {
       $state.go('dashboard');// Already Logged in
     }
 
-    /* Might need to put these into a seperate service*/
-    $http.get('/api/data/units')
-      .then(function(response) {
-          if (!response.data) {
-            console.log('Error Occured Fetching User Details');
-          } else if (response.data.length === 0) {
-            console.log('No Units Found.');
-          }
-          $scope.availableUnits = response.data;
-        });
+    loadAPIData();
 
-    $http.get('/api/data/languages')
+    function loadAPIData() {
+      userFunctions
+      .fetchAPIData('/api/data/units')
       .then(function(response) {
-          if (!response.data) {
-            console.log('Error Occured Fetching Languages');
-          } else if (response.data.length === 0) {
-            console.log('No Languages Found.');
+            if (response.data) {
+              $scope.availableUnits = response.data;
+            }
           }
-          $scope.tutorLanguages = response.data;
-        });
-
+      );
+      userFunctions
+      .fetchAPIData('/api/data/languages')
+      .then(function(response) {
+            if (response.data) {
+              $scope.tutorLanguages = response.data;
+            }
+          }
+      );
+    }
 
     $scope.submit = function(user) {
       user.id = parseInt(user.id);
@@ -49,8 +48,8 @@
       /*Check Date of Birth is Valid using MomentJS*/
       var inputDOB = user.yearDOB + '-' + user.monthDOB + '-' + user.dayDOB;
       if (moment(inputDOB, ['YYYY-MM-DD'], true).isValid()) {
-        user.DOB = new Date(inputDOB);
-        //user.DOB = inputDOB;
+        //user.DOB = new Date(inputDOB);
+        user.DOB = inputDOB;
       } else {
         $scope.errorMsg = 'Date of Birth is Invalid';
         return;

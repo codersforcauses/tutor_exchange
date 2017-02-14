@@ -13,6 +13,7 @@
       getDetails: getDetails,
       updateDetails: updateDetails,
       logoutUser: logoutUser,
+      fetchAPIData: fetchAPIData,
     };
 
     return service;
@@ -43,6 +44,18 @@
       console.log(session.getUserName() + ' has left the building');
       authService.logout();
       $state.go('home');
+    }
+
+    function fetchAPIData(url) {
+      return $http.get(url)
+      .then(function(response) {
+          if (!response.data) {
+            console.log('Error Occured Fetching Data');
+          } else if (response.data.length === 0) {
+            console.log('Data Set is Empty');
+          }
+          return response;
+        });
     }
 
   }

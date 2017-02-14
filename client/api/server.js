@@ -85,30 +85,28 @@ app.use('/auth/register', function(req, res) {
             return;
           }
 
-          // Uses the 'Bulk' Insert Function to Assign Unit/Language Relationships to Tutor.
+          // Uses the Bulk Insert Function to Assign Unit/Language Relationships to Tutor.
           if (req.body.user.id && req.body.user.units) {
-            connection.query('INSERT INTO unitTutored (tutor, unit) VALUES ?', [formatPostData(req.body.user.id,req.body.user.units)], function(err, rows, fields) {
+            connection.query('INSERT INTO unitTutored (tutor, unit) VALUES ?', [formatUnitData(req.body.user.id,req.body.user.units)], function(err, rows, fields) {
               if (err) {
                 console.log(err);
                 res.status(503).send(err);
                 return;
               }
-            });
-          }
-
-          if (req.body.user.id && req.body.user.languages) {
-            connection.query('INSERT INTO languageTutored (tutor, language) VALUES ?', [formatPostData(req.body.user.id,req.body.user.languages)], function(err, rows, fields) {
-              if (err) {
-                console.log(err);
-                res.status(503).send(err);
-                return;
+              if (req.body.user.id && req.body.user.languages) {
+                connection.query('INSERT INTO languageTutored (tutor, language) VALUES ?', [formatLanguageData(req.body.user.id,req.body.user.languages)], function(err, rows, fields) {
+                  if (err) {
+                    console.log(err);
+                    res.status(503).send(err);
+                    return;
+                  }
+                  var token = jwt.sign({id: post.userID, role: 'pendingTutor'}, app.get('secret'));
+                  res.json({success: true, message: 'Registration was Successful', name: post.name, role: 'pendingTutor', token: token});
+                  return;
+                });
               }
             });
           }
-
-          var token = jwt.sign({id: post.userID, role: 'pendingTutor'}, app.get('secret'));
-          res.json({success: true, message: 'Registration was Successful', name: post.name, role: 'pendingTutor', token: token});
-          return;
 
         });
         console.log(req.body.user.units);
@@ -217,26 +215,36 @@ app.use('/api/getprofile',function(req,res) {
       var unitData = [];
       var languageData = [];
 
-      connection.query('SELECT unit FROM tutor JOIN unitTutored ON tutor.userID = unitTutored.tutor WHERE tutor.userID = ?', [user.id], function(err, result, fields) {
+      connection.query('SELECT unitID, unitName FROM tutor JOIN unitTutored ON tutor.userID = unitTutored.tutor JOIN unit ON unitTutored.unit = unit.unitID WHERE tutor.userID = ?', [user.id], function(err, result, fields) {
         if (err) {
           console.log(err);
           res.status(503).send(err);
           return;
         }
+
+        if (!result || !result[0]) {
+          res.status(503).send(err);
+          return;
+        }
+
         for (i = 0; i < result.length; i++) {
-          unitData[i] = result[i].unit;
+          unitData[i] = {unitID: result[i].unitID, unitName: result[i].unitName};
         }
         tutorData.units = unitData;
 
-        connection.query('SELECT languageName FROM tutor JOIN languageTutored ON tutor.userID = languageTutored.tutor JOIN language ON languageTutored.language = language.languageCode WHERE tutor.userID = ?', [user.id], function(err, result, fields) {
+        connection.query('SELECT languageCode, languageName FROM tutor JOIN languageTutored ON tutor.userID = languageTutored.tutor JOIN language ON languageTutored.language = language.languageCode WHERE tutor.userID = ?', [user.id], function(err, result, fields) {
           if (err) {
             console.log(err);
             res.status(503).send(err);
             return;
           }
-          console.log(result[0]);
+
+          if (!result || !result[0]) {
+            res.status(503).send(err);
+            return;
+          }
           for (i = 0; i < result.length; i++) {
-            languageData[i] = result[i].languageName;
+            languageData[i] = {languageCode: result[i].languageCode, languageName: result[i].languageName };
           }
 
           tutorData.languages = languageData;
@@ -245,8 +253,54 @@ app.use('/api/getprofile',function(req,res) {
       });
     });
   }
-
 });
+
+app.use('/api/updateprofile',function(req,res) {
+    var user = getUser(req);
+
+    if (!user) {
+      res.json({success: false, message: 'Please log in to view profile'});
+      return;
+    }
+    var userUpdateData = {
+      phone: req.body.user.phone,
+    };
+
+    connection.query('UPDATE user SET ? WHERE userID = ?', [userUpdateData,user.id] , function(err, rows, fields) {
+        if (err) {
+          console.log(err);
+          res.status(503).send(err);
+          return;
+        }
+        if (user.role == 'student') {
+          res.json({success: true, message: 'Update Success'});
+        } else if (user.role == 'pendingTutor' || user.role == 'tutor') {
+          var tutorUpdateData = {
+            postcode: req.body.user.postcode,
+          };
+
+          connection.query('UPDATE tutor SET ? WHERE userID = ?', [tutorUpdateData, user.id], function(err, rows, fields) {
+              if (err) {
+                console.log(err);
+                res.status(503).send(err);
+                return;
+              }
+              //Format the MYSQL Commands
+              unitDelete = mysql.format('DELETE FROM unitTutored WHERE tutor=?',[user.id]);
+              unitInsert = mysql.format('INSERT INTO unitTutored (tutor, unit) VALUES ?', [formatUnitData(user.id,req.body.user.units)]);
+              languageDelete = mysql.format('DELETE FROM languageTutored WHERE tutor=?',[user.id]);
+              languageInsert = mysql.format('INSERT INTO languageTutored (tutor, language) VALUES ?', [formatLanguageData(user.id,req.body.user.languages)]);
+
+              //'Bulk Update' is achieved (in the simplest way) by deleting and reinserting data in one transaction.
+              //A more selective system would definitely be worth looking into
+              mysqlTransaction(unitDelete, unitInsert);
+              mysqlTransaction(languageDelete, languageInsert);
+              res.json({success: true, message: 'Successfully Updated Values'});
+            });
+        }
+      });
+
+  });
 
 //Fetch all Units/Languages available. Useful for Applyform and others
 app.use('/api/data/units',function(req,res) {
@@ -297,13 +351,62 @@ function getUser(req) {
   }
 }
 
-// Helper Function used for Bulk Insert
-function formatPostData(ID, array) {
+
+/**
+ * Helper Functions for Bulk Insert/Update
+ * @function
+ * @param {string} userID - ID used for each.
+ * @param {string} obj - JSON of various values.
+ */
+function formatUnitData(userID, obj) {
   var result = [];
-  for (i = 0; i < array.length; i++) {
-    result[i] = [ID,array[i]];
+  for (i = 0; i < obj.length; i++) {
+    result[i] = [userID,obj[i].unitID];
   }
   return result;
+}
+
+function formatLanguageData(userID, obj) {
+  var result = [];
+  for (i = 0; i < obj.length; i++) {
+    result[i] = [userID,obj[i].languageCode];
+  }
+  return result;
+}
+
+/**
+ * Simple 2 Query Transaction. queryA -> queryB
+ * @function
+ * @param {string} queryA - First Query to be executed.
+ * @param {string} queryB - Second Query to be executed.
+ */
+function mysqlTransaction(queryA, queryB) {
+  return connection.beginTransaction(function(err) {
+    if (err) { return err; }
+    connection.query(queryA, function(error, rows, fields) {
+      if (error) {
+        return connection.rollback(function() {
+          console.log(error);
+        });
+      }
+
+      connection.query(queryB, function(error, results, fields) {
+        if (error) {
+          return connection.rollback(function() {
+            console.log(error);
+          });
+        }
+        connection.commit(function(error) {
+          if (error) {
+            return connection.rollback(function() {
+              console.log(error);
+            });
+          }
+          return {success: true, message: 'Transaction Processed Successfully'};
+        });
+      });
+    });
+  });
 }
 
 /** [from https://code.ciphertrick.com/2016/01/18/salt-hash-passwords-using-nodejs-crypto/]
