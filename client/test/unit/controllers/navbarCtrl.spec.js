@@ -2,7 +2,7 @@ describe('NavbarCtrl test:', function() {
 
   beforeEach(module('tutorExchange'));
 
-  var $scope, $location, authService, USER_ROLES, userFunctions;
+  var NavbarCtrl, $scope, $location, authService, USER_ROLES, userFunctions;
 
   beforeEach(function() {
     var mockAuthService, mockUserFunctions;
