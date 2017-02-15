@@ -38,10 +38,10 @@
           if (response.data.success) {
             $http.defaults.headers.common.Authorization = 'Bearer ' + response.data.token;
             session.create(credentials.id, response.data.name, response.data.role);
-            console.log(session.getUserName() + ' has logged in');
-          } else {
+            //console.log(session.getUserName() + ' has logged in');
+          } /*else {
             console.log('Log in unsuccessful: ' + response.data.message);
-          }
+          }*/
           return response;
         });
     }
@@ -56,10 +56,10 @@
           if (response.data.success) {
             $http.defaults.headers.common.Authorization = 'Bearer ' + response.data.token;
             session.create(user.id, user.name, response.data.role);
-            console.log(session.getUserName() +' registered as ' + session.getUserId());
-          } else {
+            //console.log(session.getUserName() +' registered as ' + session.getUserId());
+          } /*else {
             console.log('Registration unsuccessful: ' + response.data.message);
-          }
+          }*/
           return response;
         });
     }
