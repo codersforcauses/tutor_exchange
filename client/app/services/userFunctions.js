@@ -6,19 +6,74 @@
     .factory('userFunctions', userFunctions);
 
 
-  userFunctions.$inject = ['$http', '$state', 'session', 'USER_ROLES', 'authService'];
-  function userFunctions($http, $state, session, USER_ROLES, authService) {
+  userFunctions.$inject = ['$http', '$state', 'session', 'authService'];
+  function userFunctions($http, $state, session, authService) {
+
+    var data = {
+    };
 
     var service = {
-      getDetails: getDetails,
-      updateDetails: updateDetails,
-      logoutUser: logoutUser,
-      fetchAPIData: fetchAPIData,
+      login:      login,
+      apply:      apply,
+      logout:     logout,
+
+      isLoggedIn:         isLoggedIn,
+      getSessionDetails:  getSessionDetails,
+
+      getProfile:     getProfile,
+      updateProfile:  updateProfile,
+
     };
 
     return service;
 
-    function getDetails() {
+
+    function login(user) {
+      authService.login(user.id, user.password)
+        .then(function(response) {
+          if (response.data.success) {
+            console.log(session.getUserName() + ' has logged in');
+          } else {
+            console.log('Log in unsuccessful: ' + response.data.message);
+          }
+        });
+    }
+
+
+    function apply(user) {
+      authService.register(user)
+        .then(function(response) {
+          if (response.data.success) {
+            console.log(session.getUserName() + ' has signed up');
+          } else {
+            console.log('Application unsuccessful: ' + response.data.message);
+          }
+        });
+    }
+
+
+    function logout() {
+      console.log(session.getUserName() + ' has left the building');
+      authService.logout();
+      $state.go('home');
+    }
+
+
+    function isLoggedIn() {
+      return session.exists();
+    }
+
+
+    function getSessionDetails() {
+      return {
+        id:   session.getUserId(),
+        name: session.getUserName(),
+        role: session.getUserRole(),
+      };
+    }
+
+
+    function getProfile() {
       return $http.get('/api/getprofile')
       .then(function(response) {
           if (!response.data) {
@@ -26,39 +81,19 @@
           } else if (response.data.length === 0) {
             console.log('User does not Exist');
           }
-          return response;
+          return response.data;
         });
     }
 
-    function updateDetails(user) {
+
+    function updateProfile(user) {
       return $http.post('/api/updateprofile', {user: user})
         .then(function(response) {
           if (!response.data.success) {
             console.log('Error Occured Updating User Details');
           }
-          return response;
-        });
-    }
-
-    function logoutUser() {
-      console.log(session.getUserName() + ' has left the building');
-      authService.logout();
-      $state.go('home');
-    }
-
-    function fetchAPIData(url) {
-      return $http.get(url)
-      .then(function(response) {
-          if (!response.data) {
-            console.log('Error Occured Fetching Data');
-          } else if (response.data.length === 0) {
-            console.log('Data Set is Empty');
-          }
-          return response;
         });
     }
 
   }
-
-
 })(angular);
