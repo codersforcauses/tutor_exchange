@@ -6,25 +6,25 @@
     .controller('ApplyCtrl', ApplyCtrl);
 
 
-  ApplyCtrl.$inject = ['$scope', 'authService', '$state', 'userFunctions','UWA_UNITS', 'USER_ROLES', 'TUTOR_LANGUAGES'];
-  function ApplyCtrl($scope, authService, $state, userFunctions, UWA_UNITS, USER_ROLES, TUTOR_LANGUAGES) {
-    if (authService.isAuthenticated()) {
+  ApplyCtrl.$inject = ['$scope', '$state', 'userFunctions', 'USER_ROLES', 'fetchService'];
+  function ApplyCtrl($scope, $state, userFunctions, USER_ROLES, fetchService) {
+    if (userFunctions.isLoggedIn()) {
       $state.go('dashboard');// Already Logged in
     }
 
     loadAPIData();
 
     function loadAPIData() {
-      userFunctions
-      .fetchAPIData('/api/data/units')
+      fetchService
+      .fetchUnits()
       .then(function(response) {
             if (response.data) {
               $scope.availableUnits = response.data;
             }
           }
       );
-      userFunctions
-      .fetchAPIData('/api/data/languages')
+      fetchService
+      .fetchLanguages()
       .then(function(response) {
             if (response.data) {
               $scope.tutorLanguages = response.data;
@@ -70,13 +70,13 @@
         user.languages = ['en'];
       }
 
-      authService
-        .register(user)
-        .then(function(result) {
-          if (authService.isAuthenticated()) {
+      userFunctions
+        .apply(user)
+        .then(function(message) {
+          if (userFunctions.isLoggedIn()) {
             $state.go('dashboard');
           } else {
-            $scope.errorMsg = result.data.message;
+            $scope.errorMsg = message;
             $scope.applyForm.$setPristine();
           }
         });

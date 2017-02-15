@@ -22,32 +22,37 @@
 
       getProfile:     getProfile,
       updateProfile:  updateProfile,
-
+      changePassword: changePassword,
     };
 
     return service;
 
 
     function login(user) {
-      authService.login(user.id, user.password)
+      console.log('userFunctions.login');
+      console.log(user);
+
+      return authService.login(user.id, user.password)
         .then(function(response) {
           if (response.data.success) {
             console.log(session.getUserName() + ' has logged in');
           } else {
             console.log('Log in unsuccessful: ' + response.data.message);
           }
+          return response;
         });
     }
 
 
     function apply(user) {
-      authService.register(user)
+      return authService.register(user)
         .then(function(response) {
           if (response.data.success) {
             console.log(session.getUserName() + ' has signed up');
           } else {
             console.log('Application unsuccessful: ' + response.data.message);
           }
+          return response;
         });
     }
 
@@ -81,7 +86,7 @@
           } else if (response.data.length === 0) {
             console.log('User does not Exist');
           }
-          return response.data;
+          return response;
         });
     }
 
@@ -92,7 +97,12 @@
           if (!response.data.success) {
             console.log('Error Occured Updating User Details');
           }
+          return response;
         });
+    }
+
+    function changePassword() {
+      return;
     }
 
   }
