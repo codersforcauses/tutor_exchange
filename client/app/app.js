@@ -72,8 +72,8 @@
       });
   }
 
-  run.$inject = ['$rootScope', 'authService', 'USER_ROLES', '$state'];
-  function run($rootScope, authService, USER_ROLES, $state) {
+  run.$inject = ['$rootScope', 'authService', '$state'];
+  function run($rootScope, authService, $state) {
     $rootScope.$on('$stateChangeStart', function(event, next) {
       if (next.data && next.data.authRequired) {
         if (!authService.isAuthenticated()) {
