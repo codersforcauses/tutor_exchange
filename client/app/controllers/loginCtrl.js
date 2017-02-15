@@ -6,19 +6,20 @@
     .controller('LoginCtrl', LoginCtrl);
 
 
-  LoginCtrl.$inject = ['$scope', 'authService', '$state'];
-  function LoginCtrl($scope, authService, $state) {
-    if (authService.isAuthenticated()) {
+  LoginCtrl.$inject = ['$scope', '$state', 'userFunctions'];
+  function LoginCtrl($scope, $state, userFunctions) {
+    if (userFunctions.isLoggedIn()) {
       $state.go('dashboard');// Already Logged in
     }
+
     $scope.submit = function(user) {
-      authService
-        .login(parseInt(user.id), user.password)
-        .then(function(result) {
-          if (authService.isAuthenticated()) {
+      userFunctions
+        .login(user)
+        .then(function(response) {
+          if (userFunctions.isLoggedIn()) {
             $state.go('dashboard');
           } else {
-            $scope.errorMsg = result.data.message;
+            $scope.errorMsg = response.data.message;
             $scope.loginForm.$setPristine();
           }
         });

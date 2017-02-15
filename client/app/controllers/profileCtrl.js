@@ -6,36 +6,35 @@ angular
   .controller('ProfileCtrl', ProfileCtrl);
 
 
-ProfileCtrl.$inject = ['$scope', 'session', 'authService', 'userFunctions', '$state', '$http', 'UWA_UNITS', 'TUTOR_LANGUAGES'];
-function ProfileCtrl($scope, session, authService, userFunctions, $state, $http, UWA_UNITS, TUTOR_LANGUAGES) {
+ProfileCtrl.$inject = ['$scope', '$state', '$http', 'userFunctions', 'fetchService'];
+function ProfileCtrl($scope, $state, $http, userFunctions, fetchService) {
 
   loadAPIData();
   loadUserData();
   $scope.editMode = false;
-  $scope.accountType = session.getUserRole();
+  $scope.accountType = userFunctions.getSessionDetails().role;
 
   function loadAPIData() {
-    userFunctions
-    .fetchAPIData('/api/data/units')
-    .then(function(response) {
-          if (response.data) {
-            $scope.availableUnits = response.data;
-          }
+    fetchService
+      .fetchUnits()
+      .then(function(response) {
+        if (response.data) {
+          $scope.availableUnits = response.data;
         }
-    );
-    userFunctions
-    .fetchAPIData('/api/data/languages')
-    .then(function(response) {
-          if (response.data) {
-            $scope.tutorLanguages = response.data;
-          }
+      });
+
+    fetchService
+      .fetchLanguages()
+      .then(function(response) {
+        if (response.data) {
+          $scope.availableUnits = response.data;
         }
-    );
+      });
   }
 
   function loadUserData() {
     userFunctions
-    .getDetails(session.getUserId())
+    .getProfile()
     .then(function(response) {
         if (response.data) {
           $scope.user = response.data;
@@ -81,9 +80,9 @@ function ProfileCtrl($scope, session, authService, userFunctions, $state, $http,
   $scope.save = function() {
     if ($scope.user && $scope.edituser) {
       console.log($scope.edituser);
-      userFunctions.updateDetails($scope.edituser)
+      userFunctions.updateProfile($scope.edituser)
       .then(function(response) {
-        if (response.data.success) {
+        if (response.data && response.data.success) {
           loadUserData();
           $scope.editMode = false;
         } else {
