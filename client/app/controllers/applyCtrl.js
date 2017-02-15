@@ -72,11 +72,11 @@
 
       userFunctions
         .apply(user)
-        .then(function(message) {
+        .then(function(response) {
           if (userFunctions.isLoggedIn()) {
             $state.go('dashboard');
           } else {
-            $scope.errorMsg = message;
+            $scope.errorMsg = response.data.message;
             $scope.applyForm.$setPristine();
           }
         });
