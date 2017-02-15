@@ -6,8 +6,8 @@
     .factory('authService', authService);
 
 
-  authService.$inject = ['$http', 'session', 'USER_ROLES'];
-  function authService($http, session, USER_ROLES) {
+  authService.$inject = ['$http', 'session'];
+  function authService($http, session) {
 
     var data = {
     };
@@ -18,6 +18,9 @@
       logout:           logout,
       isAuthenticated:  isAuthenticated,
       isAuthorised:     isAuthorised,
+      storeSession:     storeSession,
+      retrieveSession:  retrieveSession,
+      removeSession:    removeSession,
     };
 
     return service;
@@ -79,6 +82,23 @@
       }
       return (isAuthenticated() && roles.indexOf(session.getUserRole()) !== -1);
     }
+
+    function storeSession() {
+      // Store session details and/or token in local storage
+      return;
+    }
+
+    function retrieveSession() {
+      // Retrieve session details and/or token from local storage
+      return;
+    }
+
+    function removeSession() {
+      // If session details were stored in local storage, remove them.
+      return;
+    }
+
+
 
   }
 
