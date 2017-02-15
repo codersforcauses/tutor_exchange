@@ -29,9 +29,6 @@
 
 
     function login(user) {
-      console.log('userFunctions.login');
-      console.log(user);
-
       return authService.login(user.id, user.password)
         .then(function(response) {
           if (response.data.success) {
