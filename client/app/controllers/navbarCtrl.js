@@ -10,7 +10,7 @@
     $scope.isNavCollapsed = true;
 
     $scope.$on('$stateChangeStart', function(event, next) {
-        $scope.isLoggedIn = authService.isAuthenticated();
+        $scope.isLoggedIn = userFunctions.isLoggedIn();
         $scope.isNavCollapsed = true;
       });
 
