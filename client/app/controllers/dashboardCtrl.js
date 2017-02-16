@@ -6,16 +6,13 @@
     .controller('DashboardCtrl', DashboardCtrl);
 
 
-  DashboardCtrl.$inject = ['$scope', 'session', 'authService', '$state', '$http', 'userFunctions'];
-  function DashboardCtrl($scope, session, authService, $state, $http, userFunctions) {
-    $scope.session = {
-      id: session.getUserId(),
-      name: session.getUserName(),
-      role: session.getUserRole(),
-    };
+  DashboardCtrl.$inject = ['$scope', '$state', '$http', 'userFunctions'];
+  function DashboardCtrl($scope, $state, $http, userFunctions) {
+    
+    $scope.session = userFunctions.getSessionDetails(); // Will cause problems if userFunctions.getSessionDetails() changes.
 
     $scope.logout = function() {
-      userFunctions.logoutUser();
+      userFunctions.logout();
     };
   }
 

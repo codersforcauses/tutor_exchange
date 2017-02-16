@@ -6,8 +6,8 @@
     .factory('authService', authService);
 
 
-  authService.$inject = ['$http', 'session', 'USER_ROLES'];
-  function authService($http, session, USER_ROLES) {
+  authService.$inject = ['$http', 'session'];
+  function authService($http, session) {
 
     var data = {
     };
@@ -18,6 +18,9 @@
       logout:           logout,
       isAuthenticated:  isAuthenticated,
       isAuthorised:     isAuthorised,
+      storeSession:     storeSession,
+      retrieveSession:  retrieveSession,
+      removeSession:    removeSession,
     };
 
     return service;
@@ -35,9 +38,6 @@
           if (response.data.success) {
             $http.defaults.headers.common.Authorization = 'Bearer ' + response.data.token;
             session.create(credentials.id, response.data.name, response.data.role);
-            console.log(session.getUserName() + ' has logged in');
-          } else {
-            console.log('Log in unsuccessful: ' + response.data.message);
           }
           return response;
         });
@@ -52,10 +52,7 @@
         .then(function(response) {
           if (response.data.success) {
             $http.defaults.headers.common.Authorization = 'Bearer ' + response.data.token;
-            session.create(user.id, user.name, response.data.role);
-            console.log(session.getUserName() +' registered as ' + session.getUserId());
-          } else {
-            console.log('Registration unsuccessful: ' + response.data.message);
+            session.create(user.id, response.data.name, response.data.role);
           }
           return response;
         });
@@ -79,6 +76,23 @@
       }
       return (isAuthenticated() && roles.indexOf(session.getUserRole()) !== -1);
     }
+
+    function storeSession() {
+      // Store session details and/or token in local storage
+      return;
+    }
+
+    function retrieveSession() {
+      // Retrieve session details and/or token from local storage
+      return;
+    }
+
+    function removeSession() {
+      // If session details were stored in local storage, remove them.
+      return;
+    }
+
+
 
   }
 

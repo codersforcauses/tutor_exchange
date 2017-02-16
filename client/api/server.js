@@ -137,7 +137,7 @@ app.use('/auth/login', function(req, res) {
     var inputHashData = sha512(details.password, userSalt);
     //query within query to check if hashes match: have to do this way afaik unless you use async
     console.log('login with hash ' + inputHashData.passwordHash);
-    connection.query('SELECT COUNT(*) AS count FROM user WHERE userID = ? and passwordHash = ?', [details.studentNumber, inputHashData.passwordHash], function(err, rows, fields) {
+    connection.query('SELECT name FROM user WHERE userID = ? and passwordHash = ?', [details.studentNumber, inputHashData.passwordHash], function(err, rows, fields) {
       if (err) {
         console.log(err);
         res.status(503).send(err);
@@ -147,28 +147,27 @@ app.use('/auth/login', function(req, res) {
         res.json({success: false, message: 'Username or Password was Incorrect'});
         return;
       }
-      if (rows[0].count === 1) {
-        var name = rows[0].name;
 
-        connection.query('SELECT userid, verified FROM tutor WHERE userID = ?', [details.studentNumber], function(err, rows, fields) {
-          var token;
+      var name = rows[0].name;
 
-          if (!rows || !rows[0]) {
-            token = jwt.sign({id: details.studentNumber, role: 'student'}, app.get('secret'));
-            res.json({success: true, message: 'Login was Successful', name: name, role: 'student', token: token});
-            return;
-          }
+      connection.query('SELECT userid, verified FROM tutor WHERE userID = ?', [details.studentNumber], function(err, rows, fields) {
+        var token;
 
-          if (rows[0].verified) {
-            token = jwt.sign({id: details.studentNumber, role: 'tutor'}, app.get('secret'));
-            res.json({success: true, message: 'Login was Successful', name: name, role: 'tutor', token: token});
-            return;
-          }
+        if (!rows || !rows[0]) {
+          token = jwt.sign({id: details.studentNumber, role: 'student'}, app.get('secret'));
+          res.json({success: true, message: 'Login was Successful', name: name, role: 'student', token: token});
+          return;
+        }
 
-          token = jwt.sign({id: details.studentNumber, role: 'pendingTutor'}, app.get('secret'));
-          res.json({success: true, message: 'Login was Successful', name: name, role: 'pendingTutor', token: token});
-        });
-      }
+        if (rows[0].verified) {
+          token = jwt.sign({id: details.studentNumber, role: 'tutor'}, app.get('secret'));
+          res.json({success: true, message: 'Login was Successful', name: name, role: 'tutor', token: token});
+          return;
+        }
+
+        token = jwt.sign({id: details.studentNumber, role: 'pendingTutor'}, app.get('secret'));
+        res.json({success: true, message: 'Login was Successful', name: name, role: 'pendingTutor', token: token});
+      });
       return;
     });
   });

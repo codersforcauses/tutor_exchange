@@ -5,8 +5,10 @@
     .module('tutorExchange')
     .controller('NavbarCtrl', NavbarCtrl);
 
-  NavbarCtrl.$inject = ['$scope', '$location', 'authService', '$rootScope', 'USER_ROLES', 'userFunctions'];
-  function NavbarCtrl($scope, $location, authService, $rootScope, USER_ROLES, userFunctions) {
+  NavbarCtrl.$inject = ['$scope', '$location', 'userFunctions'];
+  function NavbarCtrl($scope, $location, userFunctions) {
+    $scope.isNavCollapsed = true;
+
     $scope.$on('$stateChangeStart', function(event, next) {
         $scope.isLoggedIn = authService.isAuthenticated();
         $scope.isNavCollapsed = true;
@@ -16,10 +18,9 @@
       return currentLocation === $location.path();
     };
 
-    $scope.isNavCollapsed = true;
     $scope.logout = function() {
       $scope.isLoggedIn = false;
-      userFunctions.logoutUser();
+      userFunctions.logout();
     };
   }
 
