@@ -9,6 +9,7 @@
   function NavbarCtrl($scope, $location, authService, $rootScope, USER_ROLES, userFunctions) {
     $scope.$on('$stateChangeStart', function(event, next) {
         $scope.isLoggedIn = authService.isAuthenticated();
+        $scope.isNavCollapsed = true;
       });
 
     $scope.isSelected = function(currentLocation) {

@@ -67,7 +67,7 @@
 
       // Set English for Default
       if (!user.languages) {
-        user.languages = ['en'];
+        user.languages = [{languageCode: 'en', languageName: 'English'}];
       }
 
       authService

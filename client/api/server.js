@@ -277,6 +277,8 @@ app.use('/api/updateprofile',function(req,res) {
         } else if (user.role == 'pendingTutor' || user.role == 'tutor') {
           var tutorUpdateData = {
             postcode: req.body.user.postcode,
+            bio: req.body.user.bio,
+            visible: req.body.user.visible,
           };
 
           connection.query('UPDATE tutor SET ? WHERE userID = ?', [tutorUpdateData, user.id], function(err, rows, fields) {
