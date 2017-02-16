@@ -10,6 +10,16 @@
 
       <br/><br/><br/>
 
+      <uib-accordion close-others="false">
+        <div uib-accordion-group class="panel-default" heading="{{tutor.name}}" ng-repeat="tutor in results">
+          {{tutor.bio}}
+        </div>
+      </uib-accordion>
+
+
+
+
+<!--
       <ul>
         <li ng-repeat="tutor in results">
           {{ tutor.studentNumber }}
@@ -26,7 +36,7 @@
           </ul>
         </li>
       <ul>
-
+-->
     </div>
   </div>
 </div>
