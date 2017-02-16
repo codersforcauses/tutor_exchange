@@ -8,39 +8,32 @@
         <button type="submit" class="btn btn-default">Search</button>
       </form>
 
-      <br/><br/><br/>
+      <br/><br/>
 
       <uib-accordion close-others="false">
         <div uib-accordion-group class="panel-default" is-open="status.open" ng-repeat="tutor in results">
           <uib-accordion-heading>
-            {{tutor.name}}
+            {{tutor.name}} {{tutor.studentNumber}}
             <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': status.open, 'glyphicon-chevron-right': !status.open}"></i>
           </uib-accordion-heading>
-          {{tutor.bio}}
+          <h5>Contact:</h5>
+          <p>{{tutor.phone}}</p>
+
+          <h5>Bio:</h5>
+          <p>{{tutor.bio}}</p>
+
+          <h5>Units taught:</h5>
+          <ul>
+            <li ng-repeat="unit in tutor.units">{{unit}}</li>
+          </ul>
+
+          <h5>Languages spoken:</h5>
+          <ul>
+            <li ng-repeat="language in tutor.languages">{{language}}</li>
+          </ul>
         </div>
       </uib-accordion>
 
-
-
-
-<!--
-      <ul>
-        <li ng-repeat="tutor in results">
-          {{ tutor.studentNumber }}
-          {{ tutor.name }}
-          {{ tutor.phone }}
-          {{ tutor.bio }}
-          <ul>
-            <li ng-repeat="unit in tutor.units">
-            {{ unit }}
-          </ul>
-          <ul>
-            <li ng-repeat="language in tutor.languages">
-            {{ language }}
-          </ul>
-        </li>
-      <ul>
--->
     </div>
   </div>
 </div>
