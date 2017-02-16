@@ -10,9 +10,9 @@
     $scope.isNavCollapsed = true;
 
     $scope.$on('$stateChangeStart', function(event, next) {
-      $scope.isLoggedIn = userFunctions.isLoggedIn();
-    });
-
+        $scope.isLoggedIn = userFunctions.isLoggedIn();
+        $scope.isNavCollapsed = true;
+      });
 
     $scope.isSelected = function(currentLocation) {
       return currentLocation === $location.path();

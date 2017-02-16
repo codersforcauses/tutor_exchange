@@ -27,7 +27,7 @@ function ProfileCtrl($scope, $state, $http, userFunctions, fetchService) {
       .fetchLanguages()
       .then(function(response) {
         if (response.data) {
-          $scope.availableUnits = response.data;
+          $scope.tutorLanguages = response.data;
         }
       });
   }
