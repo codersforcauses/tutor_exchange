@@ -57,7 +57,6 @@
 
       delete user.firstName;
       delete user.lastName;
-      delete user.tutor;
       delete user.dayDOB;
       delete user.monthDOB;
       delete user.yearDOB;
