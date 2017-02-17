@@ -1,39 +1,39 @@
 var express     = require('express');
-var bodyParser  = require('body-parser');
-var mysql       = require('mysql');
+var jsonServer  = require('json-server');
 var jwt         = require('jsonwebtoken');
 var crypto      = require('crypto');
 
 var config      = require(__dirname + '/config');
 
+var REQUIRE_AUTH = true;
 
 var app = express();
 app.use(bodyParser.json()); //read json
 app.use(bodyParser.urlencoded({extended: true})); //read data sent in url
 app.set('secret', config.secret);
 
+var router = jsonServer.router(path.join(__dirname, 'db.json'));
+var db = router.db;
+if (!db.has('users').value()) db.set('users, []').value();
 
-var connection = mysql.createConnection(config.mysqlSettings);
-connection.connect (function(error) {
-  if (!!error) {
-    console.log(error);
-  } else {
-    console.log('Connected to mysql database');
-  }
+
+server.use('/auth/login', function(req, res) {
+  login(req, res);
 });
 
-
-// middleware
-app.use('/*', function(req, res, next) {
-  console.log(req.method + ' ' + req.originalUrl);
-  next();
+server.use('/auth/register', function(req, res) {
+  register(req, res);
 });
 
+server.use('/auth/vip', function(req, res) {
+  REQUIRE_AUTH = false;
+  res.end('Entering VIP mode: you now have access to all areas.');
+});
 
-// static routing
-app.use(express.static(__dirname + '/../app'));
-app.use('/bower_components', express.static(__dirname + '/../bower_components'));
-
+server.use(express.static(path.join(__dirname, '../app')));
+server.use('/bower_components', express.static(path.join(__dirname, '../bower_components')));
+server.use(jsonServer.defaults());
+server.use(jsonServer.rewriter({'/db': '/api/db'}));
 
 app.use('/auth/register', function(req, res) {
   //var salt = req.body.user.id.toString(); // Replace with random string later
@@ -50,17 +50,11 @@ app.use('/auth/register', function(req, res) {
     passwordSalt: passhashsalt.salt,  //<- Need to store salt with password.  Salt only protects against rainbow table attacks.
   };
 
-  connection.query('SELECT * FROM user WHERE userID = ?', post.userID, function(err, rows, fields) {
-    if (err) {
-      console.log(err);
-      res.status(503).send(err);
-      return;
-    }
+server.use('/api/updateprofile', function(req, res) {
+  updateprofile(req, res);
+});
 
-    if (rows.length !== 0) {
-      res.json({success: false, message: 'User already Exists'});
-      return;
-    }
+server.use('/api', router);
 
     connection.query('INSERT INTO user SET ?', post, function(err, rows, fields) {
       if (err) {
@@ -173,14 +167,17 @@ app.use('/auth/login', function(req, res) {
   });
 });
 
+login = function(req, res) {
 
+  var user = req.body.user;
 
-app.use('/api/getprofile',function(req,res) {
-  var user = getUser(req);
-  console.log(user);
+  if (!user || !user.id || !user.password) {
+    res.json({success: false, message: 'User id or password not submitted'});
+    return;
+  }
 
-  if (!user) {
-    res.json({success: false, message: 'Please log in to view profile'});
+  if (!db.get('users').find({'id': user.id}).value()) {
+    res.json({success: false, message: 'User does not exist'});
     return;
   }
   if (user.role == 'student') {
@@ -370,29 +367,24 @@ app.use('/api/search', function(req, res) {
 
 });
 
+  //var user = {'id': 11112222, 'password': 'password', 'name': 'Hugh Jass'};
 
-// Serve
-app.listen(config.server.port, function() {
-  console.log('Live at http://localhost:' + config.server.port);
-});
+  if (db.get('users').find({'id': user.id}).value()) {
+    res.json({success: false, message: 'User already exists'});
+    return;
+  }
 
 function getUser(req) {
   var token = (req.body && req.body.token) || (req.query && req.query.token) || (req.headers && req.headers.authorization);
   //console.log(token);
 
-  if (!token || token.substring(0, 6) !== 'Bearer') {
-    return false;
-  }
+updateprofile = function(req, res) {
 
-  token = token.split(' ')[1];
+  var user = req.body.user;
 
-  try {
-    var decoded = jwt.verify(token, app.get('secret'));
-    //console.log(decoded);
-    return {id: decoded.id, role: decoded.role};
-  } catch (err) {
-    //console.log('bad token');
-    return false;
+  if (!user || !user.id) {
+    res.json({success: false, message: 'Invalid Request'});
+    return;
   }
 }
 
