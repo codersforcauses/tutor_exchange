@@ -20,11 +20,16 @@
           </div>
           <div class="form-group" ng-class="{ 'has-error': applyForm.sex.$invalid && applyForm.$submitted}">
             <label for="text">Sex:</label>
-            <select type="text" class="form-control" name="sex" ng-model="user.sex" required>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
-            </select>
+            <br>
+            <label class="radio-inline">
+              <input type="radio" name="sex" ng-model="user.sex" value="M" required>Male
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="sex" ng-model="user.sex" value="F" required>Female
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="sex" ng-model="user.sex" value="O" required>Other
+            </label>
           </div>
           <div class="form-group" ng-class="{ 'has-error': applyForm.datePicker.$invalid && applyForm.$submitted}">
             <label for="text">Date of Birth:</label>
@@ -32,7 +37,7 @@
           </div>
           <div class="form-group" ng-class="{ 'has-error': applyForm.contactnum.$invalid && applyForm.$submitted}">
             <label for="text">Contact Number:</label>
-            <input type="text" class="form-control" name="contactnum" model="user.phone">
+            <input type="text" ng-pattern="/^[0-9]*$/" class="form-control" name="contactnum" ng-model="user.phone">
           </div>
           <div class="form-group">
             <label for="inputPassword" class="control-label">Password:</label>
@@ -49,20 +54,32 @@
             <div class="form-group" ng-class="{ 'has-error': applyForm.units.$invalid && (applyForm.$submitted || applyForm.units.$dirty) }">
               <label for="text">Units:</label>
               <ui-select multiple required tagging-label="false" name="units" ng-model="user.units" theme="bootstrap">
-              <ui-select-match placeholder="Search for Units to Tutor..">{{$item}}</ui-select-match>
+              <ui-select-match placeholder="Search for Units..">{{$item.unitID}}</ui-select-match>
               <ui-select-choices  repeat="unit in availableUnits | filter: $select.search | limitTo: ($select.search.length <= 3) ? 0 : undefined">
-              {{unit}}
+              <span ng-bind-html="unit.unitID | highlight: $select.search"></span>
+              <small ng-bind-html="unit.unitName | highlight: $select.search"></small>
               </ui-select-choices>
               </ui-select>
+              <div class="help-block">Select at least one</div>
             </div>
-            <div class="form-group" ng-class="{ 'has-error': applyForm.languages.$invalid && (applyForm.$submitted || applyForm.languages.$dirty) }">
+            <div class="form-group" ng-class="{ 'has-error': applyForm.multiLanguage.$invalid && (applyForm.$submitted || applyForm.multiLanguage.$dirty) }">
               <label for="text">Languages:</label>
-              <ui-select multiple required tagging-label="false" name="languages" ng-model="user.languages" theme="bootstrap">
-              <ui-select-match placeholder="Search for Languages spoken..">{{$item}}</ui-select-match>
-              <ui-select-choices repeat="lang in tutorLanguages | filter:$select.search | limitTo: ($select.search.length <= 0) ? 0 : undefined">
-              {{lang}}
-              </ui-select-choices>
-              </ui-select>
+              <p>I am able to Tutor Students in: </p>
+              <div class="radio">
+                <label><input type="radio" ng-model="user.multipleLanguages" value="false" name="multiLanguage" required>English Only</label>
+              </div>
+              <div class="radio">
+                <label><input type="radio" ng-model="user.multipleLanguages" value="true" name="multiLanguage" required>Multiple/Other Languages</label>
+              </div>
+              <div ng-if="user.multipleLanguages === 'true'">
+                <p>List all languages spoken below:</p>
+                <ui-select multiple required tagging-label="false" name="languages" ng-model="user.languages" theme="bootstrap">
+                <ui-select-match placeholder="Search for Languages..">{{$item.languageName}}</ui-select-match>
+                <ui-select-choices repeat="lang in tutorLanguages | filter: { languageName: $select.search } | limitTo: ($select.search.length <= 1) ? 0 : undefined">
+                {{lang.languageName}}
+                </ui-select-choices>
+                </ui-select>
+              </div>
             </div>
             <div class="form-group" ng-class="{ 'has-error': applyForm.postcode.$invalid && (applyForm.$submitted || applyForm.postcode.$dirty) }">
               <label for="text">Postcode:</label>

@@ -1,156 +1,489 @@
 var express     = require('express');
-var jsonServer  = require('json-server');
+var bodyParser  = require('body-parser');
+var mysql       = require('mysql');
 var jwt         = require('jsonwebtoken');
-var path        = require('path');
+var crypto      = require('crypto');
 
 var config      = require(__dirname + '/config');
 
-var REQUIRE_AUTH = true;
 
-var server = jsonServer.create();
-server.use(jsonServer.bodyParser);
-server.set('secret', config.secret);
-
-
-var router = jsonServer.router(path.join(__dirname, 'db.json'));
-var db = router.db;
-if (!db.has('users').value()) db.set('users, []').value();
+var app = express();
+app.use(bodyParser.json()); //read json
+app.use(bodyParser.urlencoded({extended: true})); //read data sent in url
+app.set('secret', config.secret);
 
 
-server.use('/auth/login', function(req, res) {
-  login(req, res);
-});
-
-server.use('/auth/register', function(req, res) {
-  register(req, res);
-});
-
-server.use('/auth/vip', function(req, res) {
-  REQUIRE_AUTH = false;
-  res.end('Entering VIP mode: you now have access to all areas.');
-});
-
-server.use(express.static(path.join(__dirname, '../app')));
-server.use('/bower_components', express.static(path.join(__dirname, '../bower_components')));
-server.use(jsonServer.defaults());
-server.use(jsonServer.rewriter({'/db': '/api/db'}));
-
-
-server.use(function(req, res, next) {
-  if (req.originalUrl === '/db') {
-    next();
-  } else if (!REQUIRE_AUTH || isAuthorised(req)) {
-    next();
+var connection = mysql.createConnection(config.mysqlSettings);
+connection.connect (function(error) {
+  if (!!error) {
+    console.log(error);
   } else {
-    res.sendStatus(401);
+    console.log('Connected to mysql database');
   }
 });
 
-server.use('/api/updateprofile', function(req, res) {
-  updateprofile(req, res);
-});
 
-server.use('/api', router);
-
-var port = process.env.PORT || 8080;
-server.listen(port, function() {
-  console.log('\nMock server is running on http://localhost:' + port + '/\n');
+// middleware
+app.use('/*', function(req, res, next) {
+  console.log(req.method + ' ' + req.originalUrl);
+  next();
 });
 
 
+// static routing
+app.use(express.static(__dirname + '/../app'));
+app.use('/bower_components', express.static(__dirname + '/../bower_components'));
 
 
-isAuthorised = function(req) {
+app.use('/auth/register', function(req, res) {
+  //var salt = req.body.user.id.toString(); // Replace with random string later
+  //var passhashsalt = sha512(req.body.user.password, salt);
+  var passhashsalt = saltHashPassword(req.body.user.password); //holds both hash and salt
 
-  var token;
+  var post = {
+    userID: req.body.user.id,
+    name: req.body.user.name,
+    DOB: req.body.user.DOB,
+    sex: req.body.user.sex,
+    phone: req.body.user.phone,
+    passwordHash: passhashsalt.passwordHash,
+    passwordSalt: passhashsalt.salt,  //<- Need to store salt with password.  Salt only protects against rainbow table attacks.
+  };
 
-  try {
-    token = (req.body && req.body.token) || (req.query && req.query.token) || req.headers['authorization'];
-    //console.log('TOKEN IS: ' + token);
-  } catch (err) {
+  connection.query('SELECT * FROM user WHERE userID = ?', post.userID, function(err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(503).send(err);
+      return;
+    }
+
+    if (rows.length !== 0) {
+      res.json({success: false, message: 'User already Exists'});
+      return;
+    }
+
+    connection.query('INSERT INTO user SET ?', post, function(err, rows, fields) {
+      if (err) {
+        console.log(err);
+        res.status(503).send(err);
+        return;
+      }
+
+      if (!req.body.user.tutor) {
+        var token = jwt.sign({id: post.userID, role: 'student'}, app.get('secret'));
+        res.json({success: true, message: 'Registration was Successful', name: post.name, role: 'student', token: token});
+      } else {
+        var tutorpost = {
+          userID: req.body.user.id,
+          postcode: req.body.user.postcode,
+        };
+
+        connection.query('INSERT INTO tutor SET ?', tutorpost, function(err, rows, fields) {
+          if (err) {
+            console.log(err);
+            res.status(503).send(err);
+            return;
+          }
+
+          // Uses the Bulk Insert Function to Assign Unit/Language Relationships to Tutor.
+          if (req.body.user.id && req.body.user.units) {
+            connection.query('INSERT INTO unitTutored (tutor, unit) VALUES ?', [formatUnitData(req.body.user.id,req.body.user.units)], function(err, rows, fields) {
+              if (err) {
+                console.log(err);
+                res.status(503).send(err);
+                return;
+              }
+              if (req.body.user.id && req.body.user.languages) {
+                connection.query('INSERT INTO languageTutored (tutor, language) VALUES ?', [formatLanguageData(req.body.user.id,req.body.user.languages)], function(err, rows, fields) {
+                  if (err) {
+                    console.log(err);
+                    res.status(503).send(err);
+                    return;
+                  }
+                  var token = jwt.sign({id: post.userID, role: 'pendingTutor'}, app.get('secret'));
+                  res.json({success: true, message: 'Registration was Successful', name: post.name, role: 'pendingTutor', token: token});
+                  return;
+                });
+              }
+            });
+          }
+
+        });
+        console.log(req.body.user.units);
+
+      }
+    });
+  });
+});
+
+app.use('/auth/login', function(req, res) {
+
+  var details = {
+    studentNumber: req.body.user.id,
+    password: req.body.user.password,
+  };
+  //get salt for that user from the db
+  connection.query('SELECT passwordSalt FROM user WHERE userID = ?', [details.studentNumber], function(err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(503).send(err);
+      return;
+    }
+    if (!rows || !rows[0]) {
+      res.json({success: false, message: 'Username or Password was Incorrect'});
+      return;
+    }
+    var userSalt = rows[0].passwordSalt; //get salt
+    var inputHashData = sha512(details.password, userSalt);
+    //query within query to check if hashes match: have to do this way afaik unless you use async
+    console.log('login with hash ' + inputHashData.passwordHash);
+    connection.query('SELECT name FROM user WHERE userID = ? and passwordHash = ?', [details.studentNumber, inputHashData.passwordHash], function(err, rows, fields) {
+      if (err) {
+        console.log(err);
+        res.status(503).send(err);
+        return;
+      }
+      if (!rows || !rows[0]) {
+        res.json({success: false, message: 'Username or Password was Incorrect'});
+        return;
+      }
+
+      var name = rows[0].name;
+
+      connection.query('SELECT userid, verified FROM tutor WHERE userID = ?', [details.studentNumber], function(err, rows, fields) {
+        var token;
+
+        if (!rows || !rows[0]) {
+          token = jwt.sign({id: details.studentNumber, role: 'student'}, app.get('secret'));
+          res.json({success: true, message: 'Login was Successful', name: name, role: 'student', token: token});
+          return;
+        }
+
+        if (rows[0].verified) {
+          token = jwt.sign({id: details.studentNumber, role: 'tutor'}, app.get('secret'));
+          res.json({success: true, message: 'Login was Successful', name: name, role: 'tutor', token: token});
+          return;
+        }
+
+        token = jwt.sign({id: details.studentNumber, role: 'pendingTutor'}, app.get('secret'));
+        res.json({success: true, message: 'Login was Successful', name: name, role: 'pendingTutor', token: token});
+      });
+      return;
+    });
+  });
+});
+
+
+
+app.use('/api/getprofile',function(req,res) {
+  var user = getUser(req);
+  console.log(user);
+
+  if (!user) {
+    res.json({success: false, message: 'Please log in to view profile'});
+    return;
+  }
+  if (user.role == 'student') {
+    connection.query('SELECT * FROM user WHERE userID = ?', [user.id], function(err, result, fields) {
+      if (err) {
+        console.log(err);
+        res.status(503).send(err);
+        return;
+      }
+
+      if (!result || !result[0]) {
+        res.send('WHO ARE YOU?'); // User deleted, but still has token
+        return;
+      }
+      res.json(result[0]);
+    });
+  } else if (user.role == 'pendingTutor' || user.role == 'tutor') {
+    connection.query('SELECT * FROM user JOIN tutor ON user.userID = tutor.userID WHERE user.userID = ?', [user.id], function(err, result, fields) {
+      if (err) {
+        console.log(err);
+        res.status(503).send(err);
+        return;
+      }
+      if (!result || !result[0]) {
+        res.send('WHO ARE YOU?'); // User deleted, but still has token
+        return;
+      }
+
+      // Get Unit and Language Data
+      var tutorData = result[0];
+      var unitData = [];
+      var languageData = [];
+
+      connection.query('SELECT unitID, unitName FROM tutor JOIN unitTutored ON tutor.userID = unitTutored.tutor JOIN unit ON unitTutored.unit = unit.unitID WHERE tutor.userID = ?', [user.id], function(err, result, fields) {
+        if (err) {
+          console.log(err);
+          res.status(503).send(err);
+          return;
+        }
+
+        if (!result || !result[0]) {
+          res.status(503).send(err);
+          return;
+        }
+
+        for (i = 0; i < result.length; i++) {
+          unitData[i] = {unitID: result[i].unitID, unitName: result[i].unitName};
+        }
+        tutorData.units = unitData;
+
+        connection.query('SELECT languageCode, languageName FROM tutor JOIN languageTutored ON tutor.userID = languageTutored.tutor JOIN language ON languageTutored.language = language.languageCode WHERE tutor.userID = ?', [user.id], function(err, result, fields) {
+          if (err) {
+            console.log(err);
+            res.status(503).send(err);
+            return;
+          }
+
+          if (!result || !result[0]) {
+            res.status(503).send(err);
+            return;
+          }
+          for (i = 0; i < result.length; i++) {
+            languageData[i] = {languageCode: result[i].languageCode, languageName: result[i].languageName };
+          }
+
+          tutorData.languages = languageData;
+          res.json(tutorData);
+        });
+      });
+    });
+  }
+});
+
+app.use('/api/updateprofile',function(req,res) {
+    var user = getUser(req);
+
+    if (!user) {
+      res.json({success: false, message: 'Please log in to view profile'});
+      return;
+    }
+    var userUpdateData = {
+      phone: req.body.user.phone,
+    };
+
+    connection.query('UPDATE user SET ? WHERE userID = ?', [userUpdateData,user.id] , function(err, rows, fields) {
+        if (err) {
+          console.log(err);
+          res.status(503).send(err);
+          return;
+        }
+        if (user.role == 'student') {
+          res.json({success: true, message: 'Update Success'});
+        } else if (user.role == 'pendingTutor' || user.role == 'tutor') {
+          var tutorUpdateData = {
+            postcode: req.body.user.postcode,
+            bio: req.body.user.bio,
+            visible: req.body.user.visible,
+          };
+
+          connection.query('UPDATE tutor SET ? WHERE userID = ?', [tutorUpdateData, user.id], function(err, rows, fields) {
+              if (err) {
+                console.log(err);
+                res.status(503).send(err);
+                return;
+              }
+              //Format the MYSQL Commands
+              unitDelete = mysql.format('DELETE FROM unitTutored WHERE tutor=?',[user.id]);
+              unitInsert = mysql.format('INSERT INTO unitTutored (tutor, unit) VALUES ?', [formatUnitData(user.id,req.body.user.units)]);
+              languageDelete = mysql.format('DELETE FROM languageTutored WHERE tutor=?',[user.id]);
+              languageInsert = mysql.format('INSERT INTO languageTutored (tutor, language) VALUES ?', [formatLanguageData(user.id,req.body.user.languages)]);
+
+              //'Bulk Update' is achieved (in the simplest way) by deleting and reinserting data in one transaction.
+              //A more selective system would definitely be worth looking into
+              mysqlTransaction(unitDelete, unitInsert);
+              mysqlTransaction(languageDelete, languageInsert);
+              res.json({success: true, message: 'Successfully Updated Values'});
+            });
+        }
+      });
+
+  });
+
+// Fetch all Units/Languages available. Useful for Applyform and others
+app.use('/api/data/units',function(req,res) {
+    connection.query('SELECT * FROM unit', function(err, result, fields) {
+      if (err) {
+        console.log(err);
+        res.status(503).send(err);
+        return;
+      }
+      res.json(result);
+    });
+  });
+
+app.use('/api/data/languages',function(req,res) {
+    connection.query('SELECT * FROM language', function(err, result, fields) {
+      if (err) {
+        console.log(err);
+        res.status(503).send(err);
+        return;
+      }
+      res.json(result);
+    });
+  });
+
+
+// Search for tutors
+app.use('/api/search', function(req, res) {
+  // Check user has token here!
+
+  var result = [
+    {
+      studentNumber: 11111111,
+      name: 'Ali Gator',
+      phone: 0432123123,
+      bio: 'I like to move it move it',
+      units: ['MATH1101', 'MATH1102'],
+      languages: ['English', 'Chinese'],
+    },
+    {
+      studentNumber: 22222222,
+      name: 'Ben Dover',
+      phone: '0432123123',
+      bio: 'I like to move it move it',
+      units: ['CITS1101', 'CITS1102'],
+      languages: ['English', 'French'],
+    },
+    {
+      studentNumber: 33333333,
+      name: 'Carl Arm',
+      phone: '0432123123',
+      bio: 'I like to move it move it',
+      units: ['PHYS1101', 'PHYS1102'],
+      languages: ['English', 'German'],
+    },
+    {
+      studentNumber: 44444444,
+      name: 'Doug Witherspoon',
+      phone: '0432123123',
+      bio: 'You like to .. move it!',
+      units: ['CHEM1101', 'CHEM1102'],
+      languages: ['English', 'Spanish'],
+    },
+  ];
+
+  res.json(result);
+
+});
+
+
+// Serve
+app.listen(config.server.port, function() {
+  console.log('Live at http://localhost:' + config.server.port);
+});
+
+function getUser(req) {
+  var token = (req.body && req.body.token) || (req.query && req.query.token) || (req.headers && req.headers.authorization);
+  //console.log(token);
+
+  if (!token || token.substring(0, 6) !== 'Bearer') {
     return false;
   }
 
-  if (token) {
-    if (token.substring(0, 6) === 'Bearer') {
-      token = token.split(' ')[1];
-    }
+  token = token.split(' ')[1];
 
-    try {
-      var decoded = jwt.verify(token, server.get('secret'));
-      console.log(decoded + ' is authorised');
-      return true;
-    } catch (err) {
-      console.log('token no good');
-      return false;
-    }
+  try {
+    var decoded = jwt.verify(token, app.get('secret'));
+    //console.log(decoded);
+    return {id: decoded.id, role: decoded.role};
+  } catch (err) {
+    //console.log('bad token');
+    return false;
   }
-
-  return false;
-};
+}
 
 
-login = function(req, res) {
-
-  var user = req.body.user;
-
-  if (!user || !user.id || !user.password) {
-    res.json({success: false, message: 'User id or password not submitted'});
-    return;
+/**
+ * Helper Functions for Bulk Insert/Update
+ * @function
+ * @param {string} userID - ID used for each.
+ * @param {string} obj - JSON of various values.
+ */
+function formatUnitData(userID, obj) {
+  var result = [];
+  for (i = 0; i < obj.length; i++) {
+    result[i] = [userID,obj[i].unitID];
   }
+  return result;
+}
 
-  if (!db.get('users').find({'id': user.id}).value()) {
-    res.json({success: false, message: 'User does not exist'});
-    return;
+function formatLanguageData(userID, obj) {
+  var result = [];
+  for (i = 0; i < obj.length; i++) {
+    result[i] = [userID,obj[i].languageCode];
   }
+  return result;
+}
 
-  if (user.password !== db.get('users').find({'id': user.id}).value().password) {
-    res.json({success: false, message: 'Password incorrect'});
-    return;
-  }
+/**
+ * Simple 2 Query Transaction. queryA -> queryB
+ * @function
+ * @param {string} queryA - First Query to be executed.
+ * @param {string} queryB - Second Query to be executed.
+ */
+function mysqlTransaction(queryA, queryB) {
+  return connection.beginTransaction(function(err) {
+    if (err) { return err; }
+    connection.query(queryA, function(error, rows, fields) {
+      if (error) {
+        return connection.rollback(function() {
+          console.log(error);
+        });
+      }
 
-  user.name = db.get('users').find({'id': user.id}).value().name;
-  var token = jwt.sign(String(user.id), server.get('secret'));
-  res.json({success: true, name: user.name, role: 'student', token: token});
-};
+      connection.query(queryB, function(error, results, fields) {
+        if (error) {
+          return connection.rollback(function() {
+            console.log(error);
+          });
+        }
+        connection.commit(function(error) {
+          if (error) {
+            return connection.rollback(function() {
+              console.log(error);
+            });
+          }
+          return {success: true, message: 'Transaction Processed Successfully'};
+        });
+      });
+    });
+  });
+}
+
+/** [from https://code.ciphertrick.com/2016/01/18/salt-hash-passwords-using-nodejs-crypto/]
+ * generates random string of characters i.e salt
+ * @function
+ * @param {number} length - Length of the random string.
+ */
+function genRandomString(length) {
+  return crypto.randomBytes(Math.ceil(length/2))
+    .toString('hex') /** convert to hexadecimal format */
+    .slice(0,length);   /** return required number of characters */
+}
 
 
-register = function(req, res) {
+/**
+ * hash password with sha512.
+ * @function
+ * @param {string} password - List of required fields.
+ * @param {string} salt - Data to be validated.
+ */
+function sha512(password, salt) {
+  var hash = crypto.createHmac('sha512', salt); /** Hashing algorithm sha512 */
+  hash.update(password);
+  var value = hash.digest('hex');
+  return {
+    salt: salt,
+    passwordHash: value,
+  };
+}
 
-  var user = req.body.user;
-
-  if (!user || !user.id || !user.password || !user.name) {
-    res.json({success: false, message: 'User id, password or name not submitted'});
-    return;
-  }
-
-  //var user = {'id': 11112222, 'password': 'password', 'name': 'Hugh Jass'};
-
-  if (db.get('users').find({'id': user.id}).value()) {
-    res.json({success: false, message: 'User already exists'});
-    return;
-  }
-
-  db.get('users').push(user).value();
-  //router.db.read(path.join(__dirname, 'db.json'));
-
-  var token = jwt.sign(String(user.id), server.get('secret'));
-  res.json({success: true, name: user.name, role: 'student', token: token});
-
-};
-
-updateprofile = function(req, res) {
-
-  var user = req.body.user;
-
-  if (!user || !user.id) {
-    res.json({success: false, message: 'Invalid Request'});
-    return;
-  }
-
-  if (isAuthorised(req)) {
-    db.get('users').find({id: user.id}).assign(user).value()
-    res.json({success: true});
-  }
-
-};
+function saltHashPassword(userpassword) {
+  var salt = genRandomString(16); /** Gives us salt of length 16 */
+  var passwordData = sha512(userpassword, salt);
+  return passwordData;
+}

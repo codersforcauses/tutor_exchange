@@ -6,23 +6,45 @@ angular
   .controller('ProfileCtrl', ProfileCtrl);
 
 
-ProfileCtrl.$inject = ['$scope', 'session', 'authService', 'userFunctions', '$state', '$http', 'UWA_UNITS', 'TUTOR_LANGUAGES'];
-function ProfileCtrl($scope, session, authService, userFunctions, $state, $http, UWA_UNITS, TUTOR_LANGUAGES) {
-  $scope.availableUnits = UWA_UNITS;
-  $scope.tutorLanguages = TUTOR_LANGUAGES;
-  $scope.editMode = false;
+ProfileCtrl.$inject = ['$scope', '$state', '$http', 'userFunctions', 'fetchService'];
+function ProfileCtrl($scope, $state, $http, userFunctions, fetchService) {
 
-  userFunctions
-  .getDetails(session.getUserId())
-  .then(function(response) {
-      if (response.data.length == 1) {
-        $scope.user = response.data[0];
-        console.log(response);
-      } else {
-        console.log('Unable to Load User Data');
+  loadAPIData();
+  loadUserData();
+  $scope.editMode = false;
+  $scope.accountType = userFunctions.getSessionDetails().role;
+
+  function loadAPIData() {
+    fetchService
+      .fetchUnits()
+      .then(function(response) {
+        if (response.data) {
+          $scope.availableUnits = response.data;
+        }
+      });
+
+    fetchService
+      .fetchLanguages()
+      .then(function(response) {
+        if (response.data) {
+          $scope.tutorLanguages = response.data;
+        }
+      });
+  }
+
+  function loadUserData() {
+    userFunctions
+    .getProfile()
+    .then(function(response) {
+        if (response.data) {
+          $scope.user = response.data;
+          console.log(response.data);
+        } else {
+          console.log('Unable to Load User Data');
+        }
       }
-    }
-  );
+    );
+  }
 
   $scope.upgrade = function() {
     if ($scope.user) {
@@ -33,11 +55,13 @@ function ProfileCtrl($scope, session, authService, userFunctions, $state, $http,
   };
 
   $scope.upgradeSubmit = function() {
-    /* Will need to Submit a new Application to the Guild*/
-    $scope.edituser.accountType = 'tutor';
-    $scope.edituser.visible = true;
-    $scope.save();
-    $scope.upgradeAccount = false;
+    if ($scope.user) {
+      /* Will need to Submit a new Application to the Guild*/
+      $scope.edituser.visible = true;
+      $scope.save();
+      $scope.accountType = 'pendingTutor';
+      $scope.upgradeAccount = false;
+    }
   };
 
   $scope.edit = function() {
@@ -55,12 +79,12 @@ function ProfileCtrl($scope, session, authService, userFunctions, $state, $http,
 
   $scope.save = function() {
     if ($scope.user && $scope.edituser) {
-      $scope.user = angular.copy($scope.edituser); /*Direct copy for now, in future may compare values*/
-      userFunctions.updateDetails($scope.user)
+      console.log($scope.edituser);
+      userFunctions.updateProfile($scope.edituser)
       .then(function(response) {
-        if (response.data.success) {
+        if (response.data && response.data.success) {
+          loadUserData();
           $scope.editMode = false;
-          console.log(response);
         } else {
           console.log('Unable to Update User Data');
         }
