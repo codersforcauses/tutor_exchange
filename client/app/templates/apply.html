@@ -55,8 +55,9 @@
               <label for="text">Units:</label>
               <ui-select multiple required tagging-label="false" name="units" ng-model="user.units" theme="bootstrap">
               <ui-select-match placeholder="Search for Units..">{{$item.unitID}}</ui-select-match>
-              <ui-select-choices  repeat="unit in availableUnits | filter: { unitID: $select.search } | limitTo: ($select.search.length <= 3) ? 0 : undefined">
-              {{unit.unitID}}
+              <ui-select-choices  repeat="unit in availableUnits | filter: $select.search | limitTo: ($select.search.length <= 3) ? 0 : undefined">
+              <span ng-bind-html="unit.unitID | highlight: $select.search"></span>
+              <small ng-bind-html="unit.unitName | highlight: $select.search"></small>
               </ui-select-choices>
               </ui-select>
               <div class="help-block">Select at least one</div>

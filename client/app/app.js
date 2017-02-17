@@ -8,6 +8,7 @@
       'ui.router',
       'ui.select',
       'ngMessages',
+      'ngSanitize',
     ])
     .config(config)
     .run(run);
