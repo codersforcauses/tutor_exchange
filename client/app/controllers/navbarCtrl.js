@@ -5,7 +5,6 @@
     .module('tutorExchange')
     .controller('NavbarCtrl', NavbarCtrl);
 
-
   NavbarCtrl.$inject = ['$scope', '$location', 'userFunctions'];
   function NavbarCtrl($scope, $location, userFunctions) {
     $scope.isNavCollapsed = true;
