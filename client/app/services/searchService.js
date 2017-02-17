@@ -12,7 +12,6 @@
 
     var service = {
       getTutors: getTutors,
-      loadGoogleLocations: loadGoogleLocations,
     };
 
     return service;
@@ -39,14 +38,6 @@
       return $http.get('/api/search')
         .then(function(response) {
           return response;
-        });
-    }
-
-    function loadGoogleLocations(input) {
-      var params = {address: input, components: 'country:AU', sensor: false};
-      return $http.get('http://maps.googleapis.com/maps/api/geocode/json', {params: params})
-        .then(function(response) {
-          return response.data.results;
         });
     }
 

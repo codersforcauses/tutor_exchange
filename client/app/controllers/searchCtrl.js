@@ -31,11 +31,12 @@
 
     $scope.refreshLocations = function(input) {
       if (input.length > 0) {
-        searchService
-        .loadGoogleLocations(input)
-        .then(function(response) {
-          $scope.locationAPI = response;
-        });
+        var params = {address: input, components: 'country:AU', sensor: false};
+        return $http.get('http://maps.googleapis.com/maps/api/geocode/json', {params: params})
+          .then(function(response) {
+            $scope.locationAPI = response.data.results;
+            console.log(response.data.results);
+          });
       }
     };
 
