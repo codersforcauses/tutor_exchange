@@ -2,7 +2,7 @@ var fs = require('fs');
 var faker = require('faker');
 
 var LANGUAGES = [
-  'Afrikaans', 'Chinese', 'English', 'French', 'German', 'Indonesian', 'Italian', 'Japanese', 'Korean', 'Russian', 'Spanish',
+  'zh', 'en', 'fr', 'de', 'id', 'it', 'ja', 'ko', 'ru', 'es',
 ];
 
 var UNITS = [
@@ -34,7 +34,7 @@ var languageTutored = [];
 var unitTutored = [];
 
 
-for (var i=0; i<100; i++) {
+for (var i=0; i<50; i++) {
   // user
   var userID = i + 90000000;
   var name = faker.name.firstName() + ' ' + faker.name.lastName();
