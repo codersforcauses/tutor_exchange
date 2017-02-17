@@ -8,6 +8,7 @@
       'ui.router',
       'ui.select',
       'ngMessages',
+      'ngSanitize',
     ])
     .config(config)
     .run(run);
@@ -36,7 +37,7 @@
         controller: 'DashboardCtrl',
         data: {
           authRequired: true,
-          authRoles: [USER_ROLES.student, USER_ROLES.pendingTutor, USER_ROLES.tutor,],
+          authRoles: [USER_ROLES.student, USER_ROLES.pendingTutor, USER_ROLES.tutor],
         },
       })
 
@@ -46,7 +47,7 @@
         controller: 'ProfileCtrl',
         data: {
           authRequired: true,
-          authRoles: [USER_ROLES.student, USER_ROLES.pendingTutor, USER_ROLES.tutor,],
+          authRoles: [USER_ROLES.student, USER_ROLES.pendingTutor, USER_ROLES.tutor],
         },
       })
 
@@ -55,8 +56,8 @@
         templateUrl: 'templates/search.html',
         controller: 'SearchCtrl',
         data: {
-          authRequired: true,
-          authRoles: [USER_ROLES.student, USER_ROLES.pendingTutor, USER_ROLES.tutor,],
+          authRequired: false,
+          authRoles: [USER_ROLES.student, USER_ROLES.pendingTutor, USER_ROLES.tutor],
         },
       })
 
@@ -72,8 +73,8 @@
       });
   }
 
-  run.$inject = ['$rootScope', 'authService', 'USER_ROLES', '$state'];
-  function run($rootScope, authService, USER_ROLES, $state) {
+  run.$inject = ['$rootScope', 'authService', '$state'];
+  function run($rootScope, authService, $state) {
     $rootScope.$on('$stateChangeStart', function(event, next) {
       if (next.data && next.data.authRequired) {
         if (!authService.isAuthenticated()) {

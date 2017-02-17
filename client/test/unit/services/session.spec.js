@@ -1,8 +1,9 @@
-describe('session', function() {
-
-  var session;
+describe('session test: ', function() {
 
   beforeEach(module('tutorExchange'));
+
+
+  var session;
 
   beforeEach(inject(function(_session_) {
     session = _session_;
@@ -14,14 +15,14 @@ describe('session', function() {
     {id: 11223345, name: 'Jill Bloggs', role: 'Tutor'},
   ];
 
-  it('all getters return null when session has not been created', function() {
+  it('all getters should return null if session hasn\'t been created', function() {
     expect(session.exists()).toBe(false);
     expect(session.getUserId()).toBeNull();
     expect(session.getUserName()).toBeNull();
     expect(session.getUserRole()).toBeNull();
   });
 
-  it('should be able to create new session', function() {
+  it('all getters should return session details after session has been created', function() {
     var sampleUser = sampleUsers[0];
 
     expect(session.exists()).toBe(false);
@@ -33,7 +34,7 @@ describe('session', function() {
     expect(session.getUserRole()).toBe(sampleUser.role);
   });
 
-  it('should be able to delete sessions', function() {
+  it('deleting sessions should clear stored session data', function() {
     var sampleUser = sampleUsers[0];
 
     expect(session.exists()).toBe(false);
@@ -48,7 +49,7 @@ describe('session', function() {
     expect(session.getUserRole()).toBeNull();
   });
 
-  it('should overwrite old session if a new session is created', function() {
+  it('creating a new session should overwrite old sessions', function() {
     session.create(sampleUsers[0].id, sampleUsers[0].name, sampleUsers[0].role);
     session.create(sampleUsers[1].id, sampleUsers[1].name, sampleUsers[1].role);
 

@@ -7,7 +7,7 @@
         <form name="profileForm" novalidate>
           <div class="form-group">
             <label for="text">Account Type:</label>
-            {{user.accountType}}
+            {{accountType}}
           </div>
           <div class="form-group" ng-if="user.id">
             <label for="text">Student Number:</label>
@@ -34,32 +34,33 @@
             <p ng-if="!editMode" ng-bind="user.phone"></p>
             <input ng-if="editMode" type="text" class="form-control" ng-model="edituser.phone">
           </div>
-          <div ng-if="user.accountType === 'tutor' || upgradeAccount == true">
+          <div ng-if="accountType === 'tutor' || accountType === 'pendingTutor' || upgradeAccount == true">
             <div class="form-group">
               <label for="text">Units:</label>
-              <p ng-if="!editMode" ng-repeat="u in user.units">{{u}}</p>
+              <p ng-if="!editMode" ng-repeat="u in user.units">{{u.unitID}}</p>
               <div ng-if="editMode" class="form-group" ng-class="{ 'has-error': profileForm.units.$invalid && (profileForm.$submitted || profileForm.units.$dirty)}">
                 <ui-select multiple required tagging-label="false" name="units" ng-model="edituser.units" theme="bootstrap">
-                <ui-select-match placeholder="Search for Units to Tutor..">{{$item}}</ui-select-match>
-                <ui-select-choices  repeat="unit in availableUnits | filter: $select.search | limitTo: ($select.search.length <= 3) ? 0 : undefined">
-                {{unit}}
+                <ui-select-match placeholder="Search for Units..">{{$item.unitID}}</ui-select-match>
+                <ui-select-choices repeat="unit in availableUnits | filter: { unitID: $select.search } | limitTo: ($select.search.length <= 3) ? 0 : undefined">
+                <span ng-bind-html="unit.unitID | highlight: $select.search"></span>
+                <small ng-bind-html="unit.unitName | highlight: $select.search"></small>
                 </ui-select-choices>
                 </ui-select>
               </div>
             </div>
             <div class="form-group">
               <label for="text">Languages:</label>
-              <p ng-if="!editMode" ng-repeat="l in user.languages">{{l}}</p>
+              <p ng-if="!editMode" ng-repeat="l in user.languages">{{l.languageName}}</p>
               <div ng-if="editMode" class="form-group" ng-class="{ 'has-error': profileForm.languages.$invalid && (profileForm.$submitted || profileForm.languages.$dirty)}">
                 <ui-select multiple required tagging-label="false" name="languages" ng-model="edituser.languages" theme="bootstrap">
-                <ui-select-match placeholder="Search for Languages spoken..">{{$item}}</ui-select-match>
-                <ui-select-choices repeat="lang in tutorLanguages | filter:$select.search | limitTo: ($select.search.length <= 0) ? 0 : undefined">
-                {{lang}}
+                <ui-select-match placeholder="Search for Languages..">{{$item.languageName}}</ui-select-match>
+                <ui-select-choices repeat="lang in tutorLanguages | filter: { languageName: $select.search } | limitTo: ($select.search.length <= 1) ? 0 : undefined">
+                {{lang.languageName}}
                 </ui-select-choices>
                 </ui-select>
               </div>
             </div>
-            <div class="form-group" ng-class="{ 'has-error': profileForm.postcode.$invalid && && (profileForm.$submitted || profileForm.postcode.$dirty) }">
+            <div class="form-group" ng-class="{ 'has-error': profileForm.postcode.$invalid && (profileForm.$submitted || profileForm.postcode.$dirty) }">
               <label for="text">Postcode:</label>
               <p ng-if="!editMode" ng-bind="user.postcode"></p>
               <input ng-if="editMode" type="text" class="form-control" name="postcode" ng-pattern="/^[0-9]{4}$/" ng-model="edituser.postcode" required>

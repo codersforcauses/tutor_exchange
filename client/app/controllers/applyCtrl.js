@@ -6,13 +6,32 @@
     .controller('ApplyCtrl', ApplyCtrl);
 
 
-  ApplyCtrl.$inject = ['$scope', 'authService', '$state', 'UWA_UNITS', 'USER_ROLES', 'TUTOR_LANGUAGES'];
-  function ApplyCtrl($scope, authService, $state, UWA_UNITS, USER_ROLES, TUTOR_LANGUAGES) {
-    if (authService.isAuthenticated()) {
+  ApplyCtrl.$inject = ['$scope', '$state', 'userFunctions', 'USER_ROLES', 'fetchService'];
+  function ApplyCtrl($scope, $state, userFunctions, USER_ROLES, fetchService) {
+    if (userFunctions.isLoggedIn()) {
       $state.go('dashboard');// Already Logged in
     }
-    $scope.availableUnits = UWA_UNITS;
-    $scope.tutorLanguages = TUTOR_LANGUAGES;
+
+    loadAPIData();
+
+    function loadAPIData() {
+      fetchService
+      .fetchUnits()
+      .then(function(response) {
+            if (response.data) {
+              $scope.availableUnits = response.data;
+            }
+          }
+      );
+      fetchService
+      .fetchLanguages()
+      .then(function(response) {
+            if (response.data) {
+              $scope.tutorLanguages = response.data;
+            }
+          }
+      );
+    }
 
     $scope.submit = function(user) {
       user.id = parseInt(user.id);
@@ -27,8 +46,9 @@
       }
 
       /*Check Date of Birth is Valid using MomentJS*/
-      var inputDOB = user.dayDOB + '/' + user.monthDOB + '/' + user.yearDOB;
-      if (moment(inputDOB, ['DD/MM/YYYY'], true).isValid()) {
+      var inputDOB = user.yearDOB + '-' + user.monthDOB + '-' + user.dayDOB;
+      if (moment(inputDOB, ['YYYY-MM-DD'], true).isValid()) {
+        //user.DOB = new Date(inputDOB);
         user.DOB = inputDOB;
       } else {
         $scope.errorMsg = 'Date of Birth is Invalid';
@@ -42,14 +62,22 @@
       delete user.monthDOB;
       delete user.yearDOB;
 
+      user.sex = user.sex.charAt(0);
 
-      authService
-        .register(user)
-        .then(function(result) {
-          if (authService.isAuthenticated()) {
+      console.log(user);
+
+      // Set English for Default
+      if (!user.languages) {
+        user.languages = [{languageCode: 'en', languageName: 'English'}];
+      }
+
+      userFunctions
+        .apply(user)
+        .then(function(response) {
+          if (userFunctions.isLoggedIn()) {
             $state.go('dashboard');
           } else {
-            $scope.errorMsg = result.data.message;
+            $scope.errorMsg = response.data.message;
             $scope.applyForm.$setPristine();
           }
         });
