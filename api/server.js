@@ -69,7 +69,7 @@ app.use('/auth/register', function(req, res) {
         return;
       }
 
-      if (!req.body.user.tutor) {
+      if (req.body.user.accountType !== 'tutor' && req.body.user.accountType !== 'pendingTutor') {
         var token = jwt.sign({id: post.userID, role: 'student'}, app.get('secret'));
         res.json({success: true, message: 'Registration was Successful', name: post.name, role: 'student', token: token});
       } else {
