@@ -6,8 +6,8 @@
     .factory('userFunctions', userFunctions);
 
 
-  userFunctions.$inject = ['$http', '$state', 'session', 'authService'];
-  function userFunctions($http, $state, session, authService) {
+  userFunctions.$inject = ['$http', '$state', 'loginSession', 'authService'];
+  function userFunctions($http, $state, loginSession, authService) {
 
     var data = {
     };
@@ -32,7 +32,7 @@
       return authService.login(user.id, user.password)
         .then(function(response) {
           if (response.data.success) {
-            console.log(session.getUserName() + ' has logged in');
+            console.log(loginSession.getUserName() + ' has logged in');
           } else {
             console.log('Log in unsuccessful: ' + response.data.message);
           }
@@ -45,7 +45,7 @@
       return authService.register(user)
         .then(function(response) {
           if (response.data.success) {
-            console.log(session.getUserName() + ' has signed up');
+            console.log(loginSession.getUserName() + ' has signed up');
           } else {
             console.log('Application unsuccessful: ' + response.data.message);
           }
@@ -55,22 +55,22 @@
 
 
     function logout() {
-      console.log(session.getUserName() + ' has left the building');
+      console.log(loginSession.getUserName() + ' has left the building');
       authService.logout();
       $state.go('home');
     }
 
 
     function isLoggedIn() {
-      return session.exists();
+      return loginSession.exists();
     }
 
 
     function getSessionDetails() {
       return {
-        id:   session.getUserId(),
-        name: session.getUserName(),
-        role: session.getUserRole(),
+        id:   loginSession.getUserId(),
+        name: loginSession.getUserName(),
+        role: loginSession.getUserRole(),
       };
     }
 

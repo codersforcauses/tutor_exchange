@@ -3,11 +3,11 @@
 
   angular
     .module('tutorExchange')
-    .factory('session', session);
+    .factory('loginSession', loginSession);
 
 
-  session.$inject = [];
-  function session() {
+  loginSession.$inject = [];
+  function loginSession() {
 
     var userData = {
       id:     null,

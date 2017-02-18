@@ -6,8 +6,8 @@
     .factory('authService', authService);
 
 
-  authService.$inject = ['$http', 'session'];
-  function authService($http, session) {
+  authService.$inject = ['$http', 'loginSession'];
+  function authService($http, loginSession) {
 
     var data = {
     };
@@ -37,7 +37,7 @@
         .then(function(response) {
           if (response.data.success) {
             $http.defaults.headers.common.Authorization = 'Bearer ' + response.data.token;
-            session.create(credentials.id, response.data.name, response.data.role);
+            loginSession.create(credentials.id, response.data.name, response.data.role);
           }
           return response;
         });
@@ -52,7 +52,7 @@
         .then(function(response) {
           if (response.data.success) {
             $http.defaults.headers.common.Authorization = 'Bearer ' + response.data.token;
-            session.create(user.id, response.data.name, response.data.role);
+            loginSession.create(user.id, response.data.name, response.data.role);
           }
           return response;
         });
@@ -61,12 +61,12 @@
 
     function logout() {
       $http.defaults.headers.common.Authorization = '';
-      session.destroy();
+      loginSession.destroy();
     }
 
 
     function isAuthenticated() {
-      return session.exists();
+      return loginSession.exists();
     }
 
 
@@ -74,7 +74,7 @@
       if (!angular.isArray(roles)) {
         roles = [roles];
       }
-      return (isAuthenticated() && roles.indexOf(session.getUserRole()) !== -1);
+      return (isAuthenticated() && roles.indexOf(loginSession.getUserRole()) !== -1);
     }
 
     function storeSession() {
