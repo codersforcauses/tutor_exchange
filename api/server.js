@@ -5,6 +5,7 @@ var jwt         = require('jsonwebtoken');
 var crypto      = require('crypto');
 
 var config      = require(__dirname + '/config');
+var USER_ROLES  = require(__dirname + '/userRoles');
 
 
 var app = express();
@@ -69,9 +70,10 @@ app.use('/auth/register', function(req, res) {
         return;
       }
 
-      if (req.body.user.accountType !== 'tutor' && req.body.user.accountType !== 'pendingTutor') {
-        var token = jwt.sign({id: post.userID, role: 'student'}, app.get('secret'));
-        res.json({success: true, message: 'Registration was Successful', name: post.name, role: 'student', token: token});
+      if (req.body.user.accountType !== USER_ROLES.pedingTutor && req.body.user.accountType !== USER_ROLES.tutor) {
+        var role = USER_ROLES.student;
+        var token = jwt.sign({id: post.userID, role: role}, app.get('secret'));
+        res.json({success: true, message: 'Registration was Successful', name: post.name, role: role, token: token});
       } else {
         var tutorpost = {
           userID: req.body.user.id,
@@ -100,8 +102,9 @@ app.use('/auth/register', function(req, res) {
                     res.status(503).send(err);
                     return;
                   }
-                  var token = jwt.sign({id: post.userID, role: 'pendingTutor'}, app.get('secret'));
-                  res.json({success: true, message: 'Registration was Successful', name: post.name, role: 'pendingTutor', token: token});
+                  var role = USER_ROLES.pendingTutor;
+                  var token = jwt.sign({id: post.userID, role: role}, app.get('secret'));
+                  res.json({success: true, message: 'Registration was Successful', name: post.name, role: role, token: token});
                   return;
                 });
               }
@@ -151,22 +154,18 @@ app.use('/auth/login', function(req, res) {
       var name = rows[0].name;
 
       connection.query('SELECT userid, verified FROM tutor WHERE userID = ?', [details.studentNumber], function(err, rows, fields) {
-        var token;
+        var role;
 
         if (!rows || !rows[0]) {
-          token = jwt.sign({id: details.studentNumber, role: 'student'}, app.get('secret'));
-          res.json({success: true, message: 'Login was Successful', name: name, role: 'student', token: token});
-          return;
+          role = USER_ROLES.student;
+        } else if (rows[0].verified) {
+          role = USER_ROLES.tutor;
+        } else {
+          role = USER_ROLES.pendingTutor;
         }
 
-        if (rows[0].verified) {
-          token = jwt.sign({id: details.studentNumber, role: 'tutor'}, app.get('secret'));
-          res.json({success: true, message: 'Login was Successful', name: name, role: 'tutor', token: token});
-          return;
-        }
-
-        token = jwt.sign({id: details.studentNumber, role: 'pendingTutor'}, app.get('secret'));
-        res.json({success: true, message: 'Login was Successful', name: name, role: 'pendingTutor', token: token});
+        var token = jwt.sign({id: details.studentNumber, role: role}, app.get('secret'));
+        res.json({success: true, message: 'Login was Successful', name: name, role: role, token: token});
       });
       return;
     });
@@ -183,7 +182,7 @@ app.use('/api/getprofile',function(req,res) {
     res.json({success: false, message: 'Please log in to view profile'});
     return;
   }
-  if (user.role == 'student') {
+  if (user.role == USER_ROLES.student) {
     connection.query('SELECT * FROM user WHERE userID = ?', [user.id], function(err, result, fields) {
       if (err) {
         console.log(err);
@@ -197,7 +196,7 @@ app.use('/api/getprofile',function(req,res) {
       }
       res.json(result[0]);
     });
-  } else if (user.role == 'pendingTutor' || user.role == 'tutor') {
+  } else if (user.role == USER_ROLES.pendingTutor || USER_ROLES.tutor) {
     connection.query('SELECT * FROM user JOIN tutor ON user.userID = tutor.userID WHERE user.userID = ?', [user.id], function(err, result, fields) {
       if (err) {
         console.log(err);
@@ -271,9 +270,9 @@ app.use('/api/updateprofile',function(req,res) {
           res.status(503).send(err);
           return;
         }
-        if (user.role == 'student') {
+        if (user.role == USER_ROLES.student) {
           res.json({success: true, message: 'Update Success'});
-        } else if (user.role == 'pendingTutor' || user.role == 'tutor') {
+        } else if (user.role == USER_ROLES.pendingTutor || user.role == USER_ROLES.tutor) {
           var tutorUpdateData = {
             postcode: req.body.user.postcode,
             bio: req.body.user.bio,
