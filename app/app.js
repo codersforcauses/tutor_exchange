@@ -61,6 +61,26 @@
         },
       })
 
+      .state('session', {
+        url: '/session',
+        templateUrl: 'templates/session.html',
+        controller: 'SessionCtrl',
+        data: {
+          authRequired: false,
+          authRoles: [USER_ROLES.student, USER_ROLES.pendingTutor, USER_ROLES.tutor],
+        },
+      })
+
+      .state('newSession', {
+        url: '/newSession',
+        templateUrl: 'templates/newSession.html',
+        controller: 'NewSessionCtrl',
+        data: {
+          authRequired: false,
+          authRoles: [USER_ROLES.tutor],
+        },
+      })
+
       .state('apply', {
         url: '/apply',
         templateUrl: 'templates/apply.html',
