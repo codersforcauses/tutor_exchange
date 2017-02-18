@@ -56,7 +56,7 @@
                 <ui-select multiple required tagging-label="false" name="languages" ng-model="edituser.languages" theme="bootstrap">
                 <ui-select-match placeholder="Search for Languages..">{{$item.languageName}}</ui-select-match>
                 <ui-select-choices repeat="lang in tutorLanguages | filter: { languageName: $select.search } | limitTo: ($select.search.length <= 1) ? 0 : undefined">
-                {{lang.languageName}}
+                <span ng-bind-html="lang.languageName | highlight: $select.search"></span>
                 </ui-select-choices>
                 </ui-select>
               </div>
