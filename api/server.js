@@ -70,7 +70,7 @@ app.use('/auth/register', function(req, res) {
         return;
       }
 
-      if (req.body.user.accountType !== USER_ROLES.pedingTutor && req.body.user.accountType !== USER_ROLES.tutor) {
+      if (req.body.user.accountType !== USER_ROLES.pendingTutor && req.body.user.accountType !== USER_ROLES.tutor) {
         var role = USER_ROLES.student;
         var token = jwt.sign({id: post.userID, role: role}, app.get('secret'));
         res.json({success: true, message: 'Registration was Successful', name: post.name, role: role, token: token});
@@ -171,8 +171,6 @@ app.use('/auth/login', function(req, res) {
     });
   });
 });
-
-
 
 app.use('/api/getprofile',function(req,res) {
   var user = getUser(req);
@@ -299,8 +297,53 @@ app.use('/api/updateprofile',function(req,res) {
             });
         }
       });
-
   });
+
+app.use('/auth/upgrade', function(req, res) {
+  var user = getUser(req);
+
+  if (!user) {
+    res.json({success: false, message: 'Please log in to view profile'});
+    return;
+  }
+
+  var tutorpost = {
+    userID: req.body.user.userID,
+    postcode: req.body.user.postcode,
+  };
+
+  connection.query('INSERT INTO tutor SET ?', tutorpost, function(err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(503).send(err);
+      return;
+    }
+
+    if (req.body.user.userID && req.body.user.units) {
+      connection.query('INSERT INTO unitTutored (tutor, unit) VALUES ?', [formatUnitData(req.body.user.userID,req.body.user.units)], function(err, rows, fields) {
+        if (err) {
+          console.log(err);
+          res.status(503).send(err);
+          return;
+        }
+        if (req.body.user.userID && req.body.user.languages) {
+          connection.query('INSERT INTO languageTutored (tutor, language) VALUES ?', [formatLanguageData(req.body.user.userID,req.body.user.languages)], function(err, rows, fields) {
+            if (err) {
+              console.log(err);
+              res.status(503).send(err);
+              return;
+            }
+            var role = USER_ROLES.pendingTutor;
+            var token = jwt.sign({id: tutorpost.userID, role: role}, app.get('secret'));
+            res.json({success: true, message: 'Successfully Upgraded to Tutor Account', role: role, token: token});
+            return;
+          });
+        }
+      });
+    }
+  });
+});
+
 
 // Fetch all Units/Languages available. Useful for Applyform and others
 app.use('/api/data/units',function(req,res) {
