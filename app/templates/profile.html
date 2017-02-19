@@ -46,6 +46,7 @@
                 <small ng-bind-html="unit.unitName | highlight: $select.search"></small>
                 </ui-select-choices>
                 </ui-select>
+                <div class="help-block">Select at least one</div>
               </div>
             </div>
             <div class="form-group">
@@ -55,7 +56,7 @@
                 <ui-select multiple required tagging-label="false" name="languages" ng-model="edituser.languages" theme="bootstrap">
                 <ui-select-match placeholder="Search for Languages..">{{$item.languageName}}</ui-select-match>
                 <ui-select-choices repeat="lang in tutorLanguages | filter: { languageName: $select.search } | limitTo: ($select.search.length <= 1) ? 0 : undefined">
-                {{lang.languageName}}
+                <span ng-bind-html="lang.languageName | highlight: $select.search"></span>
                 </ui-select-choices>
                 </ui-select>
               </div>
@@ -92,7 +93,7 @@
             </div>
           </div>
           <div class="errorMessageBox">{{errorMsg}}</div>
-          <button id="upgradeBtn" ng-if="!editMode && user.accountType === 'student'" type="submit" class="btn btn-success" ng-click="upgrade()" ng-cloak>Upgrade to Tutor Account</button>
+          <button id="upgradeBtn" ng-if="!editMode && accountType === 'student'" type="submit" class="btn btn-success" ng-click="upgrade()" ng-cloak>Upgrade to Tutor Account</button>
           <br>
           <button ng-if="editMode && upgradeAccount" type="submit" class="btn btn-default" ng-click="profileForm.$valid && upgradeSubmit()">Submit Application</button>
           <button ng-if="!editMode" type="submit" class="btn btn-default" ng-click="edit()">Update Details</button>

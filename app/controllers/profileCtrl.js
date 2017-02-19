@@ -56,12 +56,20 @@ function ProfileCtrl($scope, $state, $http, userFunctions, fetchService) {
 
   $scope.upgradeSubmit = function() {
     if ($scope.user) {
-      /* Will need to Submit a new Application to the Guild*/
-      $scope.edituser.visible = true;
-      $scope.save();
-      $scope.accountType = 'pendingTutor';
-      $scope.upgradeAccount = false;
+      console.log($scope.edituser);
+      userFunctions.upgradeAccount($scope.edituser)
+      .then(function(response) {
+        if (response.data && response.data.success) {
+          loadUserData();
+          $scope.accountType = 'pendingTutor';
+          $scope.upgradeAccount = false;
+          $scope.editMode = false;
+        } else {
+          console.log('Unable to Upgrade Account');
+        }
+      });
     }
+
   };
 
   $scope.edit = function() {

@@ -5,6 +5,7 @@ var jwt         = require('jsonwebtoken');
 var crypto      = require('crypto');
 
 var config      = require(__dirname + '/config');
+var USER_ROLES  = require(__dirname + '/userRoles');
 
 
 var app = express();
@@ -69,9 +70,10 @@ app.use('/auth/register', function(req, res) {
         return;
       }
 
-      if (!req.body.user.tutor) {
-        var token = jwt.sign({id: post.userID, role: 'student'}, app.get('secret'));
-        res.json({success: true, message: 'Registration was Successful', name: post.name, role: 'student', token: token});
+      if (req.body.user.accountType !== USER_ROLES.pendingTutor && req.body.user.accountType !== USER_ROLES.tutor) {
+        var role = USER_ROLES.student;
+        var token = jwt.sign({id: post.userID, role: role}, app.get('secret'));
+        res.json({success: true, message: 'Registration was Successful', name: post.name, role: role, token: token});
       } else {
         var tutorpost = {
           userID: req.body.user.id,
@@ -100,8 +102,9 @@ app.use('/auth/register', function(req, res) {
                     res.status(503).send(err);
                     return;
                   }
-                  var token = jwt.sign({id: post.userID, role: 'pendingTutor'}, app.get('secret'));
-                  res.json({success: true, message: 'Registration was Successful', name: post.name, role: 'pendingTutor', token: token});
+                  var role = USER_ROLES.pendingTutor;
+                  var token = jwt.sign({id: post.userID, role: role}, app.get('secret'));
+                  res.json({success: true, message: 'Registration was Successful', name: post.name, role: role, token: token});
                   return;
                 });
               }
@@ -151,29 +154,23 @@ app.use('/auth/login', function(req, res) {
       var name = rows[0].name;
 
       connection.query('SELECT userid, verified FROM tutor WHERE userID = ?', [details.studentNumber], function(err, rows, fields) {
-        var token;
+        var role;
 
         if (!rows || !rows[0]) {
-          token = jwt.sign({id: details.studentNumber, role: 'student'}, app.get('secret'));
-          res.json({success: true, message: 'Login was Successful', name: name, role: 'student', token: token});
-          return;
+          role = USER_ROLES.student;
+        } else if (rows[0].verified) {
+          role = USER_ROLES.tutor;
+        } else {
+          role = USER_ROLES.pendingTutor;
         }
 
-        if (rows[0].verified) {
-          token = jwt.sign({id: details.studentNumber, role: 'tutor'}, app.get('secret'));
-          res.json({success: true, message: 'Login was Successful', name: name, role: 'tutor', token: token});
-          return;
-        }
-
-        token = jwt.sign({id: details.studentNumber, role: 'pendingTutor'}, app.get('secret'));
-        res.json({success: true, message: 'Login was Successful', name: name, role: 'pendingTutor', token: token});
+        var token = jwt.sign({id: details.studentNumber, role: role}, app.get('secret'));
+        res.json({success: true, message: 'Login was Successful', name: name, role: role, token: token});
       });
       return;
     });
   });
 });
-
-
 
 app.use('/api/getprofile',function(req,res) {
   var user = getUser(req);
@@ -183,7 +180,7 @@ app.use('/api/getprofile',function(req,res) {
     res.json({success: false, message: 'Please log in to view profile'});
     return;
   }
-  if (user.role == 'student') {
+  if (user.role == USER_ROLES.student) {
     connection.query('SELECT * FROM user WHERE userID = ?', [user.id], function(err, result, fields) {
       if (err) {
         console.log(err);
@@ -197,7 +194,7 @@ app.use('/api/getprofile',function(req,res) {
       }
       res.json(result[0]);
     });
-  } else if (user.role == 'pendingTutor' || user.role == 'tutor') {
+  } else if (user.role == USER_ROLES.pendingTutor || USER_ROLES.tutor) {
     connection.query('SELECT * FROM user JOIN tutor ON user.userID = tutor.userID WHERE user.userID = ?', [user.id], function(err, result, fields) {
       if (err) {
         console.log(err);
@@ -271,9 +268,9 @@ app.use('/api/updateprofile',function(req,res) {
           res.status(503).send(err);
           return;
         }
-        if (user.role == 'student') {
+        if (user.role == USER_ROLES.student) {
           res.json({success: true, message: 'Update Success'});
-        } else if (user.role == 'pendingTutor' || user.role == 'tutor') {
+        } else if (user.role == USER_ROLES.pendingTutor || user.role == USER_ROLES.tutor) {
           var tutorUpdateData = {
             postcode: req.body.user.postcode,
             bio: req.body.user.bio,
@@ -300,8 +297,53 @@ app.use('/api/updateprofile',function(req,res) {
             });
         }
       });
-
   });
+
+app.use('/auth/upgrade', function(req, res) {
+  var user = getUser(req);
+
+  if (!user) {
+    res.json({success: false, message: 'Please log in to view profile'});
+    return;
+  }
+
+  var tutorpost = {
+    userID: req.body.user.userID,
+    postcode: req.body.user.postcode,
+  };
+
+  connection.query('INSERT INTO tutor SET ?', tutorpost, function(err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(503).send(err);
+      return;
+    }
+
+    if (req.body.user.userID && req.body.user.units) {
+      connection.query('INSERT INTO unitTutored (tutor, unit) VALUES ?', [formatUnitData(req.body.user.userID,req.body.user.units)], function(err, rows, fields) {
+        if (err) {
+          console.log(err);
+          res.status(503).send(err);
+          return;
+        }
+        if (req.body.user.userID && req.body.user.languages) {
+          connection.query('INSERT INTO languageTutored (tutor, language) VALUES ?', [formatLanguageData(req.body.user.userID,req.body.user.languages)], function(err, rows, fields) {
+            if (err) {
+              console.log(err);
+              res.status(503).send(err);
+              return;
+            }
+            var role = USER_ROLES.pendingTutor;
+            var token = jwt.sign({id: tutorpost.userID, role: role}, app.get('secret'));
+            res.json({success: true, message: 'Successfully Upgraded to Tutor Account', role: role, token: token});
+            return;
+          });
+        }
+      });
+    }
+  });
+});
+
 
 // Fetch all Units/Languages available. Useful for Applyform and others
 app.use('/api/data/units',function(req,res) {
@@ -329,46 +371,45 @@ app.use('/api/data/languages',function(req,res) {
 
 // Search for tutors
 app.use('/api/search', function(req, res) {
-  // Check user has token here!
 
-  var result = [
-    {
-      studentNumber: 11111111,
-      name: 'Ali Gator',
-      phone: 0432123123,
-      bio: 'I like to move it move it',
-      units: ['MATH1101', 'MATH1102'],
-      languages: ['English', 'Chinese'],
-    },
-    {
-      studentNumber: 22222222,
-      name: 'Ben Dover',
-      phone: '0432123123',
-      bio: 'I like to move it move it',
-      units: ['CITS1101', 'CITS1102'],
-      languages: ['English', 'French'],
-    },
-    {
-      studentNumber: 33333333,
-      name: 'Carl Arm',
-      phone: '0432123123',
-      bio: 'I like to move it move it',
-      units: ['PHYS1101', 'PHYS1102'],
-      languages: ['English', 'German'],
-    },
-    {
-      studentNumber: 44444444,
-      name: 'Doug Witherspoon',
-      phone: '0432123123',
-      bio: 'You like to .. move it!',
-      units: ['CHEM1101', 'CHEM1102'],
-      languages: ['English', 'Spanish'],
-    },
-  ];
+  if (!req.body || !req.body.query || !req.body.query.units) {
+    res.json({success: false, message: 'Invalid Search Query'});
+    return;
+  }
 
-  res.json(result);
+  var searchQuery;
+  var resultQuery = [];
+
+  var queryString = 'SELECT GROUP_CONCAT(DISTINCT languageName) AS language, GROUP_CONCAT(DISTINCT unitID) AS unitID, tutor.userID, name, postcode, phone, bio FROM tutor JOIN languageTutored ON tutor.userID = languageTutored.tutor JOIN language ON languageTutored.language = language.languageCode JOIN unitTutored ON unitTutored.tutor = tutor.userID JOIN unit ON unitTutored.unit = unit.unitID JOIN user ON user.userID = tutor.userID GROUP BY tutor.userID HAVING unitID LIKE ? AND language LIKE ?';
+  if (!req.body.query.languages) {
+    searchQuery = mysql.format(queryString, ['%'+req.body.query.units.unitID+'%','%']);
+  } else {
+    searchQuery = mysql.format(queryString, ['%'+req.body.query.units.unitID+'%','%'+req.body.query.languages.languageName+'%']);
+  }
+
+  connection.query(searchQuery, function(err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(503).send(err);
+      return;
+    }
+    for (i = 0; i < rows.length; i++) {
+      var resultRow = {
+        studentNumber: rows[i].userID,
+        name: rows[i].name,
+        phone: rows[i].phone,
+        bio: rows[i].bio,
+        units: rows[i].unitID.split(','),
+        languages: rows[i].language.split(','),
+        postcode: rows[i].postcode,
+      };
+      resultQuery.push(resultRow);
+    }
+    res.json(resultQuery);
+  });
 
 });
+
 
 
 // Serve
