@@ -10,8 +10,8 @@
   function SearchCtrl($scope, $http, searchService, fetchService) {
     $scope.results = [];
     $scope.query = {};
-
     loadAPIData();
+
     function loadAPIData() {
       fetchService
         .fetchUnits()
@@ -30,27 +30,24 @@
         });
     }
 
-    $scope.refreshLocations = function(input) {
-      if (input.length > 0) {
-        searchService
-        .loadGoogleLocations(input)
-        .then(function(response) {
-          $scope.locationAPI = response;
-        });
-      }
-    };
-
+    function resetSearch() {
+      $scope.results = [];
+      delete $scope.errorMsg;
+    }
 
     $scope.submit = function(query) {
-      console.log(query);
+      resetSearch();
       searchService
         .getTutors(query)
         .then(function(response) {
           if (response.data) {
-            $scope.results = response.data;
-            console.log(response);
+            if (response.data.length > 0) {
+              $scope.results = response.data;
+            } else {
+              $scope.errorMsg = 'No Tutors matching your description can be found';
+            }
           } else {
-            console.log('error - todo: more descriptive error message here');
+            $scope.errorMsg = 'Unable to perform Search Query';
           }
         });
     };

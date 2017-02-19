@@ -371,64 +371,42 @@ app.use('/api/data/languages',function(req,res) {
 
 // Search for tutors
 app.use('/api/search', function(req, res) {
-  
-  // var user = getUser(req);
-  
-  // if (!user) {
-  //   res.json({success: false, message: 'Please log in to view profile'});
-  //   return;
-  //}
-  
-  var post = {
-      unitID: req.body.query.units.unitID, 
-      language: req.body.query.languages.languageName,
-  };
-console.log(post)
 
-  // connection.query('SELECT languageCode, languageName FROM tutor JOIN languageTutored ON tutor.userID = languageTutored.tutor JOIN language ON languageTutored.language = language.languageCode WHERE tutor.userID = ?', [user.id], function(err, result, fields) {
-  //   if (err) {
-  //     console.log(err);
-  //     res.status(503).send(err);
-  //     return;
-  //   }
+  if (!req.body || !req.body.query || !req.body.query.units) {
+    res.json({success: false, message: 'Invalid Search Query'});
+    return;
+  }
 
-  //   if (!result || !result[0]) {
-  //     res.status(503).send(err);
-  //     return;
-  //   }
-  //   for (i = 0; i < result.length; i++) {
-  //     languageData[i] = {languageCode: result[i].languageCode, languageName: result[i].languageName };
-  //   }
-
-  //   tutorData.languages = languageData;
-
-  // for (i = 0; i < result.length; i++) {
-  //     result[i] = {
-  //       studentNumber: result[i].studentNumber, languageName: result[i].languageName 
-  //     };
-  // }
-
+  var searchQuery;
   var resultQuery = [];
-  connection.query('SELECT GROUP_CONCAT(DISTINCT languageName) AS language, GROUP_CONCAT(DISTINCT unitID) AS unitID, tutor.userID, name, postcode, phone, bio FROM tutor JOIN languageTutored ON tutor.userID = languageTutored.tutor JOIN language ON languageTutored.language = language.languageCode JOIN unitTutored ON unitTutored.tutor = tutor.userID JOIN unit ON unitTutored.unit = unit.unitID JOIN user ON user.userID = tutor.userID GROUP BY tutor.userID HAVING unitID LIKE ? AND language LIKE ?', ['%'+post.unitID+'%','%'+post.language+'%'], function(err, rows, fields) {
+
+  var queryString = 'SELECT GROUP_CONCAT(DISTINCT languageName) AS language, GROUP_CONCAT(DISTINCT unitID) AS unitID, tutor.userID, name, postcode, phone, bio FROM tutor JOIN languageTutored ON tutor.userID = languageTutored.tutor JOIN language ON languageTutored.language = language.languageCode JOIN unitTutored ON unitTutored.tutor = tutor.userID JOIN unit ON unitTutored.unit = unit.unitID JOIN user ON user.userID = tutor.userID GROUP BY tutor.userID HAVING unitID LIKE ? AND language LIKE ?';
+  if (!req.body.query.languages) {
+    searchQuery = mysql.format(queryString, ['%'+req.body.query.units.unitID+'%','%']);
+  } else {
+    searchQuery = mysql.format(queryString, ['%'+req.body.query.units.unitID+'%','%'+req.body.query.languages.languageName+'%']);
+  }
+
+  connection.query(searchQuery, function(err, rows, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
       return;
     }
-      for (i = 0; i < rows.length; i++) {
-        var resultRow = {
-          studentNumber: rows[i].userID, //query
-          name: rows[i].name, //query
-          phone: rows[i].phone, //query
-          bio: rows[i].bio, //query
-          units: rows[i].unitID.split(','),  //SEARCH VARIABLE
-          languages: rows[i].language.split(','), //SEARCH VARIABLE
-          postcode: rows[i].postcode, //SEARCH VARIABLE
-        };
-        resultQuery.push(resultRow);
+    for (i = 0; i < rows.length; i++) {
+      var resultRow = {
+        studentNumber: rows[i].userID,
+        name: rows[i].name,
+        phone: rows[i].phone,
+        bio: rows[i].bio,
+        units: rows[i].unitID.split(','),
+        languages: rows[i].language.split(','),
+        postcode: rows[i].postcode,
       };
+      resultQuery.push(resultRow);
+    }
     res.json(resultQuery);
-});
+  });
 
 });
 

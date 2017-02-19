@@ -63,4 +63,12 @@ footer{
 	margin-bottom:10px;
 }
 
+div.ui-select-match{
+	overflow:hidden;
+}
+
+.btn-default-focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
 
