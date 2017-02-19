@@ -9,6 +9,7 @@
   SearchCtrl.$inject = ['$scope', '$http', 'searchService', 'fetchService'];
   function SearchCtrl($scope, $http, searchService, fetchService) {
     $scope.results = [];
+    $scope.query = {};
 
     loadAPIData();
     function loadAPIData() {
@@ -41,12 +42,13 @@
 
 
     $scope.submit = function(query) {
+      console.log(query);
       searchService
-        .getTutors()
+        .getTutors(query)
         .then(function(response) {
           if (response.data) {
             $scope.results = response.data;
-            console.log(response.data);
+            console.log(response);
           } else {
             console.log('error - todo: more descriptive error message here');
           }

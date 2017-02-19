@@ -371,46 +371,67 @@ app.use('/api/data/languages',function(req,res) {
 
 // Search for tutors
 app.use('/api/search', function(req, res) {
-  // Check user has token here!
+  
+  // var user = getUser(req);
+  
+  // if (!user) {
+  //   res.json({success: false, message: 'Please log in to view profile'});
+  //   return;
+  //}
+  
+  var post = {
+      unitID: req.body.query.units.unitID, 
+      language: req.body.query.languages.languageName,
+  };
+console.log(post)
 
-  var result = [
-    {
-      studentNumber: 11111111,
-      name: 'Ali Gator',
-      phone: 0432123123,
-      bio: 'I like to move it move it',
-      units: ['MATH1101', 'MATH1102'],
-      languages: ['English', 'Chinese'],
-    },
-    {
-      studentNumber: 22222222,
-      name: 'Ben Dover',
-      phone: '0432123123',
-      bio: 'I like to move it move it',
-      units: ['CITS1101', 'CITS1102'],
-      languages: ['English', 'French'],
-    },
-    {
-      studentNumber: 33333333,
-      name: 'Carl Arm',
-      phone: '0432123123',
-      bio: 'I like to move it move it',
-      units: ['PHYS1101', 'PHYS1102'],
-      languages: ['English', 'German'],
-    },
-    {
-      studentNumber: 44444444,
-      name: 'Doug Witherspoon',
-      phone: '0432123123',
-      bio: 'You like to .. move it!',
-      units: ['CHEM1101', 'CHEM1102'],
-      languages: ['English', 'Spanish'],
-    },
-  ];
+  // connection.query('SELECT languageCode, languageName FROM tutor JOIN languageTutored ON tutor.userID = languageTutored.tutor JOIN language ON languageTutored.language = language.languageCode WHERE tutor.userID = ?', [user.id], function(err, result, fields) {
+  //   if (err) {
+  //     console.log(err);
+  //     res.status(503).send(err);
+  //     return;
+  //   }
 
-  res.json(result);
+  //   if (!result || !result[0]) {
+  //     res.status(503).send(err);
+  //     return;
+  //   }
+  //   for (i = 0; i < result.length; i++) {
+  //     languageData[i] = {languageCode: result[i].languageCode, languageName: result[i].languageName };
+  //   }
+
+  //   tutorData.languages = languageData;
+
+  // for (i = 0; i < result.length; i++) {
+  //     result[i] = {
+  //       studentNumber: result[i].studentNumber, languageName: result[i].languageName 
+  //     };
+  // }
+
+  var resultQuery = [];
+  connection.query('SELECT GROUP_CONCAT(DISTINCT languageName) AS language, GROUP_CONCAT(DISTINCT unitID) AS unitID, tutor.userID, name, postcode, phone, bio FROM tutor JOIN languageTutored ON tutor.userID = languageTutored.tutor JOIN language ON languageTutored.language = language.languageCode JOIN unitTutored ON unitTutored.tutor = tutor.userID JOIN unit ON unitTutored.unit = unit.unitID JOIN user ON user.userID = tutor.userID GROUP BY tutor.userID HAVING unitID LIKE ? AND language LIKE ?', ['%'+post.unitID+'%','%'+post.language+'%'], function(err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(503).send(err);
+      return;
+    }
+      for (i = 0; i < rows.length; i++) {
+        var resultRow = {
+          studentNumber: rows[i].userID, //query
+          name: rows[i].name, //query
+          phone: rows[i].phone, //query
+          bio: rows[i].bio, //query
+          units: rows[i].unitID.split(','),  //SEARCH VARIABLE
+          languages: rows[i].language.split(','), //SEARCH VARIABLE
+          postcode: rows[i].postcode, //SEARCH VARIABLE
+        };
+        resultQuery.push(resultRow);
+      };
+    res.json(resultQuery);
+});
 
 });
+
 
 
 // Serve

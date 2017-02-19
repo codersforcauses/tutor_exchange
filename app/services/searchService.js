@@ -35,8 +35,8 @@
         });
     }
 
-    function getTutors() {
-      return $http.get('/api/search')
+    function getTutors(query) {
+      return $http.post('/api/search', {query: query})
         .then(function(response) {
           return response;
         });
