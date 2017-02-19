@@ -72,3 +72,12 @@ div.ui-select-match{
   box-shadow: none !important;
 }
 
+ul.searchResultList, ul.searchResultList > li {
+	padding-left:0 !important;
+	list-style:none;
+}
+
+datePicker{
+	padding:2px 7px !important;
+}
+

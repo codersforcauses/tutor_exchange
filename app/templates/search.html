@@ -5,8 +5,8 @@
       <form name="searchBar" class="form" ng-submit="submitted=true && searchBar.$valid && submit(query)" novalidate>
         <p>Find the perfect Tutor to fit your needs using the search form below.</p>
         <hr>
-        <div class="form-group" ng-class="{ 'has-error': searchBar.$invalid && searchBar.$submitted }">
-          <h4>Find a Tutor: </h4>
+        <div class="form-group">
+          <h5>Find a Tutor: </h5>
           <ui-select ng-model="query.units" theme="bootstrap" title="Choose an address" required>
           <ui-select-match placeholder="Type to Search for Units...">{{$select.selected.unitID}}: {{$select.selected.unitName}}</ui-select-match>
           <ui-select-choices repeat="unit in availableUnits | filter: { unitID: $select.search } | limitTo: ($select.search.length <= 3) ? 0 : undefined">
@@ -15,7 +15,7 @@
           </ui-select-choices>
           </ui-select>
         </div>
-        <div class="form-group" ng-if="searchLanguage" ng-class="{ 'has-error': searchBar.$invalid && searchBar.$submitted }">
+        <div class="form-group" ng-if="searchLanguage">
           <ui-select ng-model="query.languages" theme="bootstrap" title="Choose an address" required>
           <ui-select-match placeholder="Type to Search for Language...">{{$select.selected.languageName}}</ui-select-match>
           <ui-select-choices repeat="lang in tutorLanguages | filter: $select.search | limitTo: ($select.search.length <= 1) ? 0 : undefined">
@@ -44,16 +44,16 @@
         <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': status.open, 'glyphicon-chevron-right': !status.open}"></i>
         </uib-accordion-heading>
         <p ng-if="tutor.bio" ng-style="{'font-style': 'italic'}">{{tutor.bio}}</p>
-        <p ng-if="!tutor.bio">No Bio Specified</p>
-        <div ng-if="tutor.phone"><h4>Contact Number:</h4><p>{{tutor.phone}}</p></div>
-        <p ng-if="!tutor.phone">No Contact Number Specified</p>
-        <h4>Units taught:</h4>
-        <ul>
+        <i ng-if="!tutor.bio">No Bio Specified</i>
+        <div ng-if="tutor.phone"><h5>Contact Number:</h5><p>{{tutor.phone}}</p></div>
+        <i ng-if="!tutor.phone">No Contact Number Specified</i>
+        <h5>Units taught:</h5>
+        <ul class="searchResultList">
           <li ng-repeat="unit in tutor.units">{{unit}}</li>
         </ul>
-        <h4>Languages spoken:</h4>
-        <ul>
-          <li ng-repeat="language in tutor.languages">{{language}}</li>
+        <h5>Languages spoken:</h5>
+        <ul class="searchResultList">
+          <li class="search-result" ng-repeat="language in tutor.languages">{{language}}</li>
         </ul>
       </div>
       </uib-accordion>
