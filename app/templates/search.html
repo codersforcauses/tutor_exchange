@@ -1,102 +1,63 @@
 <div class="container">
   <div class="row">
-    <div class="col-sm-12">
+    <div class="col-lg-5 col-md-6">
       <h1>Tutor search</h1>
-      <form name="searchBar" class="form-inline" ng-submit="submit(query)">
+      <form name="searchBar" class="form" ng-submit="submitted=true && searchBar.$valid && submit(query)" novalidate>
+        <p>Find the perfect Tutor to fit your needs using the search form below.</p>
+        <hr>
         <div class="form-group">
-          <ui-select ng-model="query.location" theme="bootstrap" title="Select Location">
-          <ui-select-match placeholder="Search for Location...">{{$select.selected.formatted_address}}</ui-select-match>
-          <ui-select-choices repeat="location in locationAPI track by $index"
-          refresh="refreshLocations($select.search) | limitTo: ($select.search.length <= 1) ? 0 : undefined"
-          refresh-delay="500">
-          <span ng-bind-html="location.formatted_address | highlight: $select.search"></span>
-          </ui-select-choices>
-          </ui-select>
-        </div>
-        <div class="form-group">
-          <ui-select ng-model="query.units" theme="bootstrap" title="Choose an address">
-          <ui-select-match placeholder="Search for Units...">{{$select.selected.unitID}}</ui-select-match>
-          <ui-select-choices repeat="unit in availableUnits | filter: { unitID: $select.search } | limitTo: ($select.search.length <= 3) ? 0 : undefined">
+          <h5>Find a Tutor: </h5>
+          <ui-select ng-model="query.units" theme="bootstrap" title="Choose an address" required>
+          <ui-select-match placeholder="Type to Search for Units...">{{$select.selected.unitID}}: {{$select.selected.unitName}}</ui-select-match>
+          <ui-select-choices repeat="unit in availableUnits | filter: $select.search | limitTo: ($select.search.length <= 3) ? 0 : undefined">
           <span ng-bind-html="unit.unitID | highlight: $select.search"></span>
           <small ng-bind-html="unit.unitName | highlight: $select.search"></small>
           </ui-select-choices>
           </ui-select>
         </div>
-        <div class="form-group">
-          <ui-select ng-model="query.languages" theme="bootstrap" title="Choose an address">
-          <ui-select-match placeholder="Search for Language...">{{$select.selected.languageName}}</ui-select-match>
+        <div class="form-group" ng-if="searchLanguage">
+          <ui-select ng-model="query.languages" theme="bootstrap" title="Choose an address" required>
+          <ui-select-match placeholder="Type to Search for Language...">{{$select.selected.languageName}}</ui-select-match>
           <ui-select-choices repeat="lang in tutorLanguages | filter: $select.search | limitTo: ($select.search.length <= 1) ? 0 : undefined">
           <span ng-bind-html="lang.languageName | highlight: $select.search"></span>
           </ui-select-choices>
           </ui-select>
         </div>
-        <button type="submit" class="btn btn-default form-control">Search</button>
+        <div class="form-group">
+          <label class="checkbox-inline"><input type="checkbox" ng-model="searchLanguage" ng-init="searchLanguage=false">Find Tutors in your Language</label>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-default form-control">Search</button>
+        </div>
       </form>
-      <br/><br/>
+      <hr>
+      <div class="errorMessageBox">{{errorMsg}}</div>
+    </div>
+  </div>
+  <br/><br/>
+  <div class="row">
+    <div class="col-lg-12">
       <uib-accordion close-others="false">
       <div uib-accordion-group class="panel-default" is-open="status.open" ng-repeat="tutor in results">
         <uib-accordion-heading>
         {{tutor.name}} {{tutor.studentNumber}}
         <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': status.open, 'glyphicon-chevron-right': !status.open}"></i>
         </uib-accordion-heading>
-        <h5>Contact:</h5>
-        <p>{{tutor.phone}}</p>
-        <h5>Bio:</h5>
-        <p>{{tutor.bio}}</p>
+        <p ng-if="tutor.bio">{{tutor.bio}}</p>
+        <i ng-if="!tutor.bio">No Bio Specified</i>
+        <div ng-if="tutor.phone"><h5>Contact Number:</h5><p>{{tutor.phone}}</p></div>
+        <i ng-if="!tutor.phone">No Contact Number Specified</i>
         <h5>Units taught:</h5>
-        <ul>
+        <ul class="searchResultList">
           <li ng-repeat="unit in tutor.units">{{unit}}</li>
         </ul>
         <h5>Languages spoken:</h5>
-        <ul>
-          <li ng-repeat="language in tutor.languages">{{language}}</li>
+        <ul class="searchResultList">
+          <li class="search-result" ng-repeat="language in tutor.languages">{{language}}</li>
         </ul>
       </div>
       </uib-accordion>
     </div>
   </div>
+  <br/><br/><br/>
 </div>
-<!--       <form class="form-inline">
-  <div class="form-group">
-    <label for="exampleInputName2">Name</label>
-    
-    <ui-select ng-model="address.selected" theme="bootstrap" ng-disabled="disabled" reset-search-input="false" style="width:300px;">
-    <ui-select-match placeholder="Enter an address...">{{$select.selected.formatted_address}}</ui-select-match>
-    <ui-select-choices repeat="address in addresses track by $index" refresh="refreshAddresses($select.search)" refresh-delay="0">
-    <div ng-bind-html="address.formatted_address | highlight: $select.search"></div>
-    </ui-select-choices>
-    </ui-select>
-  </div>
-  <div class="form-group">
-    <label for="exampleInputEmail2">Email</label>
-    <ui-select ng-model="address.selected" theme="bootstrap" ng-disabled="disabled" reset-search-input="false">
-    <ui-select-match placeholder="Enter an address...">{{$select.selected.formatted_address}}</ui-select-match>
-    <ui-select-choices repeat="address in addresses track by $index" refresh="refreshAddresses($select.search)" refresh-delay="0">
-    <div ng-bind-html="address.formatted_address | highlight: $select.search"></div>
-    </ui-select-choices>
-    </ui-select>
-  </div>
-  <button type="submit" class="btn btn-default">Send invitation</button>
-</form> -->
-<br/><br/><br/>
-<!--
-<ul>
-  <li ng-repeat="tutor in results">
-    {{ tutor.studentNumber }}
-    {{ tutor.name }}
-    {{ tutor.phone }}
-    {{ tutor.bio }}
-    <ul>
-      <li ng-repeat="unit in tutor.units">
-        {{ unit }}
-      </ul>
-      <ul>
-        <li ng-repeat="language in tutor.languages">
-          {{ language }}
-        </ul>
-      </li>
-      <ul>
-        -->
-      </div>
-    </div>
-  </div>

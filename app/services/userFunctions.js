@@ -23,6 +23,7 @@
       getProfile:     getProfile,
       updateProfile:  updateProfile,
       changePassword: changePassword,
+      upgradeAccount: upgradeAccount,
     };
 
     return service;
@@ -93,6 +94,18 @@
         .then(function(response) {
           if (!response.data.success) {
             console.log('Error Occured Updating User Details');
+          }
+          return response;
+        });
+    }
+
+    function upgradeAccount(user) {
+      user.id = parseInt(user.id);
+      return $http.post('/auth/upgrade', {user: user})
+        .then(function(response) {
+          if (response.data.success) {
+            $http.defaults.headers.common.Authorization = 'Bearer ' + response.data.token;
+            session.upgradeToTutor();
           }
           return response;
         });

@@ -70,14 +70,13 @@ app.use('/auth/register', function(req, res) {
         return;
       }
 
-      if (req.body.user.accountType !== USER_ROLES.pedingTutor && req.body.user.accountType !== USER_ROLES.tutor) {
+      if (req.body.user.accountType !== USER_ROLES.pendingTutor && req.body.user.accountType !== USER_ROLES.tutor) {
         var role = USER_ROLES.student;
         var token = jwt.sign({id: post.userID, role: role}, app.get('secret'));
         res.json({success: true, message: 'Registration was Successful', name: post.name, role: role, token: token});
       } else {
         var tutorpost = {
           userID: req.body.user.id,
-          postcode: req.body.user.postcode,
         };
 
         connection.query('INSERT INTO tutor SET ?', tutorpost, function(err, rows, fields) {
@@ -112,8 +111,6 @@ app.use('/auth/register', function(req, res) {
           }
 
         });
-        console.log(req.body.user.units);
-
       }
     });
   });
@@ -171,8 +168,6 @@ app.use('/auth/login', function(req, res) {
     });
   });
 });
-
-
 
 app.use('/api/getprofile',function(req,res) {
   var user = getUser(req);
@@ -274,7 +269,6 @@ app.use('/api/updateprofile',function(req,res) {
           res.json({success: true, message: 'Update Success'});
         } else if (user.role == USER_ROLES.pendingTutor || user.role == USER_ROLES.tutor) {
           var tutorUpdateData = {
-            postcode: req.body.user.postcode,
             bio: req.body.user.bio,
             visible: req.body.user.visible,
           };
@@ -299,8 +293,52 @@ app.use('/api/updateprofile',function(req,res) {
             });
         }
       });
-
   });
+
+app.use('/auth/upgrade', function(req, res) {
+  var user = getUser(req);
+
+  if (!user) {
+    res.json({success: false, message: 'Please log in to view profile'});
+    return;
+  }
+
+  var tutorpost = {
+    userID: req.body.user.userID,
+  };
+
+  connection.query('INSERT INTO tutor SET ?', tutorpost, function(err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(503).send(err);
+      return;
+    }
+
+    if (req.body.user.userID && req.body.user.units) {
+      connection.query('INSERT INTO unitTutored (tutor, unit) VALUES ?', [formatUnitData(req.body.user.userID,req.body.user.units)], function(err, rows, fields) {
+        if (err) {
+          console.log(err);
+          res.status(503).send(err);
+          return;
+        }
+        if (req.body.user.userID && req.body.user.languages) {
+          connection.query('INSERT INTO languageTutored (tutor, language) VALUES ?', [formatLanguageData(req.body.user.userID,req.body.user.languages)], function(err, rows, fields) {
+            if (err) {
+              console.log(err);
+              res.status(503).send(err);
+              return;
+            }
+            var role = USER_ROLES.pendingTutor;
+            var token = jwt.sign({id: tutorpost.userID, role: role}, app.get('secret'));
+            res.json({success: true, message: 'Successfully Upgraded to Tutor Account', role: role, token: token});
+            return;
+          });
+        }
+      });
+    }
+  });
+});
+
 
 // Fetch all Units/Languages available. Useful for Applyform and others
 app.use('/api/data/units',function(req,res) {
@@ -328,46 +366,44 @@ app.use('/api/data/languages',function(req,res) {
 
 // Search for tutors
 app.use('/api/search', function(req, res) {
-  // Check user has token here!
 
-  var result = [
-    {
-      studentNumber: 11111111,
-      name: 'Ali Gator',
-      phone: 0432123123,
-      bio: 'I like to move it move it',
-      units: ['MATH1101', 'MATH1102'],
-      languages: ['English', 'Chinese'],
-    },
-    {
-      studentNumber: 22222222,
-      name: 'Ben Dover',
-      phone: '0432123123',
-      bio: 'I like to move it move it',
-      units: ['CITS1101', 'CITS1102'],
-      languages: ['English', 'French'],
-    },
-    {
-      studentNumber: 33333333,
-      name: 'Carl Arm',
-      phone: '0432123123',
-      bio: 'I like to move it move it',
-      units: ['PHYS1101', 'PHYS1102'],
-      languages: ['English', 'German'],
-    },
-    {
-      studentNumber: 44444444,
-      name: 'Doug Witherspoon',
-      phone: '0432123123',
-      bio: 'You like to .. move it!',
-      units: ['CHEM1101', 'CHEM1102'],
-      languages: ['English', 'Spanish'],
-    },
-  ];
+  if (!req.body || !req.body.query || !req.body.query.units) {
+    res.json({success: false, message: 'Invalid Search Query'});
+    return;
+  }
 
-  res.json(result);
+  var searchQuery;
+  var resultQuery = [];
+
+  var queryString = 'SELECT GROUP_CONCAT(DISTINCT languageName) AS language, GROUP_CONCAT(DISTINCT unitID) AS unitID, tutor.userID, name, phone, bio FROM tutor JOIN languageTutored ON tutor.userID = languageTutored.tutor JOIN language ON languageTutored.language = language.languageCode JOIN unitTutored ON unitTutored.tutor = tutor.userID JOIN unit ON unitTutored.unit = unit.unitID JOIN user ON user.userID = tutor.userID GROUP BY tutor.userID HAVING unitID LIKE ? AND language LIKE ?';
+  if (!req.body.query.languages) {
+    searchQuery = mysql.format(queryString, ['%'+req.body.query.units.unitID+'%','%']);
+  } else {
+    searchQuery = mysql.format(queryString, ['%'+req.body.query.units.unitID+'%','%'+req.body.query.languages.languageName+'%']);
+  }
+
+  connection.query(searchQuery, function(err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(503).send(err);
+      return;
+    }
+    for (i = 0; i < rows.length; i++) {
+      var resultRow = {
+        studentNumber: rows[i].userID,
+        name: rows[i].name,
+        phone: rows[i].phone,
+        bio: rows[i].bio,
+        units: rows[i].unitID.split(','),
+        languages: rows[i].language.split(','),
+      };
+      resultQuery.push(resultRow);
+    }
+    res.json(resultQuery);
+  });
 
 });
+
 
 
 // Serve

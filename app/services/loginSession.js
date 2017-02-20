@@ -21,6 +21,7 @@
       getUserId:    getUserId,
       getUserName:  getUserName,
       getUserRole:  getUserRole,
+      upgradeToTutor: upgradeToTutor,
       exists:   exists,
     };
 
@@ -48,6 +49,12 @@
 
     function getUserRole() {
       return userData.role;
+    }
+
+    function upgradeToTutor() {
+      if (exists() && userData.role === 'student') {
+        userData.role = 'pendingTutor';
+      }
     }
 
     function exists() {
