@@ -1,6 +1,6 @@
 <div class="container">
   <div class="row">
-    <div class="col-lg-4 col-md-6">
+    <div class="col-lg-5 col-md-6">
       <h1>Tutor search</h1>
       <form name="searchBar" class="form" ng-submit="submitted=true && searchBar.$valid && submit(query)" novalidate>
         <p>Find the perfect Tutor to fit your needs using the search form below.</p>
@@ -9,7 +9,7 @@
           <h5>Find a Tutor: </h5>
           <ui-select ng-model="query.units" theme="bootstrap" title="Choose an address" required>
           <ui-select-match placeholder="Type to Search for Units...">{{$select.selected.unitID}}: {{$select.selected.unitName}}</ui-select-match>
-          <ui-select-choices repeat="unit in availableUnits | filter: { unitID: $select.search } | limitTo: ($select.search.length <= 3) ? 0 : undefined">
+          <ui-select-choices repeat="unit in availableUnits | filter: $select.search | limitTo: ($select.search.length <= 3) ? 0 : undefined">
           <span ng-bind-html="unit.unitID | highlight: $select.search"></span>
           <small ng-bind-html="unit.unitName | highlight: $select.search"></small>
           </ui-select-choices>
@@ -43,7 +43,7 @@
         {{tutor.name}} {{tutor.studentNumber}}
         <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': status.open, 'glyphicon-chevron-right': !status.open}"></i>
         </uib-accordion-heading>
-        <p ng-if="tutor.bio" ng-style="{'font-style': 'italic'}">{{tutor.bio}}</p>
+        <p ng-if="tutor.bio">{{tutor.bio}}</p>
         <i ng-if="!tutor.bio">No Bio Specified</i>
         <div ng-if="tutor.phone"><h5>Contact Number:</h5><p>{{tutor.phone}}</p></div>
         <i ng-if="!tutor.phone">No Contact Number Specified</i>

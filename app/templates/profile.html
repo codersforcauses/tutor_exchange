@@ -61,16 +61,12 @@
                 </ui-select>
               </div>
             </div>
-            <div class="form-group" ng-class="{ 'has-error': profileForm.postcode.$invalid && (profileForm.$submitted || profileForm.postcode.$dirty) }">
-              <label for="text">Postcode:</label>
-              <p ng-if="!editMode" ng-bind="user.postcode"></p>
-              <input ng-if="editMode" type="text" class="form-control" name="postcode" ng-pattern="/^[0-9]{4}$/" ng-model="edituser.postcode" required>
-            </div>
-            <div class="form-group">
+            <div class="form-group" ng-class="{ 'has-error': profileForm.bio.$invalid && (profileForm.$submitted || profileForm.bio.$dirty) }">
               <label for="text">Your Bio:</label>
               <p ng-if="!editMode" ng-bind="user.bio"></p>
-              <textarea ng-if="editMode" class="form-control" rows="4" cols="50" ng-model="edituser.bio">
+              <textarea ng-if="editMode" name="bio" class="form-control" ng-maxlength="255" rows="4" cols="50" ng-model="edituser.bio">
               </textarea>
+              <div ng-if="editMode" class="help-block">Max 255 Characters</div>
             </div>
             <div class="accountStatusBox" ng-if="!upgradeAccount">
               <hr>
@@ -99,7 +95,6 @@
           <button ng-if="!editMode" type="submit" class="btn btn-default" ng-click="edit()">Update Details</button>
           <button ng-if="editMode && !upgradeAccount" type="submit" class="btn btn-default" ng-click="profileForm.$valid && save()">Save</button>
           <button ng-if="editMode" type="submit" class="btn btn-default" ng-click="cancel()">Cancel</button>
-          <button ng-if="!editMode" type="submit" class="btn btn-default">Change your Password</button>
         </form>
       </form>
     </div>

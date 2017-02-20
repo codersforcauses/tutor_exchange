@@ -81,10 +81,6 @@
                 </ui-select>
               </div>
             </div>
-            <div class="form-group" ng-class="{ 'has-error': applyForm.postcode.$invalid && (applyForm.$submitted || applyForm.postcode.$dirty) }">
-              <label for="text">Postcode:</label>
-              <input type="text" class="form-control" name="postcode" ng-pattern="/^[0-9]{4}$/" ng-model="user.postcode" required>
-            </div>
           </div>
           <div class="errorMessageBox">{{errorMsg}}</div>
           <button type="submit" class="btn btn-default">Submit</button>
