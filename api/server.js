@@ -405,6 +405,150 @@ app.use('/api/search', function(req, res) {
 });
 
 
+/*  Session pipeline:
+ *
+ *  request -> appointment -> openSession -> closedSession
+ *
+ *  A tutor creates a request.
+ *  The student either accepts or rejects the request.  If accepted, the request becomes an appointment.
+ *  After the session finish time, the appointment becomes an openSession.
+ *  A user then closes the openSession or creates an appeal.  Either case the openSession becomes a closedSession.
+ *
+ *  Whether a session is open or closed depends on the user.  A session will often be open for one user but closed for the other.
+ *  Use some sort of status flag to keep track of whether a session is a request, an appointment, open, semiclosed or closed.
+ *  Ignore the arrays below.  They will only work for one user only.
+ */
+
+
+var requests = [
+  {sessionID: 1003, friend: 'John Smith', contact: '0432123456', date: '07/03/2017', time: '13:00', unit: 'MATH1101'},
+  {sessionID: 1004, friend: 'John Smith', contact: '0432123456', date: '07/03/2017', time: '14:00', unit: 'CHEM1101'},
+];
+
+var appointments = [
+  {sessionID: 1000, friend: 'John Smith', contact: '0432123456', date: '01/03/2017', time: '13:00', unit: 'MATH1101'},
+  {sessionID: 1001, friend: 'John Smith', contact: '0432123456', date: '01/03/2017', time: '14:00', unit: 'CHEM1101'},
+  {sessionID: 1002, friend: 'John Smith', contact: '0432123456', date: '01/03/2017', time: '15:00', unit: 'PHYS1101'},
+];
+
+var openSessions = [
+  {sessionID: 998, friend: 'John Smith', contact: '0432123456', date: '20/02/2017', time: '13:00', unit: 'MATH1101'},
+  {sessionID: 999, friend: 'John Smith', contact: '0432123456', date: '20/02/2017', time: '14:00', unit: 'CHEM1101'},
+];
+
+
+
+// Returns a list of session requests
+app.use('api/session/get_requests', function(req, res) {
+  var user = getUser(req).id;
+
+  res.json(requests);
+});
+
+// Return list of upcoming future (accepted) sessions
+app.use('api/session/get_appointments', function(req, res) {
+  var user = getUser(req).id;
+
+  res.json(appointments);
+});
+
+// Return list of open sessions to be signed off on
+app.use('api/session/get_open_sessions', function(req, res) {
+  var user = getUser(req).id;
+
+  res.json(openSessions);
+});
+
+
+
+// Creates a new session + request
+app.use('api/session/create_request', function(req, res) {
+  var user = getUser(req).id; // Also check you're not having a session with yourself (if you know what i mean).
+
+  requests.push(res.body.session);
+});
+
+
+// Accepts a session request
+app.use('api/session/accept_request', function(req, res) {
+  var user = getUser(req).id;
+
+  var thisSessionID = req.body.sessionID;
+
+  var isThisSession = function(session) {
+    return session.sessionID === thisSessionID;
+  };
+
+  var notThisSession = function(session) {
+    return session.sessionID !== thisSessionID;
+  };
+
+  appointments.push(appointments.filter(isThisSession)[0] || {});
+  requests = requests.filter(notThisSession);
+});
+
+
+// Reject a session request
+app.use('api/session/reject_request', function(req, res) {
+  var user = getUser(req).id;
+
+  var thisSessionID = req.body.sessionID;
+
+  var notThisSession = function(session) {
+    return session.sessionID !== thisSessionID;
+  };
+
+  requests = requests.filter(notThisSession);
+});
+
+
+// Change the time and date of a session
+app.use('api/session/reschedule_appointment', function(req, res) {
+  // TODO
+});
+
+
+// Cancel an appointment
+app.use('api/session/cancel_appointment', function(req, res) {
+  var user = getUser(req).id;
+
+  var thisSessionID = req.body.sessionID;
+
+  var notThisSession = function(session) {
+    return session.sessionID !== thisSessionID;
+  };
+
+  appointments = appointments.filter(notThisSession);
+});
+
+// Signs off on an open session
+app.use('api/session/close_session', function(req, res) {
+  var user = getUser(req).id;
+
+  var thisSessionID = req.body.sessionID;
+
+  var notThisSession = function(session) {
+    return session.sessionID !== thisSessionID;
+  };
+
+  openSessions = openSessions.filter(notThisSession);
+});
+
+// Close on open session by creating an appeal
+app.use('api/session/appeal_session', function(req, res) {
+  var user = getUser(req).id;
+
+  var thisSessionID = req.body.sessionID;
+
+  var notThisSession = function(session) {
+    return session.sessionID !== thisSessionID;
+  };
+
+  openSessions = openSessions.filter(notThisSession);
+});
+
+
+
 
 // Serve
 app.listen(config.server.port, function() {
