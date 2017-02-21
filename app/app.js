@@ -71,10 +71,10 @@
         },
       })
 
-      .state('newSession', {
-        url: '/newSession',
-        templateUrl: 'templates/newSession.html',
-        controller: 'NewSessionCtrl',
+      .state('request', {
+        url: '/request',
+        templateUrl: 'templates/request.html',
+        controller: 'RequestCtrl',
         data: {
           authRequired: false,
           authRoles: [USER_ROLES.tutor],

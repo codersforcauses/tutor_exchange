@@ -3,11 +3,11 @@
 
   angular
     .module('tutorExchange')
-    .controller('NewSessionCtrl', NewSessionCtrl);
+    .controller('RequestCtrl', RequestCtrl);
 
 
-  NewSessionCtrl.$inject = ['$scope', 'fetchService'];
-  function NewSessionCtrl($scope, fetchService) {
+  RequestCtrl.$inject = ['$scope', 'fetchService'];
+  function RequestCtrl($scope, fetchService) {
 
     // Set up date picker
     $scope.datepicker = {opened: false};
