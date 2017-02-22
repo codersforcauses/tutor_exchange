@@ -3,11 +3,11 @@
 
   angular
     .module('tutorExchange')
-    .controller('SessionCtrl', SessionCtrl);
+    .controller('SessionsCtrl', SessionsCtrl);
 
 
-  SessionCtrl.$inject = ['$scope', 'sessionService'];
-  function SessionCtrl($scope, sessionService) {
+  SessionsCtrl.$inject = ['$scope', 'sessionService'];
+  function SessionsCtrl($scope, sessionService) {
 
     (function update() {
       getRequests();

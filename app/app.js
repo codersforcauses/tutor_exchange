@@ -61,10 +61,10 @@
         },
       })
 
-      .state('session', {
-        url: '/session',
-        templateUrl: 'templates/session.html',
-        controller: 'SessionCtrl',
+      .state('sessions', {
+        url: '/sessions',
+        templateUrl: 'templates/sessions.html',
+        controller: 'SessionsCtrl',
         data: {
           authRequired: false,
           authRoles: [USER_ROLES.student, USER_ROLES.pendingTutor, USER_ROLES.tutor],
