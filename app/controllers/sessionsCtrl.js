@@ -6,14 +6,10 @@
     .controller('SessionsCtrl', SessionsCtrl);
 
 
-  SessionsCtrl.$inject = ['$scope', 'sessionService'];
-  function SessionsCtrl($scope, sessionService) {
+  SessionsCtrl.$inject = ['$scope', 'userFunctions', 'sessionService'];
+  function SessionsCtrl($scope, userFunctions, sessionService) {
 
-    (function update() {
-      getRequests();
-      getAppointments();
-      getOpenSessions();
-    })();
+    $scope.role = userFunctions.getSessionDetails().role;
 
     $scope.acceptRequest = acceptRequest;
     $scope.cancelAppointment = cancelAppointment;
@@ -22,6 +18,11 @@
     $scope.appealSession = appealSession;
 
 
+    (function refresh() {
+      getRequests();
+      getAppointments();
+      getOpenSessions();
+    })();
 
 
 
@@ -78,7 +79,6 @@
     }
 
     function closeSession(sessionID) {
-      console.log('Closing session ' + sessionID);
       sessionService.closeSession(sessionID)
         .then(function() {
           getOpenSessions();
@@ -86,7 +86,6 @@
     }
 
     function appealSession(sessionID) {
-      console.log('Appealing session ' + sessionID);
       sessionService.appealSession(sessionID, 'THIS IS A SESSION APPEAL')
         .then(function() {
           getOpenSessions();

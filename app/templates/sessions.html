@@ -4,6 +4,10 @@
 
     <h1>My sessions </h1>
     <br/>
+      <div id="create_request_button" ng-if="role==='tutor' || true">
+        <button type="button" class="btn btn-primary" ng-click="">Send tutoring session invite</button>
+        <br/><br/>
+      </div>
 
       <div id="requests">
         <h3>Session Requests</h3>
