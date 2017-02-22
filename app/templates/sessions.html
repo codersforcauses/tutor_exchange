@@ -5,7 +5,7 @@
     <h1>My sessions </h1>
     <br/>
       <div id="create_request_button" ng-if="role==='tutor' || true">
-        <button type="button" class="btn btn-primary" ng-click="">Send tutoring session invite</button>
+        <button type="button" class="btn btn-primary" ng-click="openRequestModal()">Send tutoring session invite</button>
         <br/><br/>
       </div>
 
@@ -67,11 +67,11 @@
               <td>{{appointment.unit}}</td>
               <td>{{appointment.isTutor ? 'Tutor' : 'Student'}}</td>
               <td>
-                <button ng-if="!appointment.cancelled"type="button" class="btn btn-danger" ng-click="rescheduleAppointment(appointment.sessionID)">
-                  Cancel
-                </button>
-                <button ng-if="appointment.isTutor && !appointment.cancelled" type="button" class="btn btn-default" ng-click="cancelAppointment(appointment.sessionID)">
+                <button ng-if="appointment.isTutor && !appointment.cancelled" type="button" class="btn btn-default" ng-click="openRescheduleModal()">
                   Reschedule
+                </button>
+                <button ng-if="appointment.isTutor && !appointment.cancelled" type="button" class="btn btn-danger" ng-click="openCancelModal(appointment)">
+                  Cancel
                 </button>
               </td>
             </tr>
@@ -113,7 +113,7 @@
                 <button type="button" class="btn btn-success" ng-click="closeSession(openSession.sessionID)">
                   <span class="glyphicon glyphicon-ok"></span>
                 </button>
-                <button type="button" class="btn btn-danger" ng-click="appealSession(openSession.sessionID)">
+                <button type="button" class="btn btn-danger" ng-click="openCancelModal()">
                   <span class="glyphicon glyphicon-remove"></span>
                 </button>
               </td>

@@ -6,8 +6,8 @@
     .controller('SessionsCtrl', SessionsCtrl);
 
 
-  SessionsCtrl.$inject = ['$scope', 'userFunctions', 'sessionService'];
-  function SessionsCtrl($scope, userFunctions, sessionService) {
+  SessionsCtrl.$inject = ['$scope', 'userFunctions', 'sessionService', '$uibModal'];
+  function SessionsCtrl($scope, userFunctions, sessionService, $uibModal) {
 
     $scope.role = userFunctions.getSessionDetails().role;
 
@@ -16,6 +16,11 @@
     $scope.rescheduleAppointment = cancelAppointment;
     $scope.closeSession = closeSession;
     $scope.appealSession = appealSession;
+
+    $scope.openRequestModal = openRequestModal;
+    $scope.openRescheduleModal = openRescheduleModal;
+    $scope.openCancelModal = openCancelModal;
+    $scope.openAppealModal = openAppealModal;
 
 
     (function refresh() {
@@ -92,7 +97,42 @@
         });
     }
 
+    function openRequestModal() {
+      var modalInstance = $uibModal.open({
+        templateUrl: 'templates/sessions_request.html',
+      });
+    }
 
+    function openRescheduleModal() {
+      var modalInstance = $uibModal.open({
+        templateUrl: 'templates/sessions_reschedule.html',
+      });
+    }
+
+    function openCancelModal(appointment) {
+      var modalInstance = $uibModal.open({
+        templateUrl: 'templates/sessions_cancel.html',
+        controller: 'SessionsCancelCtrl',
+        resolve: {
+          appointment: function() {
+            return appointment;
+          },
+        },
+      });
+
+      modalInstance.result.then(
+        function() {
+          cancelAppointment(appointment.sessionID);
+        },
+        function() {}
+      );
+    }
+
+    function openAppealModal() {
+      var modalInstance = $uibModal.open({
+        templateUrl: 'templates/sessions_appeal.html',
+      });
+    }
 
   }
 
