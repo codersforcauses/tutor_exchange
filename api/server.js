@@ -77,7 +77,6 @@ app.use('/auth/register', function(req, res) {
       } else {
         var tutorpost = {
           userID: req.body.user.id,
-          postcode: req.body.user.postcode,
         };
 
         connection.query('INSERT INTO tutor SET ?', tutorpost, function(err, rows, fields) {
@@ -112,8 +111,6 @@ app.use('/auth/register', function(req, res) {
           }
 
         });
-        console.log(req.body.user.units);
-
       }
     });
   });
@@ -272,7 +269,6 @@ app.use('/api/updateprofile',function(req,res) {
           res.json({success: true, message: 'Update Success'});
         } else if (user.role == USER_ROLES.pendingTutor || user.role == USER_ROLES.tutor) {
           var tutorUpdateData = {
-            postcode: req.body.user.postcode,
             bio: req.body.user.bio,
             visible: req.body.user.visible,
           };
@@ -309,7 +305,7 @@ app.use('/auth/upgrade', function(req, res) {
 
   var tutorpost = {
     userID: req.body.user.userID,
-    postcode: req.body.user.postcode,
+    bio: req.body.user.bio,
   };
 
   connection.query('INSERT INTO tutor SET ?', tutorpost, function(err, rows, fields) {
@@ -380,7 +376,7 @@ app.use('/api/search', function(req, res) {
   var searchQuery;
   var resultQuery = [];
 
-  var queryString = 'SELECT GROUP_CONCAT(DISTINCT languageName) AS language, GROUP_CONCAT(DISTINCT unitID) AS unitID, tutor.userID, name, postcode, phone, bio FROM tutor JOIN languageTutored ON tutor.userID = languageTutored.tutor JOIN language ON languageTutored.language = language.languageCode JOIN unitTutored ON unitTutored.tutor = tutor.userID JOIN unit ON unitTutored.unit = unit.unitID JOIN user ON user.userID = tutor.userID GROUP BY tutor.userID HAVING unitID LIKE ? AND language LIKE ?';
+  var queryString = 'SELECT GROUP_CONCAT(DISTINCT languageName) AS language, GROUP_CONCAT(DISTINCT unitID) AS unitID, tutor.userID, name, phone, bio FROM tutor JOIN languageTutored ON tutor.userID = languageTutored.tutor JOIN language ON languageTutored.language = language.languageCode JOIN unitTutored ON unitTutored.tutor = tutor.userID JOIN unit ON unitTutored.unit = unit.unitID JOIN user ON user.userID = tutor.userID GROUP BY tutor.userID HAVING unitID LIKE ? AND language LIKE ?';
   if (!req.body.query.languages) {
     searchQuery = mysql.format(queryString, ['%'+req.body.query.units.unitID+'%','%']);
   } else {
@@ -401,7 +397,6 @@ app.use('/api/search', function(req, res) {
         bio: rows[i].bio,
         units: rows[i].unitID.split(','),
         languages: rows[i].language.split(','),
-        postcode: rows[i].postcode,
       };
       resultQuery.push(resultRow);
     }
