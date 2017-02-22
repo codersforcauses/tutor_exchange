@@ -21,7 +21,7 @@
       acceptRequest:  acceptRequest,
       rejectRequest:  rejectRequest,
 
-      rescheduleAppointment:  rescheduleAppointment,
+      //rescheduleAppointment:  rescheduleAppointment,
       cancelAppointment:      cancelAppointment,
 
       closeSession:   closeSession,
@@ -60,42 +60,43 @@
     }
 
     function acceptRequest(sessionID) {
-      return $http.get('/api/session/accept_request', {sessionID: sessionID})
+      return $http.post('/api/session/accept_request', {sessionID: sessionID})
         .then(function(response) {
           return response;
         });
     }
 
     function rejectRequest(sessionID) {
-      return $http.get('/api/session/reject_request', {sessionID: sessionID})
+      return $http.post('/api/session/reject_request', {sessionID: sessionID})
         .then(function(response) {
           return response;
         });
     }
 
-    function rescheduleAppointment(sessionID, date, time) {
-      return $http.get('/api/session/reschedule_appointment', {sessionID: sessionID})
+    // Create a new request and cancel current appointment.
+    /*function rescheduleAppointment(sessionID, date, time) {
+      return $http.post('/api/session/reschedule_appointment', {sessionID: sessionID})
         .then(function(response) {
           return response;
         });
-    }
+    }*/
 
     function cancelAppointment(sessionID) {
-      return $http.get('/api/session/cancel_appointment', {sessionID: sessionID})
+      return $http.post('/api/session/cancel_appointment', {sessionID: sessionID})
         .then(function(response) {
           return response;
         });
     }
 
     function closeSession(sessionID) {
-      return $http.get('/api/session/close_session', {sessionID: sessionID})
+      return $http.post('/api/session/close_session', {sessionID: sessionID})
         .then(function(response) {
           return response;
         });
     }
 
     function appealSession(sessionID, reason) {
-      return $http.get('/api/session/appeal_session', {sessionID: sessionID})
+      return $http.post('/api/session/appeal_session', {sessionID: sessionID})
         .then(function(response) {
           return response;
         });

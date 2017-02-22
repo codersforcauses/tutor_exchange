@@ -417,43 +417,45 @@ app.use('/api/search', function(req, res) {
  *  Whether a session is open or closed depends on the user.  A session will often be open for one user but closed for the other.
  *  Use some sort of status flag to keep track of whether a session is a request, an appointment, open, semiclosed or closed.
  *  Ignore the arrays below.  They will only work for one user only.
+ *
+ *  Also remember that tutors may be tutored by other tutors.
  */
 
 
 var requests = [
-  {sessionID: 1003, friend: 'John Smith', contact: '0432123456', date: '07/03/2017', time: '13:00', unit: 'MATH1101'},
-  {sessionID: 1004, friend: 'John Smith', contact: '0432123456', date: '07/03/2017', time: '14:00', unit: 'CHEM1101'},
+  {sessionID: 1003, isTutor: false, friend: 'John Smith', contact: '0432123456', date: '07/03/2017', time: '13:00', unit: 'MATH1101'},
+  {sessionID: 1004, isTutor: true,  friend: 'John Smith', contact: '0432123456', date: '07/03/2017', time: '14:00', unit: 'CHEM1101'},
 ];
 
 var appointments = [
-  {sessionID: 1000, friend: 'John Smith', contact: '0432123456', date: '01/03/2017', time: '13:00', unit: 'MATH1101'},
-  {sessionID: 1001, friend: 'John Smith', contact: '0432123456', date: '01/03/2017', time: '14:00', unit: 'CHEM1101'},
-  {sessionID: 1002, friend: 'John Smith', contact: '0432123456', date: '01/03/2017', time: '15:00', unit: 'PHYS1101'},
+  {sessionID: 1000, isTutor: true,  friend: 'John Smith', contact: '0432123456', date: '01/03/2017', time: '13:00', unit: 'MATH1101', cancelled: false},
+  {sessionID: 1001, isTutor: true,  friend: 'John Smith', contact: '0432123456', date: '01/03/2017', time: '14:00', unit: 'CHEM1101', cancelled: false},
+  {sessionID: 1002, isTutor: false, friend: 'John Smith', contact: '0432123456', date: '01/03/2017', time: '15:00', unit: 'PHYS1101', cancelled: false},
 ];
 
 var openSessions = [
-  {sessionID: 998, friend: 'John Smith', contact: '0432123456', date: '20/02/2017', time: '13:00', unit: 'MATH1101'},
-  {sessionID: 999, friend: 'John Smith', contact: '0432123456', date: '20/02/2017', time: '14:00', unit: 'CHEM1101'},
+  {sessionID: 998, isTutor: false, friend: 'John Smith', contact: '0432123456', date: '20/02/2017', time: '13:00', unit: 'MATH1101'},
+  {sessionID: 999, isTutor: true,  friend: 'John Smith', contact: '0432123456', date: '20/02/2017', time: '14:00', unit: 'CHEM1101'},
 ];
 
 
 
 // Returns a list of session requests
-app.use('api/session/get_requests', function(req, res) {
+app.use('/api/session/get_requests', function(req, res) {
   var user = getUser(req).id;
 
   res.json(requests);
 });
 
 // Return list of upcoming future (accepted) sessions
-app.use('api/session/get_appointments', function(req, res) {
+app.use('/api/session/get_appointments', function(req, res) {
   var user = getUser(req).id;
 
   res.json(appointments);
 });
 
 // Return list of open sessions to be signed off on
-app.use('api/session/get_open_sessions', function(req, res) {
+app.use('/api/session/get_open_sessions', function(req, res) {
   var user = getUser(req).id;
 
   res.json(openSessions);
@@ -462,7 +464,7 @@ app.use('api/session/get_open_sessions', function(req, res) {
 
 
 // Creates a new session + request
-app.use('api/session/create_request', function(req, res) {
+app.use('/api/session/create_request', function(req, res) {
   var user = getUser(req).id; // Also check you're not having a session with yourself (if you know what i mean).
 
   requests.push(res.body.session);
@@ -470,7 +472,7 @@ app.use('api/session/create_request', function(req, res) {
 
 
 // Accepts a session request
-app.use('api/session/accept_request', function(req, res) {
+app.use('/api/session/accept_request', function(req, res) {
   var user = getUser(req).id;
 
   var thisSessionID = req.body.sessionID;
@@ -483,13 +485,14 @@ app.use('api/session/accept_request', function(req, res) {
     return session.sessionID !== thisSessionID;
   };
 
-  appointments.push(appointments.filter(isThisSession)[0] || {});
+  appointments.push(requests.filter(isThisSession)[0] || {});
   requests = requests.filter(notThisSession);
+  res.end();
 });
 
 
 // Reject a session request
-app.use('api/session/reject_request', function(req, res) {
+app.use('/api/session/reject_request', function(req, res) {
   var user = getUser(req).id;
 
   var thisSessionID = req.body.sessionID;
@@ -499,30 +502,26 @@ app.use('api/session/reject_request', function(req, res) {
   };
 
   requests = requests.filter(notThisSession);
-});
-
-
-// Change the time and date of a session
-app.use('api/session/reschedule_appointment', function(req, res) {
-  // TODO
+  res.end();
 });
 
 
 // Cancel an appointment
-app.use('api/session/cancel_appointment', function(req, res) {
+app.use('/api/session/cancel_appointment', function(req, res) {
   var user = getUser(req).id;
 
   var thisSessionID = req.body.sessionID;
 
-  var notThisSession = function(session) {
-    return session.sessionID !== thisSessionID;
+  var isThisSession = function(session) {
+    return session.sessionID === thisSessionID;
   };
 
-  appointments = appointments.filter(notThisSession);
+  appointments.filter(isThisSession)[0].cancelled = true;
+  res.end();
 });
 
 // Signs off on an open session
-app.use('api/session/close_session', function(req, res) {
+app.use('/api/session/close_session', function(req, res) {
   var user = getUser(req).id;
 
   var thisSessionID = req.body.sessionID;
@@ -532,10 +531,11 @@ app.use('api/session/close_session', function(req, res) {
   };
 
   openSessions = openSessions.filter(notThisSession);
+  res.end();
 });
 
 // Close on open session by creating an appeal
-app.use('api/session/appeal_session', function(req, res) {
+app.use('/api/session/appeal_session', function(req, res) {
   var user = getUser(req).id;
 
   var thisSessionID = req.body.sessionID;
@@ -545,6 +545,7 @@ app.use('api/session/appeal_session', function(req, res) {
   };
 
   openSessions = openSessions.filter(notThisSession);
+  res.end();
 });
 
 
