@@ -120,10 +120,23 @@
       );
     }
 
-    function openRescheduleModal() {
+    function openRescheduleModal(appointment) {
       var modalInstance = $uibModal.open({
         templateUrl: 'templates/sessions_reschedule.html',
+        controller: 'SessionsRescheduleCtrl',
+        resolve: {
+          session: function() {
+            return appointment;
+          },
+        },
       });
+
+      modalInstance.result.then(
+        function(session) {
+          console.log(session);
+        },
+        function() {}
+      );
     }
 
     function openCancelModal(appointment) {

@@ -1,0 +1,42 @@
+<div class="modal-header">
+  <button type="button" class="close" ng-click="cancel()">&times;</button>
+  <h3 class="modal-title">Create a tutoring session request</h3>
+</div>
+
+<div class="modal-body" id="modal-body">
+  <form name="sessionForm" ng-submit="submitted=true && sessionForm.$valid && submit(session)" novalidate>
+    <div class="form-group" ng-class="{ 'has-error': false}">
+      <label for="text">Date:</label>
+      <p class="input-group">
+        <input type="text" class="form-control" uib-datepicker-popup ng-model="session.date" is-open="datepicker.opened" datepicker-options="datepicker.options" ng-required="true" close-text="Close" />
+         <span class="input-group-btn">
+          <button type="button" class="btn btn-default" ng-click="open()"><i class="glyphicon glyphicon-calendar"></i></button>
+        </span>
+      </p>
+    </div>
+
+    <div class="form-group" ng-class="{ 'has-error': false}">
+      <label for="text">Time:</label>
+      <div uib-timepicker ng-model="session.time" ng-change="changed()" show-meridian="true"></div>
+    </div>
+
+    <div class="form-group">
+      <label for="text">Student Number:</label>
+      <!--<p>{{session.student.id}}</p>-->
+      <p>{{session.friend}}</p>
+    </div>
+
+    <div class="form-group">
+      <label for="text">Unit:</label>
+      <p>{{session.unit}}</p>
+    </div>
+
+    <div class="form-group" ng-class="{ 'has-error': false}">
+      <label for="text">Additional comments (optional):</label>
+      <textarea class="form-control" rows="4" cols="50" ng-model="session.notes"></textarea>
+    </div>
+
+    <div class="errorMessageBox">{{errorMsg}}</div>
+    <button type="submit" class="btn btn-default">Submit</button>
+  </form>
+</div>
