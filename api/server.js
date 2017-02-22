@@ -305,6 +305,7 @@ app.use('/auth/upgrade', function(req, res) {
 
   var tutorpost = {
     userID: req.body.user.userID,
+    bio: req.body.user.bio,
   };
 
   connection.query('INSERT INTO tutor SET ?', tutorpost, function(err, rows, fields) {
