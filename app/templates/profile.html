@@ -62,7 +62,7 @@
               </div>
             </div>
             <div class="form-group" ng-class="{ 'has-error': profileForm.bio.$invalid && (profileForm.$submitted || profileForm.bio.$dirty) }">
-              <label for="text">Your Bio:</label>
+              <label for="text">Your Bio: <i class="glyphicon glyphicon-info-sign" uib-tooltip="Test"></i></label>
               <p ng-if="!editMode" ng-bind="user.bio"></p>
               <textarea ng-if="editMode" name="bio" class="form-control" ng-maxlength="255" rows="4" cols="50" ng-model="edituser.bio">
               </textarea>
@@ -71,12 +71,12 @@
             <div class="accountStatusBox" ng-if="!upgradeAccount">
               <hr>
               <div class="form-group">
-                <label>Verification Status:</label>
+                <label>Verification Status: <i class="glyphicon glyphicon-info-sign" uib-tooltip="Test"></i></label>
                 <p ng-show="!user.verified" class="verificationStatus pending">Pending</p>
                 <p ng-show="user.verified" class="verificationStatus verified">Verified</p>
               </div>
               <div class="form-group">
-                <label>Profile Visibility:</label>
+                <label>Profile Visibility: <i class="glyphicon glyphicon-info-sign" uib-tooltip="Test"></i></label>
                 <div ng-if="(user.visible == true && !editMode) || edituser.visible == true">
                   <p class="profileVisible visible">Visible&nbsp;<a ng-if="editMode" href="" ng-click="toggleVisiblity()">Make Private</a></p>
                 </div>
