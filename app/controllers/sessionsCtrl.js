@@ -90,8 +90,8 @@
         });
     }
 
-    function appealSession(sessionID) {
-      sessionService.appealSession(sessionID, 'THIS IS A SESSION APPEAL')
+    function appealSession(sessionID, message) {
+      sessionService.appealSession(sessionID, message)
         .then(function() {
           getOpenSessions();
         });
@@ -128,10 +128,19 @@
       );
     }
 
-    function openAppealModal() {
+    function openAppealModal(sessionID) {
       var modalInstance = $uibModal.open({
         templateUrl: 'templates/sessions_appeal.html',
+        controller: 'SessionsAppealCtrl',
       });
+
+      modalInstance.result.then(
+        function(message) {
+          console.log(message);
+          appealSession(sessionID, message);
+        },
+        function() {}
+      );
     }
 
   }
