@@ -76,6 +76,13 @@
         });
     }
 
+    function rejectRequest(sessionID) {
+      /*sessionService.acceptRequest(sessionID)
+        .then(function() {
+          getRequests();
+        });*/
+    }
+
     function cancelAppointment(sessionID) {
       sessionService.cancelAppointment(sessionID)
         .then(function() {
@@ -97,10 +104,20 @@
         });
     }
 
+
+
     function openRequestModal() {
       var modalInstance = $uibModal.open({
         templateUrl: 'templates/sessions_request.html',
+        controller: 'SessionsRequestCtrl',
       });
+
+      modalInstance.result.then(
+        function(session) {
+          console.log(session);
+        },
+        function() {}
+      );
     }
 
     function openRescheduleModal() {
