@@ -6,8 +6,11 @@
     .controller('SessionsRequestCtrl', SessionsRequestCtrl);
 
 
-  SessionsRequestCtrl.$inject = ['$scope', '$uibModalInstance', 'fetchService'];
-  function SessionsRequestCtrl($scope, $uibModalInstance, fetchService) {
+  SessionsRequestCtrl.$inject = ['$scope', '$uibModalInstance', 'fetchService', 'session'];
+  function SessionsRequestCtrl($scope, $uibModalInstance, fetchService, session) {
+
+    $scope.reschedule = !!session;
+    $scope.session = session || {};
 
     // Set up date picker
     $scope.datepicker = {opened: false};

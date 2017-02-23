@@ -22,18 +22,20 @@
 
     <div class="form-group" ng-class="{ 'has-error': false}">
       <label for="text">Student Number:</label>
-      <input type="text" class="form-control" name="student" ng-pattern="/^[0-9]{8}$/" ng-model="session.student.id" required>
+      <input ng-if="!reschedule" type="text" class="form-control" name="student" ng-pattern="/^[0-9]{8}$/" ng-model="session.student.id" required>
+      <p ng-if="reschedule">{{session.friend}}</p>
     </div>
 
     <div class="form-group">
       <label for="text">Unit:</label>
-      <ui-select ng-model="session.unit" theme="bootstrap" title="Choose a unit">
+      <ui-select ng-if="!reschedule" ng-model="session.unit" theme="bootstrap" title="Choose a unit">
       <ui-select-match placeholder="Search for Units...">{{$select.selected.unitID}}</ui-select-match>
       <ui-select-choices repeat="unit in availableUnits | filter: { unitID: $select.search } | limitTo: ($select.search.length <= 3) ? 0 : undefined">
       <span ng-bind-html="unit.unitID | highlight: $select.search"></span>
       <small ng-bind-html="unit.unitName | highlight: $select.search"></small>
       </ui-select-choices>
       </ui-select>
+      <p ng-if="reschedule">{{session.unit}}</p>
     </div>
 
     <div class="form-group" ng-class="{ 'has-error': false}">

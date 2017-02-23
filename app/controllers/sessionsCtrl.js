@@ -18,10 +18,9 @@
     $scope.closeSession = closeSession;
     $scope.appealSession = appealSession;
 
-    $scope.openRequestModal = openRequestModal;
-    $scope.openRescheduleModal = openRescheduleModal;
-    $scope.openAppealModal = openAppealModal;
     $scope.openRejectModal = openRejectModal;
+    $scope.openRequestModal = openRequestModal;
+    $scope.openAppealModal = openAppealModal;
 
 
     (function refresh() {
@@ -107,34 +106,20 @@
 
 
 
-    function openRequestModal() {
+    function openRequestModal(session) {
       var modalInstance = $uibModal.open({
         templateUrl: 'templates/sessions_request.html',
         controller: 'SessionsRequestCtrl',
-      });
-
-      modalInstance.result.then(
-        function(session) {
-          console.log(session);
-        },
-        function() {}
-      );
-    }
-
-    function openRescheduleModal(appointment) {
-      var modalInstance = $uibModal.open({
-        templateUrl: 'templates/sessions_reschedule.html',
-        controller: 'SessionsRescheduleCtrl',
         resolve: {
           session: function() {
-            return appointment;
+            return session;
           },
         },
       });
 
       modalInstance.result.then(
-        function(session) {
-          console.log(session);
+        function(newSession) {
+          console.log(newSession);
         },
         function() {}
       );
