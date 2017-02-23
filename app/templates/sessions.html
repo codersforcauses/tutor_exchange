@@ -33,7 +33,10 @@
               <td>
                 {{request.isTutor ? 'Waiting for response' : ''}}
                 <button ng-if="!request.isTutor" type="button" class="btn btn-success" ng-click="acceptRequest(request.sessionID)">
-                  Accept request
+                  Accept
+                </button>
+                <button ng-if="!request.isTutor" type="button" class="btn btn-danger" ng-click="openRejectModal(request, 'request')">
+                  Reject
                 </button>
               </td>
             </tr>
@@ -70,7 +73,7 @@
                 <button ng-if="appointment.isTutor && !appointment.cancelled" type="button" class="btn btn-default" ng-click="openRescheduleModal(appointment)">
                   Reschedule
                 </button>
-                <button ng-if="appointment.isTutor && !appointment.cancelled" type="button" class="btn btn-danger" ng-click="openCancelModal(appointment)">
+                <button ng-if="appointment.isTutor && !appointment.cancelled" type="button" class="btn btn-danger" ng-click="openRejectModal(appointment, 'appointment')">
                   Cancel
                 </button>
               </td>

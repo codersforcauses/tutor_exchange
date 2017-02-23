@@ -12,6 +12,7 @@
     $scope.role = userFunctions.getSessionDetails().role;
 
     $scope.acceptRequest = acceptRequest;
+    $scope.rejectRequest = rejectRequest;
     $scope.cancelAppointment = cancelAppointment;
     $scope.rescheduleAppointment = cancelAppointment;
     $scope.closeSession = closeSession;
@@ -19,8 +20,8 @@
 
     $scope.openRequestModal = openRequestModal;
     $scope.openRescheduleModal = openRescheduleModal;
-    $scope.openCancelModal = openCancelModal;
     $scope.openAppealModal = openAppealModal;
+    $scope.openRejectModal = openRejectModal;
 
 
     (function refresh() {
@@ -77,10 +78,10 @@
     }
 
     function rejectRequest(sessionID) {
-      /*sessionService.acceptRequest(sessionID)
+      sessionService.rejectRequest(sessionID)
         .then(function() {
           getRequests();
-        });*/
+        });
     }
 
     function cancelAppointment(sessionID) {
@@ -139,20 +140,24 @@
       );
     }
 
-    function openCancelModal(appointment) {
+    function openRejectModal(session, sessionType) {
       var modalInstance = $uibModal.open({
-        templateUrl: 'templates/sessions_cancel.html',
-        controller: 'SessionsCancelCtrl',
+        templateUrl: 'templates/sessions_reject.html',
+        controller: 'SessionsRejectCtrl',
         resolve: {
-          appointment: function() {
-            return appointment;
+          session: function() {
+            return session;
+          },
+          sessionType: function() {
+            return sessionType;
           },
         },
       });
 
       modalInstance.result.then(
         function() {
-          cancelAppointment(appointment.sessionID);
+          if (sessionType === 'request') rejectRequest(session.sessionID);
+          if (sessionType === 'appointment') cancelAppointment(session.sessionID);
         },
         function() {}
       );
