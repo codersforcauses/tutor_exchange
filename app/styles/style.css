@@ -86,3 +86,7 @@ datePicker{
  	text-decoration: line-through;
 }
 
+textarea {
+	resize: vertical;
+}
+
