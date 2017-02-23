@@ -15,8 +15,7 @@
         <table ng-if="hasRequests" class="table">
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Time</th>
+              <th>Date & Time</th>
               <th>Tutor/Student</th>
               <th>Unit</th>
               <th>My Role</th>
@@ -25,9 +24,8 @@
           </thead>
           <tbody>
             <tr ng-repeat="request in requests">
-              <td>{{request.date}}</td>
-              <td>{{request.time}}</td>
-              <td>{{request.friend}}</td>
+              <td>{{request.time | date:'yyyy-MM-dd @ HH:mm:ss'}}</td>
+              <td>{{request.otherUserID}}</td>
               <td>{{request.unit}}</td>
               <td>{{request.isTutor ? 'Tutor' : 'Student'}}</td>
               <td>
@@ -54,8 +52,7 @@
         <table ng-if="hasAppointments" class="table">
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Time</th>
+              <th>Date & Time</th>
               <th>Tutor/Student</th>
               <th>Unit</th>
               <th>My Role</th>
@@ -64,9 +61,8 @@
           </thead>
           <tbody>
             <tr ng-repeat="appointment in appointments" ng-class="appointment.cancelled?'strikethrough':'null'">
-              <td>{{appointment.date}}</td>
-              <td>{{appointment.time}}</td>
-              <td>{{appointment.friend}}</td>
+              <td>{{request.time | date:'yyyy-MM-dd @ HH:mm:ss'}}</td>
+              <td>{{appointment.otherUserID}}</td>
               <td>{{appointment.unit}}</td>
               <td>{{appointment.isTutor ? 'Tutor' : 'Student'}}</td>
               <td>
@@ -93,8 +89,7 @@
         <table ng-if="hasOpenSessions" class="table">
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Time</th>
+              <th>Date & Time</th>
               <th>Tutor/Student</th>
               <th>Unit</th>
               <th>My Role</th>
@@ -103,9 +98,8 @@
           </thead>
           <tbody>
             <tr ng-repeat="openSession in openSessions">
-              <td>{{openSession.date}}</td>
-              <td>{{openSession.time}}</td>
-              <td>{{openSession.friend}}</td>
+              <td>{{request.time | date:'yyyy-MM-dd @ HH:mm:ss'}}</td>
+              <td>{{openSession.otherUserID}}</td>
               <td>{{openSession.unit}}</td>
               <td>{{openSession.isTutor ? 'Tutor' : 'Student'}}</td>
               <td>

@@ -53,7 +53,7 @@
     }
 
     function createRequest(session) {
-      return $http.get('/api/session/create_request', {session: session})
+      return $http.post('/api/session/create_request', {session: session})
         .then(function(response) {
           return response;
         });

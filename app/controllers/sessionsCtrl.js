@@ -23,12 +23,12 @@
     $scope.openAppealModal = openAppealModal;
 
 
-    (function refresh() {
+    function refresh() {
       getRequests();
       getAppointments();
       getOpenSessions();
-    })();
-
+    }
+    refresh();
 
 
 
@@ -38,6 +38,7 @@
           if (response.data) {
             $scope.requests = response.data;
             $scope.hasRequests = $scope.requests && $scope.requests.length !== 0;
+            console.log(response.data);
           } else {
             $scope.hasRequests = false;
           }
@@ -120,6 +121,7 @@
       modalInstance.result.then(
         function(newSession) {
           console.log(newSession);
+          refresh();
         },
         function() {}
       );
