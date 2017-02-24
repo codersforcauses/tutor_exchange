@@ -105,7 +105,7 @@
         .then(function(response) {
           if (response.data.success) {
             $http.defaults.headers.common.Authorization = 'Bearer ' + response.data.token;
-            session.upgradeToTutor();
+            loginSession.upgradeToTutor();
           }
           return response;
         });
