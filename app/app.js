@@ -9,6 +9,7 @@
       'ui.select',
       'ngMessages',
       'ngSanitize',
+      'moment-picker',
     ])
     .config(config)
     .run(run);

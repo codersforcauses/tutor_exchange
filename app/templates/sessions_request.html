@@ -1,23 +1,26 @@
 <div class="modal-header">
   <button type="button" class="close" ng-click="cancel()">&times;</button>
-  <h3 class="modal-title">Create a tutoring session request</h3>
+  <h3 ng-if="!reschedule" class="modal-title">Create a tutoring session request</h3>
+  <h3 ng-if="reschedule" class="modal-title">Reschedule this session</h3>
 </div>
 
 <div class="modal-body" id="modal-body">
-  <form name="sessionForm" ng-submit="submitted=true && sessionForm.$valid && submit(session)" novalidate>
-    <div class="form-group" ng-class="{ 'has-error': false}">
-      <label for="text">Date:</label>
-      <p class="input-group">
-        <input type="text" class="form-control" uib-datepicker-popup ng-model="session.date" is-open="datepicker.opened" datepicker-options="datepicker.options" ng-required="true" close-text="Close" />
-         <span class="input-group-btn">
-          <button type="button" class="btn btn-default" ng-click="open()"><i class="glyphicon glyphicon-calendar"></i></button>
-        </span>
-      </p>
-    </div>
+  <form name="sessionForm" ng-submit="sessionForm.$valid && submit(session)">
 
     <div class="form-group" ng-class="{ 'has-error': false}">
-      <label for="text">Time:</label>
-      <div uib-timepicker ng-model="session.time" ng-change="changed()" show-meridian="true"></div>
+      <label>Date:</label>
+      <div class="input-group" moment-picker="session.date" format="DD/MM/YYYY" today="true">
+        <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+        <input class="form-control" placeholder="Select a date" ng-model="session.date" ng-model-options="{updateOn: 'blur'}">
+      </div>
+    </div>
+
+    <div class="form-group no-header" ng-class="{ 'has-error': false}">
+      <label>Time:</label>
+      <div class="input-group" moment-picker="session.time" format="LT">
+        <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+        <input class="form-control" placeholder="Select a date" ng-model="session.time" ng-model-options="{updateOn: 'blur'}">
+      </div>
     </div>
 
     <div class="form-group" ng-class="{ 'has-error': false}">
