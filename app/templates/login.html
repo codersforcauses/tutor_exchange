@@ -5,7 +5,7 @@
         <h1>Login</h1>
         <form name="loginForm" ng-submit="submitted=true && loginForm.$valid && submit(user)" novalidate>
           <div class="form-group" ng-class="{ 'has-error': loginForm.id.$error && loginForm.$submitted}">
-            <label for="text">Student Number:</label>
+            <label for="text">Student Number: <i class="glyphicon glyphicon-info-sign" uib-tooltip="Login with a valid UWA student number"></i></label>
             <input type="text" class="form-control" name="id" ng-model="user.id" required>
           </div>
           <div class="form-group" ng-class="{ 'has-error': loginForm.password.$error && loginForm.$submitted}">

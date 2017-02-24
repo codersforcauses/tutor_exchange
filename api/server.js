@@ -306,6 +306,7 @@ app.use('/auth/upgrade', function(req, res) {
 
   var tutorpost = {
     userID: req.body.user.userID,
+    bio: req.body.user.bio,
   };
 
   connection.query('INSERT INTO tutor SET ?', tutorpost, function(err, rows, fields) {
@@ -367,6 +368,7 @@ app.use('/api/data/languages',function(req,res) {
 
 // Search for tutors
 app.use('/api/search', function(req, res) {
+      var user = getUser(req);
 
   if (!req.body || !req.body.query || !req.body.query.units) {
     res.json({success: false, message: 'Invalid Search Query'});
@@ -377,10 +379,11 @@ app.use('/api/search', function(req, res) {
   var resultQuery = [];
 
   var queryString = 'SELECT GROUP_CONCAT(DISTINCT languageName) AS language, GROUP_CONCAT(DISTINCT unitID) AS unitID, tutor.userID, firstName, phone, bio FROM tutor JOIN languageTutored ON tutor.userID = languageTutored.tutor JOIN language ON languageTutored.language = language.languageCode JOIN unitTutored ON unitTutored.tutor = tutor.userID JOIN unit ON unitTutored.unit = unit.unitID JOIN user ON user.userID = tutor.userID GROUP BY tutor.userID HAVING unitID LIKE ? AND language LIKE ?';
+
   if (!req.body.query.languages) {
-    searchQuery = mysql.format(queryString, ['%'+req.body.query.units.unitID+'%','%']);
+    searchQuery = mysql.format(queryString, [user.id,'%'+req.body.query.units.unitID+'%','%']);
   } else {
-    searchQuery = mysql.format(queryString, ['%'+req.body.query.units.unitID+'%','%'+req.body.query.languages.languageName+'%']);
+    searchQuery = mysql.format(queryString, [user.id,'%'+req.body.query.units.unitID+'%','%'+req.body.query.languages.languageName+'%']);
   }
 
   connection.query(searchQuery, function(err, rows, fields) {
