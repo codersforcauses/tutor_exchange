@@ -7,6 +7,8 @@ var crypto      = require('crypto');
 var config      = require(__dirname + '/config');
 var USER_ROLES  = require(__dirname + '/userRoles');
 
+const nodemailer = require('nodemailer');
+
 
 var app = express();
 app.use(bodyParser.json()); //read json
@@ -247,6 +249,32 @@ app.use('/api/getprofile',function(req,res) {
     });
   }
 });
+
+//test for sending emails with nodemailer
+app.use('/test/mail', function(req,res) {
+  let transporter = nodemailer.createTransport({
+    service: 'Mailgun',
+    auth: {
+      user: 'postmaster@sandbox081193fa84b6431b81903095d01ce38f.mailgun.org',
+      pass: 'c47f0e943783fe95e397e376133b8ab6'
+    }
+  });
+
+  let mailOptions = {
+      from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
+      to:   'tutorexchangedev@gmail.com',
+      subject: 'Testing testing 123',
+      text: 'It is Wednesday my dudes',
+      html: '<b>aaaaaaAAAAAAAAAAAA</b>'
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      return console.log(error);
+    }
+    console.log('Message %s sent: %s', info.messageId, info.response);
+  });
+}); 
 
 app.use('/api/updateprofile',function(req,res) {
     var user = getUser(req);
