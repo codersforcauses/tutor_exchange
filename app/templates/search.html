@@ -1,8 +1,11 @@
 <div class="container">
   <div class="row">
-    <div class="col-lg-5 col-md-6">
+    <div class="col-lg-5 col-md-6" style="
+    height: 335px;
+"> 
+
       <br>
-      <h1>Tutor search</h1>
+      <h1>Find Tutor</h1>
       <div style="line-height:75%;">
         <br>
       </div>
@@ -48,8 +51,6 @@
         {{tutor.name}} {{tutor.studentNumber}}
         <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': status.open, 'glyphicon-chevron-right': !status.open}"></i>
         </uib-accordion-heading>
-        <p ng-if="tutor.bio">{{tutor.bio}}</p>
-        <i ng-if="!tutor.bio">No Bio Specified</i>
         <div ng-if="tutor.phone"><h5>Contact Number:</h5><p>{{tutor.phone}}</p></div>
         <i ng-if="!tutor.phone">No Contact Number Specified</i>
         <h5>Units taught:</h5>
@@ -60,6 +61,9 @@
         <ul class="searchResultList">
           <li class="search-result" ng-repeat="language in tutor.languages">{{language}}</li>
         </ul>
+        </uib-accordion-heading>
+        <div ng-if="tutor.bio"><h5>Bio:</h5><p>{{tutor.bio}}</p></div>
+        <i ng-if="!tutor.bio">No Bio specified</i>
       </div>
       </uib-accordion>
     </div>
