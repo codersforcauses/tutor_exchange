@@ -10,9 +10,14 @@
   function SessionsRequestCtrl($scope, $uibModalInstance, fetchService, session) {
 
     $scope.reschedule = !!session;
-    $scope.session = session || {};
+    $scope.session = {};
 
-    $scope.showHeader = false;
+    if (session) {
+      angular.copy(session, $scope.session);
+    }
+
+    // For date picker
+    $scope.now = moment().format('DD/MM/YYYY');
 
     //Set up unit picker
     fetchService
