@@ -1,18 +1,45 @@
 .jumbotron{
-	background-color: #55aa80;
 	padding: 95px;
+	padding-bottom: 140px;
+	margin-bottom: 0px;
 	color: #ffffff;
 }
 
 .footer{
 	padding-top:10px;
 	padding-bottom:15px;
+	position: relative;
+
 }
+
+html {
+  overflow-y: scroll;
+}
+
+.body {
+		background: url("../images/image2a.jpg");
+		background-repeat:no-repeat;
+
+}
+
+#background {
+    width: 100%; 
+    height: 100%; 
+    position: absolute; 
+    left: 0px; 
+    top: 0px; 
+    z-index: 0;
+    padding: 95px;
+	padding-bottom: 140px;
+	margin-bottom: 0px;
+}
+
+.stretch { width:100%; height:auto; }
 
 .navbar{
 	color: #ffffff !important;
 	margin-bottom: 0;
-    background-color: #55aa80;
+    background-color: transparent;
     border: 0;
     border-radius: 0;
     font-size: 12px !important;
@@ -59,12 +86,14 @@
     float: right;
     padding: 10px 10px;
     margin-top: 8px;
-    margin-right: 15px;
     margin-bottom: 8px;
     background-color: transparent;
     background-image: none;
     border: 0px solid transparent;
     border-radius: 4px;
+    top: 3px;
+    right: 15px;
+    margin-right: 0px;
 }
 
 .navbar-toggle .icon-bar + .icon-bar {
@@ -107,6 +136,7 @@
 	margin-bottom:10px;
 }
 
+
 div.ui-select-match{
 	overflow:hidden;
 }
@@ -125,3 +155,31 @@ datePicker{
 	padding:2px 7px !important;
 }
 
+a:-webkit-any-link {
+    color: -webkit-link;
+    cursor: auto;
+}
+
+li {
+    display: list-item;
+    text-align: -webkit-match-parent;
+}
+
+ul, menu, dir {
+    display: block;
+    list-style-type: disc;
+    -webkit-margin-before: 1em;
+    -webkit-margin-after: 1em;
+    -webkit-margin-start: 0px;
+    -webkit-margin-end: 0px;
+    -webkit-padding-start: 40px;
+}
+
+#footer {
+   position:absolute;
+   bottom:0;
+   width:100%;
+   height:60px;   /* Height of the footer */
+   background: transparent;
+   text-align: center;
+}
