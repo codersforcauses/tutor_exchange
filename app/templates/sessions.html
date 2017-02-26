@@ -41,7 +41,7 @@
           </tbody>
         </table>
 
-        <p ng-if="!hasRequests">You don't have any sssion requests seesions</p>
+        <p ng-if="!hasRequests">You don't have any session requests</p>
 
       </div>
       <br/>
@@ -61,7 +61,7 @@
           </thead>
           <tbody>
             <tr ng-repeat="appointment in appointments" ng-class="appointment.cancelled?'strikethrough':'null'">
-              <td>{{request.time | date:'yyyy-MM-dd @ HH:mm:ss'}}</td>
+              <td>{{appointment.time | date:'yyyy-MM-dd @ HH:mm:ss'}}</td>
               <td>{{appointment.otherUserID}}</td>
               <td>{{appointment.unit}}</td>
               <td>{{appointment.isTutor ? 'Tutor' : 'Student'}}</td>
@@ -77,7 +77,7 @@
           </tbody>
         </table>
 
-        <p ng-if="!hasAppointments">You don't have any upcoming seesions</p>
+        <p ng-if="!hasAppointments">You don't have any upcoming sessions</p>
 
       </div>
       <br/>
@@ -98,7 +98,7 @@
           </thead>
           <tbody>
             <tr ng-repeat="openSession in openSessions">
-              <td>{{request.time | date:'yyyy-MM-dd @ HH:mm:ss'}}</td>
+              <td>{{openSession.time | date:'yyyy-MM-dd @ HH:mm:ss'}}</td>
               <td>{{openSession.otherUserID}}</td>
               <td>{{openSession.unit}}</td>
               <td>{{openSession.isTutor ? 'Tutor' : 'Student'}}</td>
