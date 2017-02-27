@@ -9,6 +9,7 @@
       'ui.select',
       'ngMessages',
       'ngSanitize',
+      'moment-picker',
     ])
     .config(config)
     .run(run);
@@ -106,5 +107,15 @@
       }
     });
   }
+
+  angular
+    .module('tutorExchange')
+      .config(['momentPickerProvider', function(momentPickerProvider) {
+        momentPickerProvider.options({
+          //showHeader: false,
+          minutesFormat: 'HH:mm',
+        });
+      },
+    ]);
 
 })(angular);

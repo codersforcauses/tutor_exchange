@@ -1,49 +1,57 @@
 <div class="modal-header">
   <button type="button" class="close" ng-click="cancel()">&times;</button>
-  <h3 class="modal-title">Create a tutoring session request</h3>
+  <h3 ng-if="!reschedule" class="modal-title">Create a tutoring session request</h3>
+  <h3 ng-if="reschedule" class="modal-title">Reschedule this session</h3>
 </div>
 
 <div class="modal-body" id="modal-body">
-  <form name="sessionForm" ng-submit="submitted=true && sessionForm.$valid && submit(session)" novalidate>
-    <div class="form-group" ng-class="{ 'has-error': false}">
-      <label for="text">Date:</label>
-      <p class="input-group">
-        <input type="text" class="form-control" uib-datepicker-popup ng-model="session.date" is-open="datepicker.opened" datepicker-options="datepicker.options" ng-required="true" close-text="Close" />
-         <span class="input-group-btn">
-          <button type="button" class="btn btn-default" ng-click="open()"><i class="glyphicon glyphicon-calendar"></i></button>
-        </span>
-      </p>
+  <form name="sessionForm" ng-submit="sessionForm.$valid && submit(session)" novalidate>
+
+    <div class="form-group" ng-class="{'has-error': (!sessionForm.date.$pristine || sessionForm.$submitted) && sessionForm.date.$error.required}">
+      <label>Date:</label>
+      <div class="input-group" moment-picker="session.date" format="DD/MM/YYYY" today="true" min-date="now">
+        <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+        <input name="date" class="form-control" placeholder="Select a date" ng-model="session.date" ng-model-options="{updateOn: 'blur'}" ng-required="true" autocomplete="off">
+      </div>
+      <div ng-show="(!sessionForm.date.$pristine || sessionForm.$submitted) && sessionForm.date.$error.required" class="errorMessageBox">Please enter a date</div>
     </div>
 
-    <div class="form-group" ng-class="{ 'has-error': false}">
-      <label for="text">Time:</label>
-      <div uib-timepicker ng-model="session.time" ng-change="changed()" show-meridian="true"></div>
+    <div class="form-group no-header" ng-class="{'has-error': (!sessionForm.date.$pristine || sessionForm.$submitted) && sessionForm.time.$error.required}">
+      <label>Time:</label>
+      <div class="input-group" moment-picker="session.time" format="HH:mm">
+        <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+        <input name="time" class="form-control" placeholder="Select a time" ng-model="session.time" ng-model-options="{updateOn: 'blur'}"  ng-required="true" autocomplete="off">
+      </div>
+      <div ng-show="(!sessionForm.time.$pristine || sessionForm.$submitted) && sessionForm.time.$error.required" class="errorMessageBox">Please enter a time</div>
     </div>
 
-    <div class="form-group" ng-class="{ 'has-error': false}">
+    <div class="form-group" ng-class="{'has-error': (!sessionForm.student.$pristine || sessionForm.$submitted) && sessionForm.student.$error.required || sessionForm.$submitted && sessionForm.student.$error.pattern}">
       <label for="text">Student Number:</label>
-      <input ng-if="!reschedule" type="text" class="form-control" name="student" ng-pattern="/^[0-9]{8}$/" ng-model="session.student.id" required>
+      <input ng-if="!reschedule" type="text" name="student" class="form-control" ng-model="session.student.id" ng-pattern="/^[0-9]{8}$/" ng-required="true">
+      <div ng-show="(!sessionForm.student.$pristine || sessionForm.$submitted) && sessionForm.student.$error.required" class="errorMessageBox">Please enter a student number</div>
+      <div ng-show="sessionForm.$submitted && sessionForm.student.$error.pattern" class="errorMessageBox">Please enter a valid student number</div>
       <p ng-if="reschedule">{{session.friend}}</p>
     </div>
 
-    <div class="form-group">
+    <div class="form-group" ng-class="{'has-error': sessionForm.$submitted && sessionForm.unit.$error.required}">
       <label for="text">Unit:</label>
-      <ui-select ng-if="!reschedule" ng-model="session.unit" theme="bootstrap" title="Choose a unit">
-      <ui-select-match placeholder="Search for Units...">{{$select.selected.unitID}}</ui-select-match>
-      <ui-select-choices repeat="unit in availableUnits | filter: { unitID: $select.search } | limitTo: ($select.search.length <= 3) ? 0 : undefined">
-      <span ng-bind-html="unit.unitID | highlight: $select.search"></span>
-      <small ng-bind-html="unit.unitName | highlight: $select.search"></small>
-      </ui-select-choices>
+      <ui-select ng-if="!reschedule" name="unit" ng-model="session.unit" theme="bootstrap" title="Choose a unit" ng-required="true">
+        <ui-select-match placeholder="Search for Units...">{{$select.selected.unitID}}</ui-select-match>
+        <ui-select-choices  repeat="unit in availableUnits | filter: $select.search | limitTo: ($select.search.length <= 3) ? 0 : undefined">
+          <span ng-bind-html="unit.unitID | highlight: $select.search"></span>
+          <small ng-bind-html="unit.unitName | highlight: $select.search"></small>
+        </ui-select-choices>
       </ui-select>
+      <div ng-show="sessionForm.$submitted && sessionForm.unit.$error.required" class="errorMessageBox">Please select a unit</div>
       <p ng-if="reschedule">{{session.unit}}</p>
     </div>
 
-    <div class="form-group" ng-class="{ 'has-error': false}">
+    <div class="form-group" ng-class="{'has-error': sessionForm.notes.$error.maxlength}">
       <label for="text">Additional comments (optional):</label>
-      <textarea class="form-control" rows="4" cols="50" ng-model="session.notes"></textarea>
+      <textarea name="notes" class="form-control" rows="4" cols="50" ng-model="session.notes" ng-maxlength="255"></textarea>
+      <div ng-show="sessionForm.notes.$error.maxlength" class="errorMessageBox">Max length is 255 characters</div>
     </div>
 
-    <div class="errorMessageBox">{{errorMsg}}</div>
     <button type="submit" class="btn btn-default">Submit</button>
   </form>
 </div>
