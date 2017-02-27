@@ -426,23 +426,6 @@ app.use('/api/search', function(req, res) {
  *  Also remember that tutors may be tutored by other tutors.
  */
 
-
-var requests = [
-  {sessionID: 1003, isTutor: false, otherUserID: 'John Smith', contact: '0432123456', date: '07/03/2017', time: '13:00', unit: 'MATH1101'},
-  {sessionID: 1004, isTutor: true,  otherUserID: 'John Smith', contact: '0432123456', date: '07/03/2017', time: '14:00', unit: 'CHEM1101'},
-];
-
-var appointments = [
-  {sessionID: 1000, isTutor: true,  otherUserID: 'John Smith', contact: '0432123456', date: '01/03/2017', time: '13:00', unit: 'MATH1101', cancelled: false},
-  {sessionID: 1001, isTutor: true,  otherUserID: 'John Smith', contact: '0432123456', date: '01/03/2017', time: '14:00', unit: 'CHEM1101', cancelled: false},
-  {sessionID: 1002, isTutor: false, otherUserID: 'John Smith', contact: '0432123456', date: '01/03/2017', time: '15:00', unit: 'PHYS1101', cancelled: false},
-];
-
-var openSessions = [
-  {sessionID: 998, isTutor: false, otherUserID: 'John Smith', contact: '0432123456', date: '20/02/2017', time: '13:00', unit: 'MATH1101'},
-  {sessionID: 999, isTutor: true,  otherUserID: 'John Smith', contact: '0432123456', date: '20/02/2017', time: '14:00', unit: 'CHEM1101'},
-];
-
 // sessionStatus - 0: Request 1: Appointment 2. Completed 3. Cancelled
 // confirmationStatus - 0: Not Confirmed 1: Confirmed by Tutor 2. Confirmed by Tutee 3. Fully Confirmed
 // hasOccured - 0: Has Not Occured 1: Has Occured
@@ -452,7 +435,7 @@ app.use('/api/session/get_requests', function(req, res) {
   var currentUser = getUser(req);
 
   if (!currentUser) {
-    res.status(503).send('Not Logged in. Cannot Fetch API Data');
+    res.status(401).send('Not Logged in. Cannot Fetch API Data');
     return;
   }
 
@@ -476,7 +459,7 @@ app.use('/api/session/get_appointments', function(req, res) {
   var currentUser = getUser(req);
 
   if (!currentUser) {
-    res.status(503).send('Not Logged in. Cannot Fetch API Data');
+    res.status(401).send('Not Logged in. Cannot Fetch API Data');
     return;
   }
   connection.query('SELECT * FROM session WHERE sessionStatus = 1 AND hasOccured = 0 AND (tutee = ? OR tutor = ?)',[currentUser.id, currentUser.id], function(err, result, fields) {
@@ -499,7 +482,7 @@ app.use('/api/session/get_open_sessions', function(req, res) {
   var currentUser = getUser(req);
 
   if (!currentUser) {
-    res.status(503).send('Not Logged in. Cannot Fetch API Data');
+    res.status(401).send('Not Logged in. Cannot Fetch API Data');
     return;
   }
 
@@ -521,13 +504,18 @@ app.use('/api/session/get_open_sessions', function(req, res) {
 app.use('/api/session/create_request', function(req, res) {
   var currentUser = getUser(req);
 
-  if (!req.body || !req.body.session || !currentUser) {
-    res.status(503).send('Not Logged in, or valid Request Data not supplied');
+  if (!currentUser) {
+    res.status(401).send('Not Logged in');
+    return;
+  }
+
+  if (!req.body || !req.body.sessionID) {
+    res.status(400).send('Session ID not supplied');
     return;
   }
 
   if (req.body.session.student.id == currentUser.id) {
-    res.status(503).send('Cannot Start a Session with Yourself');
+    res.status(400).send('Cannot Start a Session with Yourself');
     return;
   }
 
@@ -559,8 +547,13 @@ app.use('/api/session/accept_request', function(req, res) {
   //May need to confirm Session request actually exists and is linked to current user...
   var currentUser = getUser(req);
 
-  if (!req.body || !req.body.sessionID || !currentUser) {
-    res.status(503).send('Not Logged in, or Session ID not supplied');
+  if (!currentUser) {
+    res.status(401).send('Not Logged in');
+    return;
+  }
+
+  if (!req.body || !req.body.sessionID) {
+    res.status(400).send('Session ID not supplied');
     return;
   }
 
@@ -580,8 +573,13 @@ app.use('/api/session/accept_request', function(req, res) {
 app.use('/api/session/reject_request', function(req, res) {
   var currentUser = getUser(req);
 
-  if (!req.body || !req.body.sessionID || !currentUser) {
-    res.status(503).send('Not Logged in, or Session ID not supplied');
+  if (!currentUser) {
+    res.status(401).send('Not Logged in');
+    return;
+  }
+
+  if (!req.body || !req.body.sessionID) {
+    res.status(400).send('Session ID not supplied');
     return;
   }
 
@@ -601,8 +599,13 @@ app.use('/api/session/reject_request', function(req, res) {
 app.use('/api/session/cancel_appointment', function(req, res) {
   var currentUser = getUser(req);
 
-  if (!req.body || !req.body.sessionID || !currentUser) {
-    res.status(503).send('Not Logged in, or Session ID not supplied');
+  if (!currentUser) {
+    res.status(401).send('Not Logged in');
+    return;
+  }
+
+  if (!req.body || !req.body.sessionID) {
+    res.status(400).send('Session ID not supplied');
     return;
   }
 
@@ -620,8 +623,13 @@ app.use('/api/session/cancel_appointment', function(req, res) {
 app.use('/api/session/close_session', function(req, res) {
   var currentUser = getUser(req);
 
-  if (!req.body || !req.body.sessionID || !currentUser) {
-    res.status(503).send('Not Logged in, or Session ID not supplied');
+  if (!currentUser) {
+    res.status(401).send('Not Logged in');
+    return;
+  }
+
+  if (!req.body || !req.body.sessionID) {
+    res.status(400).send('Session ID not supplied');
     return;
   }
 
@@ -661,8 +669,13 @@ app.use('/api/session/close_session', function(req, res) {
 app.use('/api/session/appeal_session', function(req, res) {
   var currentUser = getUser(req);
 
-  if (!req.body || !req.body.sessionID || !currentUser) {
-    res.status(503).send('Not Logged in, or Session ID not supplied');
+  if (!currentUser) {
+    res.status(401).send('Not Logged in');
+    return;
+  }
+
+  if (!req.body || !req.body.sessionID) {
+    res.status(400).send('Session ID not supplied');
     return;
   }
 
