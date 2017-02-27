@@ -71,7 +71,6 @@
           authRoles: [USER_ROLES.student, USER_ROLES.pendingTutor, USER_ROLES.tutor],
         },
       })
-
       .state('request', {
         url: '/request',
         templateUrl: 'templates/request.html',
@@ -81,7 +80,6 @@
           authRoles: [USER_ROLES.tutor],
         },
       })
-
       .state('apply', {
         url: '/apply',
         templateUrl: 'templates/apply.html',

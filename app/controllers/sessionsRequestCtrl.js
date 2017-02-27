@@ -6,8 +6,8 @@
     .controller('SessionsRequestCtrl', SessionsRequestCtrl);
 
 
-  SessionsRequestCtrl.$inject = ['$scope', '$uibModalInstance', 'fetchService', 'session'];
-  function SessionsRequestCtrl($scope, $uibModalInstance, fetchService, session) {
+  SessionsRequestCtrl.$inject = ['$scope', '$uibModalInstance', 'fetchService', 'session', 'sessionService'];
+  function SessionsRequestCtrl($scope, $uibModalInstance, fetchService, session, sessionService) {
 
     $scope.reschedule = !!session;
     $scope.session = {};
@@ -27,6 +27,11 @@
       });
 
     $scope.submit = function(session) {
+      sessionService
+        .createRequest(session)
+        .then(function(response) {
+          console.log(response);
+        });
       $uibModalInstance.close(session);
     };
 

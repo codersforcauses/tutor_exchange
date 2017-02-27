@@ -35,7 +35,6 @@
 
     $scope.submit = function(user) {
       user.id = parseInt(user.id);
-      user.name = user.firstName + ' ' + user.lastName;
 
       if (user.tutor) {
         user.accountType = USER_ROLES.tutor;
@@ -55,8 +54,6 @@
         return;
       }
 
-      delete user.firstName;
-      delete user.lastName;
       delete user.tutor;
       delete user.dayDOB;
       delete user.monthDOB;

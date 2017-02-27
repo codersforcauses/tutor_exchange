@@ -1,5 +1,5 @@
 <div ng-controller="NavbarCtrl">
-  <nav class="navbar navbar-default navbar-static-top" role="navigation">
+  <nav class="navbar navbar-default navbar-static-top body" role="navigation">
     <div class="container">
       <div class = "navbar-header">
         <button type="button" class="navbar-toggle" ng-click="isNavCollapsed = !isNavCollapsed">
@@ -7,8 +7,16 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="#">Volunteer Tutor Exchange</a>
+        <div class="row">
+            <a class="navbar-brand navbar-header" href="#" style="padding-top: 11px;">      
+            <href="#" ><img src="../images/logoTom2.png" width="45px" height="32px" style= "margin-left: 10px";>
+            <span>Tutor Exchange</span>
+          </a>
+        </div> 
       </div>
+      </href="#">
+      </a>
+      
       <div class="collapse navbar-collapse" uib-collapse="isNavCollapsed">
         <ul class="nav navbar-nav navbar-right">
           <li ng-show="isLoggedIn" ng-class="{ active: isSelected('/dashboard') }"><a href="#!/dashboard">DASHBOARD</a></li>
@@ -23,4 +31,4 @@
       </div>
     </div>
   </nav>
-</div>
+</div> 
