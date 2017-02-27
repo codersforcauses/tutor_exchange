@@ -155,6 +155,11 @@ datePicker{
 	padding:2px 7px !important;
 }
 
+.strikethrough {
+	color: grey;
+ 	text-decoration: line-through;
+}
+
 a:-webkit-any-link {
     color: -webkit-link;
     cursor: auto;

@@ -1,0 +1,37 @@
+<div class="modal-header">
+  <button type="button" class="close" ng-click="cancle()">&times;</button>
+  <h3 ng-if="isRequest" class="modal-title">Reject this request</h3>
+  <h3 ng-if="isAppointment" class="modal-title">Cancel this session</h3>
+</div>
+
+<div class="modal-body" id="modal-body">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Tutor/Student</th>
+        <th>Unit</th>
+        <th>My Role</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{session.date}}</td>
+        <td>{{session.time}}</td>
+        <td>{{session.friend}}</td>
+        <td>{{session.unit}}</td>
+        <td>{{session.isTutor ? 'Tutor' : 'Student'}}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <br/>
+  <p ng-if="isRequest">Are you sure you want to reject this tutoring session request?</p>
+  <p ng-if="isAppointment">Are you sure you want to cancel this session?</p>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-danger" type="button" ng-click="reject()">Yes</button>
+  <button class="btn btn-primary" type="button" ng-click="cancle()">No</button>
+</div>
