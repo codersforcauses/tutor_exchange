@@ -67,17 +67,8 @@
         templateUrl: 'templates/sessions.html',
         controller: 'SessionsCtrl',
         data: {
-          authRequired: false,
+          authRequired: true,
           authRoles: [USER_ROLES.student, USER_ROLES.pendingTutor, USER_ROLES.tutor],
-        },
-      })
-      .state('request', {
-        url: '/request',
-        templateUrl: 'templates/request.html',
-        controller: 'RequestCtrl',
-        data: {
-          authRequired: false,
-          authRoles: [USER_ROLES.tutor],
         },
       })
       .state('apply', {

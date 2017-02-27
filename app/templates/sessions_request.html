@@ -5,22 +5,22 @@
 </div>
 
 <div class="modal-body" id="modal-body">
-  <form name="sessionForm" ng-submit="sessionForm.$valid && submit(session)" novalidate>
+  <form name="sessionForm" ng-submit="sessionForm.$valid && submit(session, preFormatTime)" novalidate>
 
     <div class="form-group" ng-class="{'has-error': (!sessionForm.date.$pristine || sessionForm.$submitted) && sessionForm.date.$error.required}">
       <label>Date:</label>
-      <div class="input-group" moment-picker="session.date" format="DD/MM/YYYY" today="true" min-date="now">
+      <div class="input-group" moment-picker="preFormatTime.date" format="DD/MM/YYYY" today="true" min-date="now">
         <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
-        <input name="date" class="form-control" placeholder="Select a date" ng-model="session.date" ng-model-options="{updateOn: 'blur'}" ng-required="true" autocomplete="off">
+        <input name="date" class="form-control" placeholder="Select a date" ng-model="preFormatTime.date" ng-model-options="{updateOn: 'blur'}" ng-required="true" autocomplete="off">
       </div>
       <div ng-show="(!sessionForm.date.$pristine || sessionForm.$submitted) && sessionForm.date.$error.required" class="errorMessageBox">Please enter a date</div>
     </div>
 
     <div class="form-group no-header" ng-class="{'has-error': (!sessionForm.date.$pristine || sessionForm.$submitted) && sessionForm.time.$error.required}">
       <label>Time:</label>
-      <div class="input-group" moment-picker="session.time" format="HH:mm">
+      <div class="input-group" moment-picker="preFormatTime.time" format="HH:mm">
         <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
-        <input name="time" class="form-control" placeholder="Select a time" ng-model="session.time" ng-model-options="{updateOn: 'blur'}"  ng-required="true" autocomplete="off">
+        <input name="time" class="form-control" placeholder="Select a time" ng-model="preFormatTime.time" ng-model-options="{updateOn: 'blur'}"  ng-required="true" autocomplete="off">
       </div>
       <div ng-show="(!sessionForm.time.$pristine || sessionForm.$submitted) && sessionForm.time.$error.required" class="errorMessageBox">Please enter a time</div>
     </div>

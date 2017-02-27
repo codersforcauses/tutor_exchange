@@ -509,11 +509,6 @@ app.use('/api/session/create_request', function(req, res) {
     return;
   }
 
-  if (!req.body || !req.body.sessionID) {
-    res.status(400).send('Session ID not supplied');
-    return;
-  }
-
   if (req.body.session.student.id == currentUser.id) {
     res.status(400).send('Cannot Start a Session with Yourself');
     return;

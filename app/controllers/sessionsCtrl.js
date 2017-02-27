@@ -6,10 +6,10 @@
     .controller('SessionsCtrl', SessionsCtrl);
 
 
-  SessionsCtrl.$inject = ['$scope', 'userFunctions', 'sessionService', '$uibModal'];
-  function SessionsCtrl($scope, userFunctions, sessionService, $uibModal) {
+  SessionsCtrl.$inject = ['$scope', 'userFunctions', 'USER_ROLES', 'sessionService', '$uibModal'];
+  function SessionsCtrl($scope, userFunctions, USER_ROLES, sessionService, $uibModal) {
 
-    $scope.role = userFunctions.getSessionDetails().role;
+    $scope.isTutor = (userFunctions.getSessionDetails().role === USER_ROLES.tutor || userFunctions.getSessionDetails().role === USER_ROLES.pendingTutor);
 
     $scope.acceptRequest = acceptRequest;
     $scope.rejectRequest = rejectRequest;
@@ -22,15 +22,16 @@
     $scope.openRequestModal = openRequestModal;
     $scope.openAppealModal = openAppealModal;
 
+    refresh();
+
+
+
 
     function refresh() {
       getRequests();
       getAppointments();
       getOpenSessions();
     }
-    refresh();
-
-
 
     function getRequests() {
       sessionService.getRequests()
@@ -121,7 +122,25 @@
       modalInstance.result.then(
         function(newSession) {
           console.log(newSession);
-          refresh();
+
+          if (!session) {
+            //Original session not provided: new request
+            sessionService.createRequest(newSession)
+            .then(function(response) {
+              refresh();
+              console.log(response);
+            });
+          } else {
+            //There was an orginal session: cancel it.
+            sessionService.rejectRequest(session.sessionID)
+              .then(function() {
+                sessionService.createRequest(newSession)
+                .then(function(response) {
+                  refresh();
+                  console.log(response);
+                });
+              });
+          }
         },
         function() {}
       );

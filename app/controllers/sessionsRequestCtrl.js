@@ -11,10 +11,14 @@
 
     $scope.reschedule = !!session;
     $scope.session = {};
+    $scope.preFormatTime = {date: null, time: null};
 
     if (session) {
       angular.copy(session, $scope.session);
+      $scope.preFormatTime.date = moment(session.time).format('DD/MM/YYYY');
+      $scope.preFormatTime.time = moment(session.time).format('HH:mm');
     }
+
 
     // For date picker
     $scope.now = moment().format('DD/MM/YYYY');
@@ -26,12 +30,10 @@
         if (response.data) $scope.availableUnits = response.data;
       });
 
-    $scope.submit = function(session) {
-      sessionService
-        .createRequest(session)
-        .then(function(response) {
-          console.log(response);
-        });
+    $scope.submit = function(session, preFormatTime) {
+      console.log('SUBMIT!!!!!!!');
+      session.time = moment(preFormatTime.date + preFormatTime.time, 'DD/MM/YYYYHH:mm').format('YYYY-MM-DD HH:mm:ss');
+
       $uibModalInstance.close(session);
     };
 

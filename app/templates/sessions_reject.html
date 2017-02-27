@@ -8,8 +8,7 @@
   <table class="table">
     <thead>
       <tr>
-        <th>Date</th>
-        <th>Time</th>
+        <th>Date & Time</th>
         <th>Tutor/Student</th>
         <th>Unit</th>
         <th>My Role</th>
@@ -17,9 +16,8 @@
     </thead>
     <tbody>
       <tr>
-        <td>{{session.date}}</td>
-        <td>{{session.time}}</td>
-        <td>{{session.friend}}</td>
+        <td>{{session.time | date:'yyyy-MM-dd @ HH:mm:ss'}}</td>
+        <td>{{session.otherUserID}}</td>
         <td>{{session.unit}}</td>
         <td>{{session.isTutor ? 'Tutor' : 'Student'}}</td>
       </tr>
