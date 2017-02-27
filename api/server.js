@@ -409,6 +409,7 @@ app.use('/api/search', function(req, res) {
   });
 
 
+
 /*  Session pipeline:
  *
  *  request -> appointment -> openSession -> closedSession
