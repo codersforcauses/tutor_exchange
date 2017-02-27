@@ -56,7 +56,7 @@
         templateUrl: 'templates/search.html',
         controller: 'SearchCtrl',
         data: {
-          authRequired: false,
+          authRequired: true,
           authRoles: [USER_ROLES.student, USER_ROLES.pendingTutor, USER_ROLES.tutor],
         },
       })
