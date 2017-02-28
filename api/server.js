@@ -439,18 +439,34 @@ app.use('/api/session/get_requests', function(req, res) {
     return;
   }
 
-  connection.query('SELECT * FROM session WHERE sessionStatus = 0 AND (tutee = ? OR tutor = ?)',[currentUser.id, currentUser.id], function(err, result, fields) {
+  //connection.query('SELECT * FROM session WHERE sessionStatus = 0 AND (tutee = ? OR tutor = ?)',[currentUser.id, currentUser.id], function(err, result, fields) {
+  connection.query('SELECT session.*, user.firstName, user.lastName, phone FROM session JOIN user ON session.tutor = user.userID WHERE sessionStatus = 0 AND tutee = ? UNION SELECT session.*, user.firstName, user.lastName, phone FROM session JOIN user ON session.tutee = user.userID WHERE sessionStatus = 0 AND tutor = ?;', [currentUser.id, currentUser.id], function(err, result, fields) {
+
     if (err) {
       console.log(err);
       res.status(503).send(err);
       return;
     }
-    // Determines if person making the request is actually the tutor
+
+    var requests = [];
+
     for (i = 0; i < result.length; i++) {
-      result[i].isTutor = (result[i].tutor === currentUser.id);
-      result[i].otherUserID = result[i].isTutor ? result[i].tutor : result[i].tutee;
+      requests.push({
+        sessionID: result[i].sessionID,
+        otherUser: {
+          userID: (result[i].tutor === currentUser.id ? result[i].tutee : result[i].tutor),
+          firstName: result[i].firstName,
+          lastName: result[i].lastName,
+          phone: result[i].phone,
+        },
+        time: result[i].time,
+        unit: result[i].unit,
+        comments: result[i].comments,
+        isTutor: (result[i].tutor === currentUser.id),
+      });
     }
-    res.json(result);
+
+    res.json(requests);
   });
 });
 
@@ -532,7 +548,7 @@ app.use('/api/session/create_request', function(req, res) {
       res.status(503).send(err);
       return;
     }
-    res.json(result);
+    res.end();
   });
 });
 
@@ -553,13 +569,13 @@ app.use('/api/session/accept_request', function(req, res) {
   }
 
   //Gets Session Details and Ensures session is not cancelled and is a request.
-  connection.query('UPDATE session SET sessionStatus = 1 WHERE sessionID = ?',[req.body.sessionID], function(err, result, fields) {
+  connection.query('UPDATE session SET sessionStatus = 1 WHERE sessionID = ? AND (tutee = ? OR tutor = ?)', [req.body.sessionID, currentUser.id, currentUser.id], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
       return;
     }
-    res.json(result);
+    res.end();
   });
 });
 
@@ -578,13 +594,13 @@ app.use('/api/session/reject_request', function(req, res) {
     return;
   }
 
-  connection.query('DELETE FROM session WHERE sessionID = ?',[req.body.sessionID], function(err, result, fields) {
+  connection.query('DELETE FROM session WHERE sessionID = ? AND (tutee = ? OR tutor = ?)', [req.body.sessionID, currentUser.id, currentUser.id], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
       return;
     }
-    res.json(result);
+    res.end();
   });
 
 });

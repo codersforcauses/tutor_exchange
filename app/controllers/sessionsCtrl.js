@@ -11,6 +11,7 @@
 
     $scope.isTutor = (userFunctions.getSessionDetails().role === USER_ROLES.tutor || userFunctions.getSessionDetails().role === USER_ROLES.pendingTutor);
 
+    $scope.createRequest = createRequest;
     $scope.acceptRequest = acceptRequest;
     $scope.rejectRequest = rejectRequest;
     $scope.cancelAppointment = cancelAppointment;
@@ -39,7 +40,6 @@
           if (response.data) {
             $scope.requests = response.data;
             $scope.hasRequests = $scope.requests && $scope.requests.length !== 0;
-            console.log(response.data);
           } else {
             $scope.hasRequests = false;
           }
@@ -67,6 +67,13 @@
           } else {
             $scope.hasOpenSessions = false;
           }
+        });
+    }
+
+    function createRequest(session) {
+      sessionService.createRequest(session)
+        .then(function() {
+          getRequests();
         });
     }
 
@@ -125,11 +132,8 @@
 
           if (!session) {
             //Original session not provided: new request
-            sessionService.createRequest(newSession)
-            .then(function(response) {
-              refresh();
-              console.log(response);
-            });
+            createRequest(newSession);
+
           } else {
             //There was an orginal session: cancel it.
             sessionService.rejectRequest(session.sessionID)

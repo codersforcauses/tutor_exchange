@@ -15,18 +15,18 @@
         <table ng-if="hasRequests" class="table">
           <thead>
             <tr>
-              <th>Date & Time</th>
-              <th>Tutor/Student</th>
+              <th>Time & Date</th>
               <th>Unit</th>
+              <th>With</th>
               <th>My Role</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
             <tr ng-repeat="request in requests">
-              <td>{{request.time | date:'yyyy-MM-dd @ HH:mm:ss'}}</td>
-              <td>{{request.otherUserID}}</td>
+              <td>{{request.time | date:'HH:mm dd/MM/yyyy'}}</td>
               <td>{{request.unit}}</td>
+              <td>{{request.otherUser.firstName}} {{request.otherUser.lastName}}</td>
               <td>{{request.isTutor ? 'Tutor' : 'Student'}}</td>
               <td>
                 {{request.isTutor ? 'Waiting for response' : ''}}
