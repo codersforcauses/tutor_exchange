@@ -7,7 +7,7 @@ var crypto      = require('crypto');
 var config      = require(__dirname + '/config');
 var USER_ROLES  = require(__dirname + '/userRoles');
 
-const nodemailer = require('nodemailer');
+var nodemailer = require('nodemailer');
 
 
 var app = express();
@@ -74,7 +74,7 @@ app.use('/auth/register', function(req, res) {
       }
 
       if (req.body.user.accountType !== USER_ROLES.pendingTutor && req.body.user.accountType !== USER_ROLES.tutor) {
-        var role = USER_ROLES.student;
+        var role = USER_ROLES.pendingUser;
         var token = jwt.sign({id: post.userID, role: role}, app.get('secret'));
         res.json({success: true, message: 'Registration was Successful', name: post.firstName, role: role, token: token});
       } else {
@@ -104,7 +104,7 @@ app.use('/auth/register', function(req, res) {
                     res.status(503).send(err);
                     return;
                   }
-                  var role = USER_ROLES.pendingTutor;
+                  var role = USER_ROLES.pendingUser;
                   var token = jwt.sign({id: post.userID, role: role}, app.get('secret'));
                   res.json({success: true, message: 'Registration was Successful', name: post.firstName, role: role, token: token});
                   return;
@@ -153,19 +153,27 @@ app.use('/auth/login', function(req, res) {
 
       var name = rows[0].firstName;
 
-      connection.query('SELECT userid, verified FROM tutor WHERE userID = ?', [details.studentNumber], function(err, rows, fields) {
-        var role;
-
-        if (!rows || !rows[0]) {
-          role = USER_ROLES.student;
-        } else if (rows[0].verified) {
-          role = USER_ROLES.tutor;
+      connection.query('SELECT emailVerified FROM user WHERE userID = ?', [details.studentNumber], function(err, rows, fields) {
+        if (rows[0].emailVerified === 0) {
+          role = USER_ROLES.pendingUser;
+          var token = jwt.sign({id: details.studentNumber, role: role}, app.get('secret'));
+          res.json({success: true, message: 'Login was Successful', name: name, role: role, token: token});
         } else {
-          role = USER_ROLES.pendingTutor;
-        }
+          connection.query('SELECT userid, verified FROM tutor WHERE userID = ?', [details.studentNumber], function(err, rows, fields) {
+            var role;
 
-        var token = jwt.sign({id: details.studentNumber, role: role}, app.get('secret'));
-        res.json({success: true, message: 'Login was Successful', name: name, role: role, token: token});
+            if (!rows || !rows[0]) {
+              role = USER_ROLES.student;
+            } else if (rows[0].verified) {
+              role = USER_ROLES.tutor;
+            } else {
+              role = USER_ROLES.pendingTutor;
+            }
+
+            var token = jwt.sign({id: details.studentNumber, role: role}, app.get('secret'));
+            res.json({success: true, message: 'Login was Successful', name: name, role: role, token: token});
+          });
+        }
       });
       return;
     });
@@ -253,29 +261,29 @@ app.use('/api/getprofile',function(req,res) {
 
 //test for sending emails with nodemailer
 app.use('/test/mail', function(req,res) {
-  let transporter = nodemailer.createTransport({
+  var transporter = nodemailer.createTransport({
     service: 'Mailgun',
     auth: {
       user: 'postmaster@sandbox081193fa84b6431b81903095d01ce38f.mailgun.org',
-      pass: 'c47f0e943783fe95e397e376133b8ab6'
-    }
+      pass: 'c47f0e943783fe95e397e376133b8ab6',
+    },
   });
 
-  let mailOptions = {
+  var mailOptions = {
       from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
       to:   'tutorexchangedev@gmail.com',
       subject: 'Testing testing 123',
       text: 'It is Wednesday my dudes',
-      html: '<b>aaaaaaAAAAAAAAAAAA</b>'
-  };
+      html: '<b>aaaaaaAAAAAAAAAAAA</b>',
+    };
 
-  transporter.sendMail(mailOptions, (error, info) => {
+  transporter.sendMail(mailOptions, function(error, info) {
     if (error) {
       return console.log(error);
     }
     console.log('Message %s sent: %s', info.messageId, info.response);
   });
-}); 
+});
 
 app.use('/api/updateprofile',function(req,res) {
     var user = getUser(req);

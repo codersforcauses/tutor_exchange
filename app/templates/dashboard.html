@@ -1,13 +1,20 @@
 <div class="container">
 	<br>
 	<h1>Welcome {{session.name}}</h1>
-     <div style="line-height:10%;">
-       <br>
-     </div>
-	<h3>Upcoming Sessions</h3>
-	<p>It appears you have no upcoming sessions! <a href="#!/search">Click here</a> to find a Tutor</p>
-	<br>
-	<h4><a href="#!/profile">View your Profile</a></h4>
+	<div style="line-height:10%;">
+		<br>
+	</div>
+	<div ng-if="session.role !== 'pendingUser'">
+		<h3>Upcoming Sessions</h3>
+		<p>It appears you have no upcoming sessions! <a href="#!/search">Click here</a> to find a Tutor</p>
+		<br>
+		<h4><a href="#!/profile">View your Profile</a></h4>
+	</div>
+	<div ng-if="session.role === 'pendingUser'">
+		<h4>Your Account is not verified</h4> 
+		<p>A Verification Email has been sent to: {{session.id}}@student.uwa.edu.au</p>
+		<p><a href="#">Click Here</a> to Resend</p>
+	</div>
 	<br>
 	<h4>Logged in as: </h4><p>{{session.name}}</p> <p>Student Number: {{session.id}}</p> <p>Account Type: {{session.role}}</p><a href="" ng-click="logout()">Logout</a>
 </div>

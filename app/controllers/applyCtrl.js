@@ -67,7 +67,7 @@
       if (!user.languages) {
         user.languages = [{languageCode: 'en', languageName: 'English'}];
       }
-
+      $scope.applyForm.$setPristine();
       userFunctions
         .apply(user)
         .then(function(response) {
