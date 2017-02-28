@@ -137,7 +137,6 @@ app.use('/auth/login', function(req, res) {
     var userSalt = rows[0].passwordSalt; //get salt
     var inputHashData = sha512(details.password, userSalt);
     //query within query to check if hashes match: have to do this way afaik unless you use async
-    console.log('login with hash ' + inputHashData.passwordHash);
     connection.query('SELECT firstName FROM user WHERE userID = ? and passwordHash = ?', [details.studentNumber, inputHashData.passwordHash], function(err, rows, fields) {
       if (err) {
         console.log(err);
@@ -440,7 +439,7 @@ app.use('/api/session/get_requests', function(req, res) {
   }
 
   //connection.query('SELECT * FROM session WHERE sessionStatus = 0 AND (tutee = ? OR tutor = ?)',[currentUser.id, currentUser.id], function(err, result, fields) {
-  connection.query('SELECT session.*, user.firstName, user.lastName, phone FROM session JOIN user ON session.tutor = user.userID WHERE sessionStatus = 0 AND tutee = ? UNION SELECT session.*, user.firstName, user.lastName, phone FROM session JOIN user ON session.tutee = user.userID WHERE sessionStatus = 0 AND tutor = ?;', [currentUser.id, currentUser.id], function(err, result, fields) {
+  connection.query('SELECT session.*, firstName, lastName, phone FROM session JOIN user ON session.tutor = user.userID WHERE sessionStatus = 0 AND tutee = ? UNION SELECT session.*, user.firstName, user.lastName, phone FROM session JOIN user ON session.tutee = user.userID WHERE sessionStatus = 0 AND tutor = ?;', [currentUser.id, currentUser.id], function(err, result, fields) {
 
     if (err) {
       console.log(err);
@@ -478,18 +477,34 @@ app.use('/api/session/get_appointments', function(req, res) {
     res.status(401).send('Not Logged in. Cannot Fetch API Data');
     return;
   }
-  connection.query('SELECT * FROM session WHERE sessionStatus = 1 AND hasOccured = 0 AND (tutee = ? OR tutor = ?)',[currentUser.id, currentUser.id], function(err, result, fields) {
+  //connection.query('SELECT * FROM session WHERE sessionStatus = 1 AND hasOccured = 0 AND (tutee = ? OR tutor = ?)',[currentUser.id, currentUser.id], function(err, result, fields) {
+  connection.query('SELECT *, firstName, lastName, phone FROM session JOIN user ON session.tutor = user.userID WHERE (sessionStatus = 1 OR sessionStatus = 3) AND tutee = ? UNION SELECT *, firstName, lastName, phone FROM session JOIN user ON session.tutee = user.userID WHERE (sessionStatus = 1 OR sessionStatus = 3) AND tutor = ?',[currentUser.id, currentUser.id], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
       return;
     }
 
+    var appointments = [];
+
     for (i = 0; i < result.length; i++) {
-      result[i].isTutor = (result[i].tutor === currentUser.id);
-      result[i].otherUserID = result[i].isTutor ? result[i].tutor : result[i].tutee;
+      appointments.push({
+        sessionID: result[i].sessionID,
+        otherUser: {
+          userID: (result[i].tutor === currentUser.id ? result[i].tutee : result[i].tutor),
+          firstName: result[i].firstName,
+          lastName: result[i].lastName,
+          phone: result[i].phone,
+        },
+        time: result[i].time,
+        unit: result[i].unit,
+        comments: result[i].comments,
+        isTutor: (result[i].tutor === currentUser.id),
+        cancelled: (result[i].sessionStatus !== 1),
+      });
     }
-    res.json(result);
+
+    res.json(appointments);
   });
 });
 
@@ -525,7 +540,7 @@ app.use('/api/session/create_request', function(req, res) {
     return;
   }
 
-  if (req.body.session.student.id == currentUser.id) {
+  if (req.body.session.otherUser.userID === currentUser.id) {
     res.status(400).send('Cannot Start a Session with Yourself');
     return;
   }
@@ -533,8 +548,8 @@ app.use('/api/session/create_request', function(req, res) {
 
   var requestData = {
     tutor: currentUser.id,
-    tutee: req.body.session.student.id,
-    unit: req.body.session.unit.unitID,
+    tutee: req.body.session.otherUser.userID,
+    unit: req.body.session.unit,
     time: req.body.session.time,
     comments: req.body.session.comments,
     sessionStatus: 0,
@@ -620,7 +635,7 @@ app.use('/api/session/cancel_appointment', function(req, res) {
     return;
   }
 
-  connection.query('UPDATE session SET sessionStatus = 3 WHERE sessionID = ?',[req.body.sessionID], function(err, result, fields) {
+  connection.query('UPDATE session SET sessionStatus = 3 WHERE sessionID = ? AND (tutee = ? OR tutor = ?)',[req.body.sessionID, currentUser.id, currentUser.id], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);

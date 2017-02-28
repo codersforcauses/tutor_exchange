@@ -27,10 +27,10 @@
 
     <div class="form-group" ng-class="{'has-error': (!sessionForm.student.$pristine || sessionForm.$submitted) && sessionForm.student.$error.required || sessionForm.$submitted && sessionForm.student.$error.pattern}">
       <label for="text">Student Number:</label>
-      <input ng-if="!reschedule" type="text" name="student" class="form-control" ng-model="session.student.id" ng-pattern="/^[0-9]{8}$/" ng-required="true">
+      <input ng-if="!reschedule" type="text" name="student" class="form-control" ng-model="session.otherUser.userID" ng-pattern="/^[0-9]{8}$/" ng-required="true">
       <div ng-show="(!sessionForm.student.$pristine || sessionForm.$submitted) && sessionForm.student.$error.required" class="errorMessageBox">Please enter a student number</div>
       <div ng-show="sessionForm.$submitted && sessionForm.student.$error.pattern" class="errorMessageBox">Please enter a valid student number</div>
-      <p ng-if="reschedule">{{session.friend}}</p>
+      <p ng-if="reschedule">{{session.otherUser.userID}}</p>
     </div>
 
     <div class="form-group" ng-class="{'has-error': sessionForm.$submitted && sessionForm.unit.$error.required}">
@@ -46,10 +46,10 @@
       <p ng-if="reschedule">{{session.unit}}</p>
     </div>
 
-    <div class="form-group" ng-class="{'has-error': sessionForm.notes.$error.maxlength}">
+    <div class="form-group" ng-class="{'has-error': sessionForm.comments.$error.maxlength}">
       <label for="text">Additional comments (optional):</label>
-      <textarea name="notes" class="form-control" rows="4" cols="50" ng-model="session.notes" ng-maxlength="255"></textarea>
-      <div ng-show="sessionForm.notes.$error.maxlength" class="errorMessageBox">Max length is 255 characters</div>
+      <textarea name="comments" class="form-control" rows="4" cols="50" ng-model="session.comments" ng-maxlength="255"></textarea>
+      <div ng-show="sessionForm.comments.$error.maxlength" class="errorMessageBox">Max length is 255 characters</div>
     </div>
 
     <button type="submit" class="btn btn-default">Submit</button>

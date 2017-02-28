@@ -52,18 +52,18 @@
         <table ng-if="hasAppointments" class="table">
           <thead>
             <tr>
-              <th>Date & Time</th>
-              <th>Tutor/Student</th>
+              <th>Time & Date</th>
               <th>Unit</th>
+              <th>With</th>
               <th>My Role</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
             <tr ng-repeat="appointment in appointments" ng-class="appointment.cancelled?'strikethrough':'null'">
-              <td>{{appointment.time | date:'yyyy-MM-dd @ HH:mm:ss'}}</td>
-              <td>{{appointment.otherUserID}}</td>
+              <td>{{appointment.time | date:'HH:mm dd/MM/yyyy'}}</td>
               <td>{{appointment.unit}}</td>
+              <td>{{appointment.otherUser.firstName}} {{appointment.otherUser.lastName}}</td>
               <td>{{appointment.isTutor ? 'Tutor' : 'Student'}}</td>
               <td>
                 <button ng-if="appointment.isTutor && !appointment.cancelled" type="button" class="btn btn-default" ng-click="openRequestModal(appointment, 'reschedule')">
@@ -121,6 +121,11 @@
         <p ng-if="!hasOpenSessions">You don't have any sessions to sign off</p>
 
       </div>
+
+      <div id="refresh_button">
+        <button type="button" class="btn btn-primary" ng-click="refresh()">Refresh</button>
+      </div>
+
     </div>
   </div>
 </div>

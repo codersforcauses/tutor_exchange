@@ -23,6 +23,8 @@
     $scope.openRequestModal = openRequestModal;
     $scope.openAppealModal = openAppealModal;
 
+    $scope.refresh = refresh;
+
     refresh();
 
 
