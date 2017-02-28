@@ -130,7 +130,6 @@
 
       modalInstance.result.then(
         function(newSession) {
-          console.log(newSession);
 
           if (!session) {
             //Original session not provided: new request
@@ -138,14 +137,8 @@
 
           } else {
             //There was an orginal session: cancel it.
-            sessionService.rejectRequest(session.sessionID)
-              .then(function() {
-                sessionService.createRequest(newSession)
-                .then(function(response) {
-                  refresh();
-                  console.log(response);
-                });
-              });
+            cancelAppointment(session.sessionID);
+            createRequest(newSession);
           }
         },
         function() {}
@@ -182,9 +175,8 @@
       });
 
       modalInstance.result.then(
-        function(message) {
-          console.log(message);
-          appealSession(sessionID, message);
+        function(reason) {
+          appealSession(sessionID, reason);
         },
         function() {}
       );

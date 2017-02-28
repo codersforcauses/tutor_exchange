@@ -425,9 +425,9 @@ app.use('/api/search', function(req, res) {
  *  Also remember that tutors may be tutored by other tutors.
  */
 
-// sessionStatus - 0: Request 1: Appointment 2. Completed 3. Cancelled
-// confirmationStatus - 0: Not Confirmed 1: Confirmed by Tutor 2. Confirmed by Tutee 3. Fully Confirmed
-// hasOccured - 0: Has Not Occured 1: Has Occured
+// sessionStatus - 0: Request,    1: Appointment,    2: Completed,    3: Cancelled
+//confirmationStatus - 0: Not Confirmed,    1: Confirmed by Tutor,    2: Confirmed by Tutee    3: Fully Confirmed
+// hasOccured - 0: Has Not Occured,    1: Has Occured
 
 // Returns a list of session requests.
 app.use('/api/session/get_requests', function(req, res) {
@@ -478,7 +478,7 @@ app.use('/api/session/get_appointments', function(req, res) {
     return;
   }
   //connection.query('SELECT * FROM session WHERE sessionStatus = 1 AND hasOccured = 0 AND (tutee = ? OR tutor = ?)',[currentUser.id, currentUser.id], function(err, result, fields) {
-  connection.query('SELECT *, firstName, lastName, phone FROM session JOIN user ON session.tutor = user.userID WHERE (sessionStatus = 1 OR sessionStatus = 3) AND tutee = ? UNION SELECT *, firstName, lastName, phone FROM session JOIN user ON session.tutee = user.userID WHERE (sessionStatus = 1 OR sessionStatus = 3) AND tutor = ?',[currentUser.id, currentUser.id], function(err, result, fields) {
+  connection.query('SELECT session.*, firstName, lastName, phone FROM session JOIN user ON session.tutor = user.userID WHERE (sessionStatus = 1 OR sessionStatus = 3) AND tutee = ? UNION SELECT session.*, firstName, lastName, phone FROM session JOIN user ON session.tutee = user.userID WHERE (sessionStatus = 1 OR sessionStatus = 3) AND tutor = ?',[currentUser.id, currentUser.id], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
@@ -517,17 +517,31 @@ app.use('/api/session/get_open_sessions', function(req, res) {
     return;
   }
 
-  connection.query('SELECT * FROM session WHERE sessionStatus = 1 AND hasOccured = 1 AND confirmationStatus <> 3 AND ((tutee = ? AND confirmationStatus <> 2) OR (tutor = ? AND confirmationStatus <> 1))',[currentUser.id, currentUser.id], function(err, result, fields) {
+  //confirmationStatus - 0: Not Confirmed,    1: Confirmed by Tutor,    2: Confirmed by Tutee    3: Fully Confirmed
+  connection.query('SELECT session.*, firstName, lastName FROM session JOIN user ON session.tutor = user.userID WHERE sessionStatus = 2 AND tutee = ? AND (confirmationStatus = 0 OR confirmationStatus = 1) UNION SELECT session.*, firstName, lastName FROM session JOIN user ON session.tutee = user.userID WHERE sessionStatus = 2 AND tutor = ? AND (confirmationStatus = 0 OR confirmationStatus = 2)',[currentUser.id, currentUser.id], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
       return;
     }
+
+    var openSessions = [];
+
     for (i = 0; i < result.length; i++) {
-      result[i].isTutor = (result[i].tutor === currentUser.id);
-      result[i].otherUserID = result[i].isTutor ? result[i].tutor : result[i].tutee;
+      openSessions.push({
+        sessionID: result[i].sessionID,
+        otherUser: {
+          userID: (result[i].tutor === currentUser.id ? result[i].tutee : result[i].tutor),
+          firstName: result[i].firstName,
+          lastName: result[i].lastName,
+        },
+        time: result[i].time,
+        unit: result[i].unit,
+        isTutor: (result[i].tutor === currentUser.id),
+      });
     }
-    res.json(result);
+
+    res.json(openSessions);
   });
 });
 
@@ -659,34 +673,37 @@ app.use('/api/session/close_session', function(req, res) {
     return;
   }
 
-  connection.query('SELECT tutor, tutee, sessionStatus, confirmationStatus FROM session WHERE sessionID = ?',[req.body.sessionID], function(err, result, fields) {
+  connection.query('SELECT tutor, tutee, confirmationStatus FROM session WHERE sessionID = ? AND sessionStatus = 2 AND (tutee = ? OR tutor = ?)', [req.body.sessionID, currentUser.id, currentUser.id], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
       return;
     }
-    //confirmationStatus - 0: Not Confirmed 1: Confirmed by Tutor 2. Confirmed by Tutee 3. Fully Confirmed
-    var sessionStatus = result[0].sessionStatus;
-    if (result[0].confirmationStatus === 0) {
-      if (result[0].tutor === currentUser.id) {
-        confirmStatus = 1;
-      } else if (result[0].tutee === currentUser.id) {
-        confirmStatus = 2;
-      }
-    } else if ((result[0].confirmationStatus === 1 && result[0].tutee === currentUser.id) || (result[0].confirmationStatus === 2 && result[0].tutor === currentUser.id)) {
-      confirmStatus = 3;
-      sessionStatus = 2;
-    } else {
-      console.log('Session Already Closed or is Invalid');
+
+    if (result.length === 0) {
+      res.status(400).send('Session doesn\'t exist');
       return;
     }
-    connection.query('UPDATE session SET sessionStatus = ?, confirmationStatus = ? WHERE sessionID = ?',[sessionStatus, confirmStatus ,req.body.sessionID], function(err, result, fields) {
+
+    //confirmationStatus - 0: Not Confirmed,    1: Confirmed by Tutor,    2: Confirmed by Tutee    3: Fully Confirmed
+    var confirmationStatus = result[0].confirmationStatus;
+
+    if (currentUser.id === result[0].tutor && (confirmationStatus === 0 || confirmationStatus === 2)) {
+      confirmationStatus += 1;
+    }
+
+    if (currentUser.id === result[0].tutee && (confirmationStatus === 0 || confirmationStatus === 1)) {
+      confirmationStatus += 2;
+    }
+
+
+    connection.query('UPDATE session SET confirmationStatus = ? WHERE sessionID = ?', [confirmationStatus, req.body.sessionID], function(err, result, fields) {
       if (err) {
         console.log(err);
         res.status(503).send(err);
         return;
       }
-      res.json(result);
+      res.end();
     });
   });
 });
@@ -705,14 +722,55 @@ app.use('/api/session/appeal_session', function(req, res) {
     return;
   }
 
-  // Currently just sets session to cancelled.
-  connection.query('UPDATE session SET sessionStatus = 3 WHERE sessionID = ?',[req.body.sessionID], function(err, result, fields) {
+  connection.query('SELECT tutor, tutee, confirmationStatus FROM session WHERE sessionID = ? AND sessionStatus = 2 AND (tutee = ? OR tutor = ?)', [req.body.sessionID, currentUser.id, currentUser.id], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
       return;
     }
-    res.json(result);
+
+    if (result.length === 0) {
+      res.status(400).send('Session doesn\'t exist');
+      return;
+    }
+
+    //confirmationStatus - 0: Not Confirmed,    1: Confirmed by Tutor,    2: Confirmed by Tutee    3: Fully Confirmed
+    var confirmationStatus = result[0].confirmationStatus;
+
+    if (currentUser.id === result[0].tutor && (confirmationStatus === 0 || confirmationStatus === 2)) {
+      confirmationStatus += 1;
+    }
+
+    if (currentUser.id === result[0].tutee && (confirmationStatus === 0 || confirmationStatus === 1)) {
+      confirmationStatus += 2;
+    }
+
+
+    connection.query('UPDATE session SET confirmationStatus = ?, hasOccured = 0 WHERE sessionID = ?', [confirmationStatus, req.body.sessionID], function(err, result, fields) {
+      if (err) {
+        console.log(err);
+        res.status(503).send(err);
+        return;
+      }
+
+
+      // The problem here is that resolvedBy isn't needed anymore.  Resolved is, though.
+      //var requestData = {
+      //  sessionID: req.body.sessionID,
+      //  userID: currentUser.id,
+      //  reason: req.body.reason || '',
+      //  resolvedBy: 0,
+      //};
+
+      //connection.query('INSERT INTO sessionComplaint SET ?', requestData, function(err, result, fields) {
+      //  if (err) {
+      //    console.log(err);
+      //    res.status(503).send(err);
+      //    return;
+      //  }
+        res.end();
+      //});
+    });
   });
 });
 

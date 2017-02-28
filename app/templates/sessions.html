@@ -89,18 +89,18 @@
         <table ng-if="hasOpenSessions" class="table">
           <thead>
             <tr>
-              <th>Date & Time</th>
-              <th>Tutor/Student</th>
+              <th>Time & Date</th>
               <th>Unit</th>
+              <th>With</th>
               <th>My Role</th>
               <th>
             </tr>
           </thead>
           <tbody>
             <tr ng-repeat="openSession in openSessions">
-              <td>{{openSession.time | date:'yyyy-MM-dd @ HH:mm:ss'}}</td>
-              <td>{{openSession.otherUserID}}</td>
+              <td>{{openSession.time | date:'HH:mm dd/MM/yyyy'}}</td>
               <td>{{openSession.unit}}</td>
+              <td>{{openSession.otherUser.firstName}} {{openSession.otherUser.lastName}}</td>
               <td>{{openSession.isTutor ? 'Tutor' : 'Student'}}</td>
               <td>
                 <!--
@@ -121,6 +121,8 @@
         <p ng-if="!hasOpenSessions">You don't have any sessions to sign off</p>
 
       </div>
+      <br/>
+
 
       <div id="refresh_button">
         <button type="button" class="btn btn-primary" ng-click="refresh()">Refresh</button>
