@@ -160,6 +160,28 @@ datePicker{
  	text-decoration: line-through;
 }
 
+.moment-picker-container {
+	border-color: black !important;
+}
+
+.moment-picker-container:before {
+	/*content: none !important;*/
+	border-bottom-color: black !important;
+}
+
+.moment-picker-container:after {
+	/*content: none !important;*/
+	border-top-color: black !important;
+}
+
+.no-header .header-view {
+	display: none;
+}
+
+textarea {
+	resize: vertical;
+}
+
 a:-webkit-any-link {
     color: -webkit-link;
     cursor: auto;

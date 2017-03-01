@@ -96,7 +96,7 @@
     }
 
     function appealSession(sessionID, reason) {
-      return $http.post('/api/session/appeal_session', {sessionID: sessionID})
+      return $http.post('/api/session/appeal_session', {sessionID: sessionID, reason: reason})
         .then(function(response) {
           return response;
         });

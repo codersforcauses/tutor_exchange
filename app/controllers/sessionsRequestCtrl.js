@@ -10,21 +10,18 @@
   function SessionsRequestCtrl($scope, $uibModalInstance, fetchService, session, sessionService) {
 
     $scope.reschedule = !!session;
-    $scope.session = session || {};
+    $scope.session = {};
+    $scope.preFormatTime = {date: null, time: null};
 
-    // Set up date picker
-    $scope.datepicker = {opened: false};
+    if (session) {
+      angular.copy(session, $scope.session);
+      $scope.preFormatTime.date = moment(session.time).format('DD/MM/YYYY');
+      $scope.preFormatTime.time = moment(session.time).format('HH:mm');
+    }
 
-    $scope.datepicker.options = {
-      formatYear: 'yy',
-      maxDate: new Date(2020, 5, 22), // Make this on year in future, or even last day of year.
-      minDate: new Date(),
-      startingDay: 1,
-    };
 
-    $scope.open = function() {
-      $scope.datepicker.opened = true;
-    };
+    // For date picker
+    $scope.now = moment().format('DD/MM/YYYY');
 
     //Set up unit picker
     fetchService
@@ -33,12 +30,11 @@
         if (response.data) $scope.availableUnits = response.data;
       });
 
-    $scope.submit = function(session) {
-      sessionService
-        .createRequest(session)
-        .then(function(response) {
-          console.log(response);
-        });
+    $scope.submit = function(session, preFormatTime) {
+      console.log('SUBMIT!!!!!!!');
+      session.time = moment(preFormatTime.date + preFormatTime.time, 'DD/MM/YYYYHH:mm').format('YYYY-MM-DD HH:mm:ss');
+      if (session.unit.unitID) session.unit = session.unit.unitID;
+
       $uibModalInstance.close(session);
     };
 
