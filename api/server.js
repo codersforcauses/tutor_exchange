@@ -140,7 +140,6 @@ app.use('/auth/login', function(req, res) {
     var userSalt = rows[0].passwordSalt; //get salt
     var inputHashData = sha512(details.password, userSalt);
     //query within query to check if hashes match: have to do this way afaik unless you use async
-    console.log('login with hash ' + inputHashData.passwordHash);
     connection.query('SELECT firstName FROM user WHERE userID = ? and passwordHash = ?', [details.studentNumber, inputHashData.passwordHash], function(err, rows, fields) {
       if (err) {
         console.log(err);
@@ -437,48 +436,47 @@ app.use('/api/search', function(req, res) {
  *  Also remember that tutors may be tutored by other tutors.
  */
 
-
-var requests = [
-  {sessionID: 1003, isTutor: false, otherUserID: 'John Smith', contact: '0432123456', date: '07/03/2017', time: '13:00', unit: 'MATH1101'},
-  {sessionID: 1004, isTutor: true,  otherUserID: 'John Smith', contact: '0432123456', date: '07/03/2017', time: '14:00', unit: 'CHEM1101'},
-];
-
-var appointments = [
-  {sessionID: 1000, isTutor: true,  otherUserID: 'John Smith', contact: '0432123456', date: '01/03/2017', time: '13:00', unit: 'MATH1101', cancelled: false},
-  {sessionID: 1001, isTutor: true,  otherUserID: 'John Smith', contact: '0432123456', date: '01/03/2017', time: '14:00', unit: 'CHEM1101', cancelled: false},
-  {sessionID: 1002, isTutor: false, otherUserID: 'John Smith', contact: '0432123456', date: '01/03/2017', time: '15:00', unit: 'PHYS1101', cancelled: false},
-];
-
-var openSessions = [
-  {sessionID: 998, isTutor: false, otherUserID: 'John Smith', contact: '0432123456', date: '20/02/2017', time: '13:00', unit: 'MATH1101'},
-  {sessionID: 999, isTutor: true,  otherUserID: 'John Smith', contact: '0432123456', date: '20/02/2017', time: '14:00', unit: 'CHEM1101'},
-];
-
-// sessionStatus - 0: Request 1: Appointment 2. Completed 3. Cancelled
-// confirmationStatus - 0: Not Confirmed 1: Confirmed by Tutor 2. Confirmed by Tutee 3. Fully Confirmed
-// hasOccured - 0: Has Not Occured 1: Has Occured
+// sessionStatus - 0: Request,    1: Appointment,    2: Completed,    3: Cancelled
+//confirmationStatus - 0: Not Confirmed,    1: Confirmed by Tutor,    2: Confirmed by Tutee    3: Fully Confirmed
+// hasOccured - 0: Has Not Occured,    1: Has Occured
 
 // Returns a list of session requests.
 app.use('/api/session/get_requests', function(req, res) {
   var currentUser = getUser(req);
 
   if (!currentUser) {
-    res.status(503).send('Not Logged in. Cannot Fetch API Data');
+    res.status(401).send('Not Logged in. Cannot Fetch API Data');
     return;
   }
 
-  connection.query('SELECT * FROM session WHERE sessionStatus = 0 AND (tutee = ? OR tutor = ?)',[currentUser.id, currentUser.id], function(err, result, fields) {
+  //connection.query('SELECT * FROM session WHERE sessionStatus = 0 AND (tutee = ? OR tutor = ?)',[currentUser.id, currentUser.id], function(err, result, fields) {
+  connection.query('SELECT session.*, firstName, lastName, phone FROM session JOIN user ON session.tutor = user.userID WHERE sessionStatus = 0 AND tutee = ? UNION SELECT session.*, user.firstName, user.lastName, phone FROM session JOIN user ON session.tutee = user.userID WHERE sessionStatus = 0 AND tutor = ?;', [currentUser.id, currentUser.id], function(err, result, fields) {
+
     if (err) {
       console.log(err);
       res.status(503).send(err);
       return;
     }
-    // Determines if person making the request is actually the tutor
+
+    var requests = [];
+
     for (i = 0; i < result.length; i++) {
-      result[i].isTutor = (result[i].tutor === currentUser.id);
-      result[i].otherUserID = result[i].isTutor ? result[i].tutor : result[i].tutee;
+      requests.push({
+        sessionID: result[i].sessionID,
+        otherUser: {
+          userID: (result[i].tutor === currentUser.id ? result[i].tutee : result[i].tutor),
+          firstName: result[i].firstName,
+          lastName: result[i].lastName,
+          phone: result[i].phone,
+        },
+        time: result[i].time,
+        unit: result[i].unit,
+        comments: result[i].comments,
+        isTutor: (result[i].tutor === currentUser.id),
+      });
     }
-    res.json(result);
+
+    res.json(requests);
   });
 });
 
@@ -487,21 +485,37 @@ app.use('/api/session/get_appointments', function(req, res) {
   var currentUser = getUser(req);
 
   if (!currentUser) {
-    res.status(503).send('Not Logged in. Cannot Fetch API Data');
+    res.status(401).send('Not Logged in. Cannot Fetch API Data');
     return;
   }
-  connection.query('SELECT * FROM session WHERE sessionStatus = 1 AND hasOccured = 0 AND (tutee = ? OR tutor = ?)',[currentUser.id, currentUser.id], function(err, result, fields) {
+  //connection.query('SELECT * FROM session WHERE sessionStatus = 1 AND hasOccured = 0 AND (tutee = ? OR tutor = ?)',[currentUser.id, currentUser.id], function(err, result, fields) {
+  connection.query('SELECT session.*, firstName, lastName, phone FROM session JOIN user ON session.tutor = user.userID WHERE (sessionStatus = 1 OR sessionStatus = 3) AND tutee = ? UNION SELECT session.*, firstName, lastName, phone FROM session JOIN user ON session.tutee = user.userID WHERE (sessionStatus = 1 OR sessionStatus = 3) AND tutor = ?',[currentUser.id, currentUser.id], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
       return;
     }
 
+    var appointments = [];
+
     for (i = 0; i < result.length; i++) {
-      result[i].isTutor = (result[i].tutor === currentUser.id);
-      result[i].otherUserID = result[i].isTutor ? result[i].tutor : result[i].tutee;
+      appointments.push({
+        sessionID: result[i].sessionID,
+        otherUser: {
+          userID: (result[i].tutor === currentUser.id ? result[i].tutee : result[i].tutor),
+          firstName: result[i].firstName,
+          lastName: result[i].lastName,
+          phone: result[i].phone,
+        },
+        time: result[i].time,
+        unit: result[i].unit,
+        comments: result[i].comments,
+        isTutor: (result[i].tutor === currentUser.id),
+        cancelled: (result[i].sessionStatus !== 1),
+      });
     }
-    res.json(result);
+
+    res.json(appointments);
   });
 });
 
@@ -510,21 +524,35 @@ app.use('/api/session/get_open_sessions', function(req, res) {
   var currentUser = getUser(req);
 
   if (!currentUser) {
-    res.status(503).send('Not Logged in. Cannot Fetch API Data');
+    res.status(401).send('Not Logged in. Cannot Fetch API Data');
     return;
   }
 
-  connection.query('SELECT * FROM session WHERE sessionStatus = 1 AND hasOccured = 1 AND confirmationStatus <> 3 AND ((tutee = ? AND confirmationStatus <> 2) OR (tutor = ? AND confirmationStatus <> 1))',[currentUser.id, currentUser.id], function(err, result, fields) {
+  //confirmationStatus - 0: Not Confirmed,    1: Confirmed by Tutor,    2: Confirmed by Tutee    3: Fully Confirmed
+  connection.query('SELECT session.*, firstName, lastName FROM session JOIN user ON session.tutor = user.userID WHERE sessionStatus = 2 AND tutee = ? AND (confirmationStatus = 0 OR confirmationStatus = 1) UNION SELECT session.*, firstName, lastName FROM session JOIN user ON session.tutee = user.userID WHERE sessionStatus = 2 AND tutor = ? AND (confirmationStatus = 0 OR confirmationStatus = 2)',[currentUser.id, currentUser.id], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
       return;
     }
+
+    var openSessions = [];
+
     for (i = 0; i < result.length; i++) {
-      result[i].isTutor = (result[i].tutor === currentUser.id);
-      result[i].otherUserID = result[i].isTutor ? result[i].tutor : result[i].tutee;
+      openSessions.push({
+        sessionID: result[i].sessionID,
+        otherUser: {
+          userID: (result[i].tutor === currentUser.id ? result[i].tutee : result[i].tutor),
+          firstName: result[i].firstName,
+          lastName: result[i].lastName,
+        },
+        time: result[i].time,
+        unit: result[i].unit,
+        isTutor: (result[i].tutor === currentUser.id),
+      });
     }
-    res.json(result);
+
+    res.json(openSessions);
   });
 });
 
@@ -532,21 +560,21 @@ app.use('/api/session/get_open_sessions', function(req, res) {
 app.use('/api/session/create_request', function(req, res) {
   var currentUser = getUser(req);
 
-  if (!req.body || !req.body.session || !currentUser) {
-    res.status(503).send('Not Logged in, or valid Request Data not supplied');
+  if (!currentUser) {
+    res.status(401).send('Not Logged in');
     return;
   }
 
-  if (req.body.session.student.id == currentUser.id) {
-    res.status(503).send('Cannot Start a Session with Yourself');
+  if (req.body.session.otherUser.userID === currentUser.id) {
+    res.status(400).send('Cannot Start a Session with Yourself');
     return;
   }
 
 
   var requestData = {
     tutor: currentUser.id,
-    tutee: req.body.session.student.id,
-    unit: req.body.session.unit.unitID,
+    tutee: req.body.session.otherUser.userID,
+    unit: req.body.session.unit,
     time: req.body.session.time,
     comments: req.body.session.comments,
     sessionStatus: 0,
@@ -560,7 +588,7 @@ app.use('/api/session/create_request', function(req, res) {
       res.status(503).send(err);
       return;
     }
-    res.json(result);
+    res.end();
   });
 });
 
@@ -570,19 +598,24 @@ app.use('/api/session/accept_request', function(req, res) {
   //May need to confirm Session request actually exists and is linked to current user...
   var currentUser = getUser(req);
 
-  if (!req.body || !req.body.sessionID || !currentUser) {
-    res.status(503).send('Not Logged in, or Session ID not supplied');
+  if (!currentUser) {
+    res.status(401).send('Not Logged in');
+    return;
+  }
+
+  if (!req.body || !req.body.sessionID) {
+    res.status(400).send('Session ID not supplied');
     return;
   }
 
   //Gets Session Details and Ensures session is not cancelled and is a request.
-  connection.query('UPDATE session SET sessionStatus = 1 WHERE sessionID = ?',[req.body.sessionID], function(err, result, fields) {
+  connection.query('UPDATE session SET sessionStatus = 1 WHERE sessionID = ? AND (tutee = ? OR tutor = ?)', [req.body.sessionID, currentUser.id, currentUser.id], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
       return;
     }
-    res.json(result);
+    res.end();
   });
 });
 
@@ -591,18 +624,23 @@ app.use('/api/session/accept_request', function(req, res) {
 app.use('/api/session/reject_request', function(req, res) {
   var currentUser = getUser(req);
 
-  if (!req.body || !req.body.sessionID || !currentUser) {
-    res.status(503).send('Not Logged in, or Session ID not supplied');
+  if (!currentUser) {
+    res.status(401).send('Not Logged in');
     return;
   }
 
-  connection.query('DELETE FROM session WHERE sessionID = ?',[req.body.sessionID], function(err, result, fields) {
+  if (!req.body || !req.body.sessionID) {
+    res.status(400).send('Session ID not supplied');
+    return;
+  }
+
+  connection.query('DELETE FROM session WHERE sessionID = ? AND (tutee = ? OR tutor = ?)', [req.body.sessionID, currentUser.id, currentUser.id], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
       return;
     }
-    res.json(result);
+    res.end();
   });
 
 });
@@ -612,12 +650,17 @@ app.use('/api/session/reject_request', function(req, res) {
 app.use('/api/session/cancel_appointment', function(req, res) {
   var currentUser = getUser(req);
 
-  if (!req.body || !req.body.sessionID || !currentUser) {
-    res.status(503).send('Not Logged in, or Session ID not supplied');
+  if (!currentUser) {
+    res.status(401).send('Not Logged in');
     return;
   }
 
-  connection.query('UPDATE session SET sessionStatus = 3 WHERE sessionID = ?',[req.body.sessionID], function(err, result, fields) {
+  if (!req.body || !req.body.sessionID) {
+    res.status(400).send('Session ID not supplied');
+    return;
+  }
+
+  connection.query('UPDATE session SET sessionStatus = 3 WHERE sessionID = ? AND (tutee = ? OR tutor = ?)',[req.body.sessionID, currentUser.id, currentUser.id], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
@@ -631,39 +674,47 @@ app.use('/api/session/cancel_appointment', function(req, res) {
 app.use('/api/session/close_session', function(req, res) {
   var currentUser = getUser(req);
 
-  if (!req.body || !req.body.sessionID || !currentUser) {
-    res.status(503).send('Not Logged in, or Session ID not supplied');
+  if (!currentUser) {
+    res.status(401).send('Not Logged in');
     return;
   }
 
-  connection.query('SELECT tutor, tutee, sessionStatus, confirmationStatus FROM session WHERE sessionID = ?',[req.body.sessionID], function(err, result, fields) {
+  if (!req.body || !req.body.sessionID) {
+    res.status(400).send('Session ID not supplied');
+    return;
+  }
+
+  connection.query('SELECT tutor, tutee, confirmationStatus FROM session WHERE sessionID = ? AND sessionStatus = 2 AND (tutee = ? OR tutor = ?)', [req.body.sessionID, currentUser.id, currentUser.id], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
       return;
     }
-    //confirmationStatus - 0: Not Confirmed 1: Confirmed by Tutor 2. Confirmed by Tutee 3. Fully Confirmed
-    var sessionStatus = result[0].sessionStatus;
-    if (result[0].confirmationStatus === 0) {
-      if (result[0].tutor === currentUser.id) {
-        confirmStatus = 1;
-      } else if (result[0].tutee === currentUser.id) {
-        confirmStatus = 2;
-      }
-    } else if ((result[0].confirmationStatus === 1 && result[0].tutee === currentUser.id) || (result[0].confirmationStatus === 2 && result[0].tutor === currentUser.id)) {
-      confirmStatus = 3;
-      sessionStatus = 2;
-    } else {
-      console.log('Session Already Closed or is Invalid');
+
+    if (result.length === 0) {
+      res.status(400).send('Session doesn\'t exist');
       return;
     }
-    connection.query('UPDATE session SET sessionStatus = ?, confirmationStatus = ? WHERE sessionID = ?',[sessionStatus, confirmStatus ,req.body.sessionID], function(err, result, fields) {
+
+    //confirmationStatus - 0: Not Confirmed,    1: Confirmed by Tutor,    2: Confirmed by Tutee    3: Fully Confirmed
+    var confirmationStatus = result[0].confirmationStatus;
+
+    if (currentUser.id === result[0].tutor && (confirmationStatus === 0 || confirmationStatus === 2)) {
+      confirmationStatus += 1;
+    }
+
+    if (currentUser.id === result[0].tutee && (confirmationStatus === 0 || confirmationStatus === 1)) {
+      confirmationStatus += 2;
+    }
+
+
+    connection.query('UPDATE session SET confirmationStatus = ? WHERE sessionID = ?', [confirmationStatus, req.body.sessionID], function(err, result, fields) {
       if (err) {
         console.log(err);
         res.status(503).send(err);
         return;
       }
-      res.json(result);
+      res.end();
     });
   });
 });
@@ -672,19 +723,65 @@ app.use('/api/session/close_session', function(req, res) {
 app.use('/api/session/appeal_session', function(req, res) {
   var currentUser = getUser(req);
 
-  if (!req.body || !req.body.sessionID || !currentUser) {
-    res.status(503).send('Not Logged in, or Session ID not supplied');
+  if (!currentUser) {
+    res.status(401).send('Not Logged in');
     return;
   }
 
-  // Currently just sets session to cancelled.
-  connection.query('UPDATE session SET sessionStatus = 3 WHERE sessionID = ?',[req.body.sessionID], function(err, result, fields) {
+  if (!req.body || !req.body.sessionID) {
+    res.status(400).send('Session ID not supplied');
+    return;
+  }
+
+  connection.query('SELECT tutor, tutee, confirmationStatus FROM session WHERE sessionID = ? AND sessionStatus = 2 AND (tutee = ? OR tutor = ?)', [req.body.sessionID, currentUser.id, currentUser.id], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
       return;
     }
-    res.json(result);
+
+    if (result.length === 0) {
+      res.status(400).send('Session doesn\'t exist');
+      return;
+    }
+
+    //confirmationStatus - 0: Not Confirmed,    1: Confirmed by Tutor,    2: Confirmed by Tutee    3: Fully Confirmed
+    var confirmationStatus = result[0].confirmationStatus;
+
+    if (currentUser.id === result[0].tutor && (confirmationStatus === 0 || confirmationStatus === 2)) {
+      confirmationStatus += 1;
+    }
+
+    if (currentUser.id === result[0].tutee && (confirmationStatus === 0 || confirmationStatus === 1)) {
+      confirmationStatus += 2;
+    }
+
+
+    connection.query('UPDATE session SET confirmationStatus = ?, hasOccured = 0 WHERE sessionID = ?', [confirmationStatus, req.body.sessionID], function(err, result, fields) {
+      if (err) {
+        console.log(err);
+        res.status(503).send(err);
+        return;
+      }
+
+
+      // The problem here is that resolvedBy isn't needed anymore.  Resolved is, though.
+      //var requestData = {
+      //  sessionID: req.body.sessionID,
+      //  userID: currentUser.id,
+      //  reason: req.body.reason || '',
+      //  resolvedBy: 0,
+      //};
+
+      //connection.query('INSERT INTO sessionComplaint SET ?', requestData, function(err, result, fields) {
+      //  if (err) {
+      //    console.log(err);
+      //    res.status(503).send(err);
+      //    return;
+      //  }
+        res.end();
+      //});
+    });
   });
 });
 

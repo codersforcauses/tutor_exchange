@@ -6,11 +6,13 @@
 <div class="modal-body" id="modal-body">
   <p>Let us know why this tutoring session wasn't completed</p>
 
-  <form name="sessionForm" ng-submit="submit(reason)" novalidate>
-  	<div class="form-group" ng-class="{ 'has-error': false}">
-      <label for="text">Reason:</label>
-      <textarea class="form-control" rows="4" cols="50" ng-model="reason"></textarea>
+  <form name="appealForm" ng-submit="appealForm.$valid && submit(reason)" novalidate>
+  	<div class="form-group" ng-class="{'has-error': (!appealForm.reason.$pristine || appealForm.$submitted) && appealForm.reason.$error.required || appealForm.reason.$error.maxlength}">
+      <label for="reason">Reason:</label>
+      <textarea name="reason" class="form-control" rows="4" cols="50" ng-model="reason" ng-required="true" ng-maxlength="255"></textarea>
     </div>
+    <div ng-show="(!appealForm.reason.$pristine || appealForm.$submitted) && appealForm.reason.$error.required" class="errorMessageBox">Please include a reason</div>
+    <div ng-show="appealForm.reason.$error.maxlength" class="errorMessageBox">Max length is 255 characters</div>
     <button type="submit" class="btn btn-default">Submit</button>
   </form>
   
