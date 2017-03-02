@@ -9,7 +9,7 @@
   SessionsCtrl.$inject = ['$scope', 'userFunctions', 'USER_ROLES', 'sessionService', '$uibModal'];
   function SessionsCtrl($scope, userFunctions, USER_ROLES, sessionService, $uibModal) {
 
-    $scope.isTutor = (userFunctions.getSessionDetails().role === USER_ROLES.tutor || userFunctions.getSessionDetails().role === USER_ROLES.pendingTutor);
+    $scope.isTutor = (userFunctions.getSessionDetails().role === USER_ROLES.tutor);
 
     $scope.createRequest = createRequest;
     $scope.acceptRequest = acceptRequest;

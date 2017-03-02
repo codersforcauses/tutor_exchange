@@ -554,6 +554,11 @@ app.use('/api/session/create_request', function(req, res) {
     return;
   }
 
+  if (currentUser.role !== USER_ROLES.tutor) {
+    res.status(403).send('Only tutors can create session requests');
+    return;
+  }
+
   if (req.body.session.otherUser.userID === currentUser.id) {
     res.status(400).send('Cannot Start a Session with Yourself');
     return;
