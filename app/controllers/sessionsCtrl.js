@@ -22,6 +22,7 @@
     $scope.openRejectModal = openRejectModal;
     $scope.openRequestModal = openRequestModal;
     $scope.openAppealModal = openAppealModal;
+    $scope.openCommentModal = openCommentModal;
 
     $scope.refresh = refresh;
 
@@ -178,6 +179,23 @@
         function(reason) {
           appealSession(sessionID, reason);
         },
+        function() {}
+      );
+    }
+
+    function openCommentModal(comment) {
+      var modalInstance = $uibModal.open({
+        templateUrl: 'templates/sessions_comment.html',
+        controller: 'SessionsCommentCtrl',
+        resolve: {
+          comment: function() {
+            return comment;
+          },
+        },
+      });
+
+      modalInstance.result.then(
+        function() {},
         function() {}
       );
     }
