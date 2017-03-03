@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <button type="button" class="close" ng-click="cancle()">&times;</button>
+  <button type="button" class="close" ng-click="cancel()">&times;</button>
   <h3 ng-if="isRequest" class="modal-title">Reject this request</h3>
   <h3 ng-if="isAppointment" class="modal-title">Cancel this session</h3>
 </div>
@@ -8,19 +8,17 @@
   <table class="table">
     <thead>
       <tr>
-        <th>Date</th>
-        <th>Time</th>
-        <th>Tutor/Student</th>
+        <th>Time & Date</th>
         <th>Unit</th>
+        <th>With</th>
         <th>My Role</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td>{{session.date}}</td>
-        <td>{{session.time}}</td>
-        <td>{{session.friend}}</td>
+        <td>{{session.time | date:'HH:mm dd/MM/yyyy'}}</td>
         <td>{{session.unit}}</td>
+        <td>{{session.otherUser.firstName}} {{session.otherUser.lastName}}</td>
         <td>{{session.isTutor ? 'Tutor' : 'Student'}}</td>
       </tr>
     </tbody>
@@ -33,5 +31,5 @@
 
 <div class="modal-footer">
   <button class="btn btn-danger" type="button" ng-click="reject()">Yes</button>
-  <button class="btn btn-primary" type="button" ng-click="cancle()">No</button>
+  <button class="btn btn-primary" type="button" ng-click="cancel()">No</button>
 </div>

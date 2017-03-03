@@ -4,7 +4,7 @@
 
     <h1>My sessions </h1>
     <br/>
-      <div id="create_request_button" ng-if="role==='tutor' || true">
+      <div id="create_request_button" ng-if="isTutor">
         <button type="button" class="btn btn-primary" ng-click="openRequestModal()">Send tutoring session invite</button>
         <br/><br/>
       </div>
@@ -15,19 +15,23 @@
         <table ng-if="hasRequests" class="table">
           <thead>
             <tr>
-              <th>Date & Time</th>
-              <th>Tutor/Student</th>
+              <th>Time & Date</th>
               <th>Unit</th>
+              <th>With</th>
               <th>My Role</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
             <tr ng-repeat="request in requests">
-              <td>{{request.time | date:'yyyy-MM-dd @ HH:mm:ss'}}</td>
-              <td>{{request.otherUserID}}</td>
+              <td>{{request.time | date:'HH:mm dd/MM/yyyy'}}</td>
               <td>{{request.unit}}</td>
-              <td>{{request.isTutor ? 'Tutor' : 'Student'}}</td>
+              <td>{{request.otherUser.firstName}} {{request.otherUser.lastName}}
+                <i ng-if="request.otherUser.phone" class="glyphicon glyphicon-earphone" uib-popover="Phone: {{request.otherUser.phone}}" popover-trigger="'mouseenter'"></i>
+              </td>
+              <td>{{request.isTutor ? 'Tutor' : 'Student'}}
+                <i ng-if="request.comments" class="glyphicon glyphicon-comment" ng-click="openCommentModal(request.comments)"></i>
+              </td>
               <td>
                 {{request.isTutor ? 'Waiting for response' : ''}}
                 <button ng-if="!request.isTutor" type="button" class="btn btn-success" ng-click="acceptRequest(request.sessionID)">
@@ -52,19 +56,23 @@
         <table ng-if="hasAppointments" class="table">
           <thead>
             <tr>
-              <th>Date & Time</th>
-              <th>Tutor/Student</th>
+              <th>Time & Date</th>
               <th>Unit</th>
+              <th>With</th>
               <th>My Role</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
             <tr ng-repeat="appointment in appointments" ng-class="appointment.cancelled?'strikethrough':'null'">
-              <td>{{appointment.time | date:'yyyy-MM-dd @ HH:mm:ss'}}</td>
-              <td>{{appointment.otherUserID}}</td>
+              <td>{{appointment.time | date:'HH:mm dd/MM/yyyy'}}</td>
               <td>{{appointment.unit}}</td>
-              <td>{{appointment.isTutor ? 'Tutor' : 'Student'}}</td>
+              <td>{{appointment.otherUser.firstName}} {{appointment.otherUser.lastName}}
+                <i ng-if="appointment.otherUser.phone" class="glyphicon glyphicon-earphone" uib-popover="Phone: {{appointment.otherUser.phone}}" popover-trigger="'mouseenter'"></i>
+              </td>
+              <td>{{appointment.isTutor ? 'Tutor' : 'Student'}}
+                <i ng-if="appointment.comments" class="glyphicon glyphicon-comment" ng-click="openCommentModal(appointment.comments)"></i>
+              </td>
               <td>
                 <button ng-if="appointment.isTutor && !appointment.cancelled" type="button" class="btn btn-default" ng-click="openRequestModal(appointment, 'reschedule')">
                   Reschedule
@@ -89,18 +97,18 @@
         <table ng-if="hasOpenSessions" class="table">
           <thead>
             <tr>
-              <th>Date & Time</th>
-              <th>Tutor/Student</th>
+              <th>Time & Date</th>
               <th>Unit</th>
+              <th>With</th>
               <th>My Role</th>
               <th>
             </tr>
           </thead>
           <tbody>
             <tr ng-repeat="openSession in openSessions">
-              <td>{{openSession.time | date:'yyyy-MM-dd @ HH:mm:ss'}}</td>
-              <td>{{openSession.otherUserID}}</td>
+              <td>{{openSession.time | date:'HH:mm dd/MM/yyyy'}}</td>
               <td>{{openSession.unit}}</td>
+              <td>{{openSession.otherUser.firstName}} {{openSession.otherUser.lastName}}</td>
               <td>{{openSession.isTutor ? 'Tutor' : 'Student'}}</td>
               <td>
                 <!--
@@ -121,6 +129,13 @@
         <p ng-if="!hasOpenSessions">You don't have any sessions to sign off</p>
 
       </div>
+      <br/>
+
+
+      <div id="refresh_button">
+        <button type="button" class="btn btn-primary" ng-click="refresh()">Refresh</button>
+      </div>
+
     </div>
   </div>
 </div>

@@ -5,12 +5,11 @@
     .module('tutorExchange')
     .controller('NavbarCtrl', NavbarCtrl);
 
-  NavbarCtrl.$inject = ['$scope', '$location', 'userFunctions'];
-  function NavbarCtrl($scope, $location, userFunctions) {
+  NavbarCtrl.$inject = ['$scope', '$state', '$location', 'userFunctions', 'loginSession'];
+  function NavbarCtrl($scope, $state, $location, userFunctions, loginSession) {
     $scope.isNavCollapsed = true;
 
     $scope.$on('$stateChangeStart', function(event, next) {
-        $scope.isLoggedIn = userFunctions.isLoggedIn();
         $scope.isNavCollapsed = true;
       });
 
@@ -18,8 +17,19 @@
       return currentLocation === $location.path();
     };
 
+    $scope.showIcon = function(path) {
+      if (path === 'logout') {
+        return userFunctions.isLoggedIn();
+      }
+
+      if (!$state.get(path).data) {
+        return !userFunctions.isLoggedIn();
+      }
+      return $state.get(path).data.authRoles.indexOf(loginSession.getUserRole()) !== -1;
+    };
+
     $scope.logout = function() {
-      $scope.isLoggedIn = false;
+      $scope.loggedInUser = loginSession.getUserRole();
       userFunctions.logout();
     };
   }
