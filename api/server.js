@@ -33,7 +33,7 @@ app.use('/*', function(req, res, next) {
 
 
 // static routing
-if (!config.devOptions.serveStatic) {
+if (config.devOptions.serveStatic) {
   app.use(express.static(__dirname + '/../app'));
   app.use('/bower_components', express.static(__dirname + '/../bower_components'));
 }
