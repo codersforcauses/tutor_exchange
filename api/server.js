@@ -945,6 +945,8 @@ function mysqlTransaction(queryA, queryB) {
 }
 
 function sendVerifyEmail(userID, hostURL) { //hostURL eg. http://localhost:8080, www.volunteertutorexchange.com etc
+  if (!config.devOptions.sendMail) return;
+
   var verifyCode = genRandomString(20);
   var userEmail = userID + '@student.uwa.edu.au';
   var verifyLink = hostURL+'/emailVerify?id='+userID+'&code='+verifyCode;
