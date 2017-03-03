@@ -3,6 +3,24 @@
 	padding-bottom: 140px;
 	margin-bottom: 0px;
 	color: #ffffff;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.mainText {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.jumbotron p {
+    font-size: 20px;
+}
+
+.nav .navbar-nav .navbar-right {
+    margin-right: -15px !important;
 }
 
 .footer{
@@ -16,10 +34,12 @@ html {
   overflow-y: scroll;
 }
 
-.body {
-		background: url("../images/image2a.jpg");
-		background-repeat:no-repeat;
-
+.body { 
+  background: url(../images/image2b.jpg) no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
 }
 
 #background {
@@ -44,6 +64,7 @@ html {
     border-radius: 0;
     font-size: 12px !important;
     letter-spacing: 4px;
+    overflow: hidden;
 }
 .navbar li a, .navbar .navbar-brand {
     color: #ffffff !important;
@@ -61,11 +82,6 @@ html {
     background-image: none;
     border: 1px solid #ccc;
     border-radius: 4px;
-    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
-    -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
-    -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
-    transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
 }
 
 .navbar-nav li a:hover, .navbar-nav li.active a {
@@ -94,10 +110,6 @@ html {
     top: 3px;
     right: 15px;
     margin-right: 0px;
-}
-
-.navbar-toggle .icon-bar + .icon-bar {
-    margin-top: 5px;
 }
 
 .navbar-collapse.in {
@@ -160,26 +172,6 @@ datePicker{
  	text-decoration: line-through;
 }
 
-a:-webkit-any-link {
-    color: -webkit-link;
-    cursor: auto;
-}
-
-li {
-    display: list-item;
-    text-align: -webkit-match-parent;
-}
-
-ul, menu, dir {
-    display: block;
-    list-style-type: disc;
-    -webkit-margin-before: 1em;
-    -webkit-margin-after: 1em;
-    -webkit-margin-start: 0px;
-    -webkit-margin-end: 0px;
-    -webkit-padding-start: 40px;
-}
-
 #footer {
    position:absolute;
    bottom:0;
@@ -188,3 +180,4 @@ ul, menu, dir {
    background: transparent;
    text-align: center;
 }
+
