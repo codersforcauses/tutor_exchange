@@ -9,7 +9,7 @@
   SessionsCtrl.$inject = ['$scope', 'userFunctions', 'USER_ROLES', 'sessionService', '$uibModal'];
   function SessionsCtrl($scope, userFunctions, USER_ROLES, sessionService, $uibModal) {
 
-    $scope.isTutor = (userFunctions.getSessionDetails().role === USER_ROLES.tutor || userFunctions.getSessionDetails().role === USER_ROLES.pendingTutor);
+    $scope.isTutor = (userFunctions.getSessionDetails().role === USER_ROLES.tutor);
 
     $scope.createRequest = createRequest;
     $scope.acceptRequest = acceptRequest;
@@ -22,6 +22,7 @@
     $scope.openRejectModal = openRejectModal;
     $scope.openRequestModal = openRequestModal;
     $scope.openAppealModal = openAppealModal;
+    $scope.openCommentModal = openCommentModal;
 
     $scope.refresh = refresh;
 
@@ -178,6 +179,23 @@
         function(reason) {
           appealSession(sessionID, reason);
         },
+        function() {}
+      );
+    }
+
+    function openCommentModal(comment) {
+      var modalInstance = $uibModal.open({
+        templateUrl: 'templates/sessions_comment.html',
+        controller: 'SessionsCommentCtrl',
+        resolve: {
+          comment: function() {
+            return comment;
+          },
+        },
+      });
+
+      modalInstance.result.then(
+        function() {},
         function() {}
       );
     }

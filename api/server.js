@@ -565,6 +565,11 @@ app.use('/api/session/create_request', function(req, res) {
     return;
   }
 
+  if (currentUser.role !== USER_ROLES.tutor) {
+    res.status(403).send('Only tutors can create session requests');
+    return;
+  }
+
   if (req.body.session.otherUser.userID === currentUser.id) {
     res.status(400).send('Cannot Start a Session with Yourself');
     return;
@@ -815,6 +820,43 @@ app.use('/emailVerify', function(req,res) {
     }
   });
 });
+
+// Get name from student number
+app.use('/api/who/get_name', function(req, res) {
+  var currentUser = getUser(req);
+
+  if (!currentUser) {
+    res.status(401).send('Not Logged in');
+    return;
+  }
+
+  if (currentUser.role !== USER_ROLES.tutor && currentUser.role !== USER_ROLES.admin) {
+    res.status(403).send('You don\'t have the authority');
+    return;
+  }
+
+  if (!req.body || !req.body.userID) {
+    res.status(400).send('userID not supplied');
+    return;
+  }
+
+  connection.query('SELECT firstName, lastName FROM user WHERE userID = ?', [req.body.userID], function(err, result, fields) {
+    if (err) {
+      console.log(err);
+      res.status(503).send(err);
+      return;
+    }
+
+    if (result.length === 0) {
+      res.json({userDoesNotExist: true});
+      return;
+    }
+
+    res.json(result[0]);
+  });
+
+});
+
 
 
 // Serve
