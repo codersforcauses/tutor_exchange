@@ -77,6 +77,11 @@
         controller: 'ApplyCtrl',
       })
 
+      .state('termsOfUse', {
+        url: '/termsOfUse',
+        templateUrl: 'templates/termsOfUse.html',
+      })
+
       .state('about', {
         url: '/about',
         templateUrl: 'templates/about.html',
