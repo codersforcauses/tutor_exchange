@@ -7,7 +7,8 @@ var nodemailer = require('nodemailer');
 
 var config      = require(__dirname + '/config');
 var USER_ROLES  = require(__dirname + '/userRoles');
-
+var SESSION_STATUS = require(__dirname + '/sessionStatus');
+var CONFIRM_STATUS = require(__dirname + '/confirmationStatus');
 
 var app = express();
 app.use(bodyParser.json()); //read json
@@ -440,7 +441,6 @@ app.use('/api/search', function(req, res) {
 
 // sessionStatus - 0: Request,    1: Appointment,    2: Completed,    3: Cancelled
 //confirmationStatus - 0: Not Confirmed,    1: Confirmed by Tutor,    2: Confirmed by Tutee    3: Fully Confirmed
-// hasOccured - 0: Has Not Occured,    1: Has Occured
 
 // Returns a list of session requests.
 app.use('/api/session/get_requests', function(req, res) {
@@ -490,7 +490,7 @@ app.use('/api/session/get_appointments', function(req, res) {
     res.status(401).send('Not Logged in. Cannot Fetch API Data');
     return;
   }
-  //connection.query('SELECT * FROM session WHERE sessionStatus = 1 AND hasOccured = 0 AND (tutee = ? OR tutor = ?)',[currentUser.id, currentUser.id], function(err, result, fields) {
+  //connection.query('SELECT * FROM session WHERE sessionStatus = 1 AND hoursAwarded = 0 AND (tutee = ? OR tutor = ?)',[currentUser.id, currentUser.id], function(err, result, fields) {
   connection.query('SELECT session.*, firstName, lastName, phone FROM session JOIN user ON session.tutor = user.userID WHERE (sessionStatus = 1 OR sessionStatus = 3) AND tutee = ? UNION SELECT session.*, firstName, lastName, phone FROM session JOIN user ON session.tutee = user.userID WHERE (sessionStatus = 1 OR sessionStatus = 3) AND tutor = ?',[currentUser.id, currentUser.id], function(err, result, fields) {
     if (err) {
       console.log(err);
@@ -586,7 +586,7 @@ app.use('/api/session/create_request', function(req, res) {
     comments: req.body.session.comments,
     sessionStatus: 0,
     confirmationStatus: 0,
-    hasOccured: 0,
+    hoursAwarded: 0,
   };
 
   connection.query('INSERT INTO session SET ?', requestData, function(err, result, fields) {
@@ -764,30 +764,27 @@ app.use('/api/session/appeal_session', function(req, res) {
     }
 
 
-    connection.query('UPDATE session SET confirmationStatus = ?, hasOccured = 0 WHERE sessionID = ?', [confirmationStatus, req.body.sessionID], function(err, result, fields) {
+    connection.query('UPDATE session SET confirmationStatus = ?, hoursAwarded = 0 WHERE sessionID = ?', [confirmationStatus, req.body.sessionID], function(err, result, fields) {
       if (err) {
         console.log(err);
         res.status(503).send(err);
         return;
       }
 
+      var requestData = {
+        sessionID: req.body.sessionID,
+        userID: currentUser.id,
+        reason: req.body.reason || '',
+      };
 
-      // The problem here is that resolvedBy isn't needed anymore.  Resolved is, though.
-      //var requestData = {
-      //  sessionID: req.body.sessionID,
-      //  userID: currentUser.id,
-      //  reason: req.body.reason || '',
-      //  resolvedBy: 0,
-      //};
-
-      //connection.query('INSERT INTO sessionComplaint SET ?', requestData, function(err, result, fields) {
-      //  if (err) {
-      //    console.log(err);
-      //    res.status(503).send(err);
-      //    return;
-      //  }
+      connection.query('INSERT INTO sessionComplaint SET ?', requestData, function(err, result, fields) {
+        if (err) {
+          console.log(err);
+          res.status(503).send(err);
+          return;
+        }
         res.end();
-      //});
+      });
     });
   });
 });
