@@ -6,11 +6,12 @@
     .controller('SessionsCtrl', SessionsCtrl);
 
 
-  SessionsCtrl.$inject = ['$scope', 'userFunctions', 'sessionService', '$uibModal'];
-  function SessionsCtrl($scope, userFunctions, sessionService, $uibModal) {
+  SessionsCtrl.$inject = ['$scope', 'userFunctions', 'USER_ROLES', 'sessionService', '$uibModal'];
+  function SessionsCtrl($scope, userFunctions, USER_ROLES, sessionService, $uibModal) {
 
-    $scope.role = userFunctions.getSessionDetails().role;
+    $scope.isTutor = (userFunctions.getSessionDetails().role === USER_ROLES.tutor);
 
+    $scope.createRequest = createRequest;
     $scope.acceptRequest = acceptRequest;
     $scope.rejectRequest = rejectRequest;
     $scope.cancelAppointment = cancelAppointment;
@@ -21,6 +22,13 @@
     $scope.openRejectModal = openRejectModal;
     $scope.openRequestModal = openRequestModal;
     $scope.openAppealModal = openAppealModal;
+    $scope.openCommentModal = openCommentModal;
+
+    $scope.refresh = refresh;
+
+    refresh();
+
+
 
 
     function refresh() {
@@ -28,9 +36,6 @@
       getAppointments();
       getOpenSessions();
     }
-    refresh();
-
-
 
     function getRequests() {
       sessionService.getRequests()
@@ -38,7 +43,6 @@
           if (response.data) {
             $scope.requests = response.data;
             $scope.hasRequests = $scope.requests && $scope.requests.length !== 0;
-            console.log(response.data);
           } else {
             $scope.hasRequests = false;
           }
@@ -66,6 +70,13 @@
           } else {
             $scope.hasOpenSessions = false;
           }
+        });
+    }
+
+    function createRequest(session) {
+      sessionService.createRequest(session)
+        .then(function() {
+          getRequests();
         });
     }
 
@@ -120,8 +131,16 @@
 
       modalInstance.result.then(
         function(newSession) {
-          console.log(newSession);
-          refresh();
+
+          if (!session) {
+            //Original session not provided: new request
+            createRequest(newSession);
+
+          } else {
+            //There was an orginal session: cancel it.
+            cancelAppointment(session.sessionID);
+            createRequest(newSession);
+          }
         },
         function() {}
       );
@@ -157,10 +176,26 @@
       });
 
       modalInstance.result.then(
-        function(message) {
-          console.log(message);
-          appealSession(sessionID, message);
+        function(reason) {
+          appealSession(sessionID, reason);
         },
+        function() {}
+      );
+    }
+
+    function openCommentModal(comment) {
+      var modalInstance = $uibModal.open({
+        templateUrl: 'templates/sessions_comment.html',
+        controller: 'SessionsCommentCtrl',
+        resolve: {
+          comment: function() {
+            return comment;
+          },
+        },
+      });
+
+      modalInstance.result.then(
+        function() {},
         function() {}
       );
     }
