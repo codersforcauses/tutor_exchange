@@ -112,8 +112,8 @@ html {
     margin-right: 0px;
 }
 
-.navbar-collapse.in {
-    overflow-y: hidden;
+.collapsing.in-remove-active {
+    overflow: hidden;
 }
 
 .errorMessageBox{
