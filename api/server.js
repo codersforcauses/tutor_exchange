@@ -33,8 +33,10 @@ app.use('/*', function(req, res, next) {
 
 
 // static routing
-app.use(express.static(__dirname + '/../app'));
-app.use('/bower_components', express.static(__dirname + '/../bower_components'));
+if (!config.devOptions.serveStatic) {
+  app.use(express.static(__dirname + '/../app'));
+  app.use('/bower_components', express.static(__dirname + '/../bower_components'));
+}
 
 
 app.use('/auth/register', function(req, res) {
@@ -966,6 +968,8 @@ function sendVerifyEmail(userID, hostURL) { //hostURL eg. http://localhost:8080,
 }
 
 function sendMail(mailOptions) {
+  if (!config.devOptions.sendMail) return;
+
   var transporter = nodemailer.createTransport({
     service: 'Mailgun',
     auth: config.mailgunServer,
