@@ -38,7 +38,7 @@
         controller: 'DashboardCtrl',
         data: {
           authRequired: true,
-          authRoles: [USER_ROLES.student, USER_ROLES.pendingTutor, USER_ROLES.tutor],
+          authRoles: [USER_ROLES.pendingUser, USER_ROLES.student, USER_ROLES.pendingTutor, USER_ROLES.tutor],
         },
       })
 

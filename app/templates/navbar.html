@@ -19,14 +19,14 @@
       
       <div class="collapse navbar-collapse" uib-collapse="isNavCollapsed">
         <ul class="nav navbar-nav navbar-right">
-          <li ng-show="isLoggedIn" ng-class="{ active: isSelected('/dashboard') }"><a href="#!/dashboard">DASHBOARD</a></li>
-          <li ng-show="isLoggedIn" ng-class="{ active: isSelected('/profile') }"><a href="#!/profile">PROFILE</a></li>
-          <li ng-show="isLoggedIn" ng-class="{ active: isSelected('/search') }"><a href="#!/search">SEARCH</a></li>
-          <li ng-show="isLoggedIn" ng-class="{ active: isSelected('/sessions') }"><a href="#!/sessions">SESSIONS</a></li>
-          <li ng-show="!isLoggedIn" ng-class="{ active: isSelected('/about') }"><a href="#!/about">ABOUT</a></li>
-          <li ng-show="!isLoggedIn" ng-class="{ active: isSelected('/apply') }"><a href="#!/apply">APPLY</a></li>
-          <li ng-show="!isLoggedIn" ng-class="{ active: isSelected('/login') }"><a href="#!/login">LOGIN</a></li>
-          <li ng-show="isLoggedIn"><a href="" ng-click="logout()">LOGOUT</a></li>
+          <li ng-show="showIcon('dashboard')" ng-class="{ active: isSelected('/dashboard') }"><a href="#!/dashboard">DASHBOARD</a></li>
+          <li ng-show="showIcon('profile')" ng-class="{ active: isSelected('/profile') }"><a href="#!/profile">PROFILE</a></li>
+          <li ng-show="showIcon('search')" ng-class="{ active: isSelected('/search') }"><a href="#!/search">SEARCH</a></li>
+          <li ng-show="showIcon('sessions')" ng-class="{ active: isSelected('/sessions') }"><a href="#!/sessions">SESSIONS</a></li>
+          <li ng-show="showIcon('about')" ng-class="{ active: isSelected('/about') }"><a href="#!/about">ABOUT</a></li>
+          <li ng-show="showIcon('apply')" ng-class="{ active: isSelected('/apply') }"><a href="#!/apply">APPLY</a></li>
+          <li ng-show="showIcon('login')" ng-class="{ active: isSelected('/login') }"><a href="#!/login">LOGIN</a></li>
+          <li ng-show="showIcon('logout')"><a href="" ng-click="logout()">LOGOUT</a></li>
         </ul>
       </div>
     </div>

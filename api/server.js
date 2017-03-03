@@ -3,6 +3,7 @@ var bodyParser  = require('body-parser');
 var mysql       = require('mysql');
 var jwt         = require('jsonwebtoken');
 var crypto      = require('crypto');
+var nodemailer = require('nodemailer');
 
 var config      = require(__dirname + '/config');
 var USER_ROLES  = require(__dirname + '/userRoles');
@@ -72,7 +73,8 @@ app.use('/auth/register', function(req, res) {
       }
 
       if (req.body.user.accountType !== USER_ROLES.pendingTutor && req.body.user.accountType !== USER_ROLES.tutor) {
-        var role = USER_ROLES.student;
+        sendVerifyEmail(post.userID, req.headers.host);
+        var role = USER_ROLES.pendingUser;
         var token = jwt.sign({id: post.userID, role: role}, app.get('secret'));
         res.json({success: true, message: 'Registration was Successful', name: post.firstName, role: role, token: token});
       } else {
@@ -102,7 +104,8 @@ app.use('/auth/register', function(req, res) {
                     res.status(503).send(err);
                     return;
                   }
-                  var role = USER_ROLES.pendingTutor;
+                  sendVerifyEmail(post.userID, req.headers.host);
+                  var role = USER_ROLES.pendingUser;
                   var token = jwt.sign({id: post.userID, role: role}, app.get('secret'));
                   res.json({success: true, message: 'Registration was Successful', name: post.firstName, role: role, token: token});
                   return;
@@ -150,19 +153,27 @@ app.use('/auth/login', function(req, res) {
 
       var name = rows[0].firstName;
 
-      connection.query('SELECT userid, verified FROM tutor WHERE userID = ?', [details.studentNumber], function(err, rows, fields) {
-        var role;
-
-        if (!rows || !rows[0]) {
-          role = USER_ROLES.student;
-        } else if (rows[0].verified) {
-          role = USER_ROLES.tutor;
+      connection.query('SELECT emailVerified FROM user WHERE userID = ?', [details.studentNumber], function(err, rows, fields) {
+        if (rows[0].emailVerified === 0) {
+          role = USER_ROLES.pendingUser;
+          var token = jwt.sign({id: details.studentNumber, role: role}, app.get('secret'));
+          res.json({success: true, message: 'Login was Successful', name: name, role: role, token: token});
         } else {
-          role = USER_ROLES.pendingTutor;
-        }
+          connection.query('SELECT userid, verified FROM tutor WHERE userID = ?', [details.studentNumber], function(err, rows, fields) {
+            var role;
 
-        var token = jwt.sign({id: details.studentNumber, role: role}, app.get('secret'));
-        res.json({success: true, message: 'Login was Successful', name: name, role: role, token: token});
+            if (!rows || !rows[0]) {
+              role = USER_ROLES.student;
+            } else if (rows[0].verified) {
+              role = USER_ROLES.tutor;
+            } else {
+              role = USER_ROLES.pendingTutor;
+            }
+
+            var token = jwt.sign({id: details.studentNumber, role: role}, app.get('secret'));
+            res.json({success: true, message: 'Login was Successful', name: name, role: role, token: token});
+          });
+        }
       });
       return;
     });
@@ -774,7 +785,36 @@ app.use('/api/session/appeal_session', function(req, res) {
   });
 });
 
+app.use('/emailVerify', function(req,res) {
+  if (!req.query.id || !req.query.code) {
+    res.status(401).send('Invalid Email Verification Request');
+  }
+  connection.query('SELECT emailVerified FROM user WHERE userID = ? AND verifyCode = ?',[req.query.id, req.query.code], function(err, result, fields) {
+    if (err) {
+      console.log(err);
+      res.status(503).send(err);
+      return;
+    }
+    if (!result || !result[0]) {
+      res.status(401).send('User Not Found or Code may have expired');
+      return;
+    }
 
+    if (result[0].emailVerified === 0) {
+      connection.query('UPDATE user SET emailVerified = 1 WHERE userID = ?',[req.query.id], function(err, result, fields) {
+        if (err) {
+          console.log(err);
+          res.status(503).send(err);
+          return;
+        }
+        res.redirect('/#!/login');//Maybe have a seperate 'verify success' page?
+      });
+    } else {
+      res.status(503).send('User is Already Verified');
+      return;
+    }
+  });
+});
 
 
 // Serve
@@ -858,6 +898,44 @@ function mysqlTransaction(queryA, queryB) {
       });
     });
   });
+}
+
+function sendVerifyEmail(userID, hostURL) { //hostURL eg. http://localhost:8080, www.volunteertutorexchange.com etc
+  var verifyCode = genRandomString(20);
+  var userEmail = userID + '@student.uwa.edu.au';
+  var verifyLink = hostURL+'/emailVerify?id='+userID+'&code='+verifyCode;
+
+  connection.query('UPDATE user SET verifyCode = ? WHERE userID = ?',[verifyCode, userID], function(err, result, fields) {
+    if (err) {
+      console.log(err);
+      return;
+    }
+
+    var data = {
+      from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
+      to:   userEmail,
+      subject: 'Time to Verify Matey',
+      text: verifyLink,
+      html: '<p>Hey Friendo you need to Verify this Email Address. <a href="'+verifyLink+'">Click Here</a> Buddy<p>',
+    };
+
+    sendMail(data);
+  });
+}
+
+function sendMail(mailOptions) {
+  var transporter = nodemailer.createTransport({
+    service: 'Mailgun',
+    auth: config.mailgunServer,
+  });
+
+  transporter.sendMail(mailOptions, function(error, info) {
+    if (error) {
+      return console.log(error);
+    }
+    return;
+  });
+
 }
 
 /** [from https://code.ciphertrick.com/2016/01/18/salt-hash-passwords-using-nodejs-crypto/]
