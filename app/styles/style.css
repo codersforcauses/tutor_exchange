@@ -1,64 +1,53 @@
-.jumbotron{
-	padding: 95px;
-	padding-bottom: 140px;
-	margin-bottom: 0px;
-	color: #ffffff;
+.jumbotron {
+    padding: 95px;
+    padding-bottom: 140px;
+    margin-bottom: 0px;
+    color: #ffffff;
     width: 100%;
     height: 100%;
     position: relative;
 }
-
 .mainText {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
 }
-
 .jumbotron p {
     font-size: 20px;
 }
-
 .nav .navbar-nav .navbar-right {
     margin-right: -15px !important;
 }
-
-.footer{
-	padding-top:10px;
-	padding-bottom:15px;
-	position: relative;
-
+.footer {
+    padding-top: 10px;
+    padding-bottom: 15px;
+    position: relative;
 }
-
 html {
-  overflow-y: scroll;
+    overflow-y: scroll;
 }
-
-.body { 
-  background: url(../images/image2b.jpg) no-repeat center center fixed; 
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;
-  background-size: cover;
+.body {
+    background: url(../images/image2b.jpg) no-repeat center top fixed;
 }
-
 #background {
-    width: 100%; 
-    height: 100%; 
-    position: absolute; 
-    left: 0px; 
-    top: 0px; 
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0px;
+    top: 0px;
     z-index: 0;
     padding: 95px;
-	padding-bottom: 140px;
-	margin-bottom: 0px;
+    padding-bottom: 140px;
+    margin-bottom: 0px;
 }
-
-.stretch { width:100%; height:auto; }
-
-.navbar{
-	color: #ffffff !important;
-	margin-bottom: 0;
+.stretch {
+    width: 100%;
+    height: auto;
+}
+.navbar {
+    color: #ffffff !important;
+    margin-bottom: 0;
     background-color: transparent;
     border: 0;
     border-radius: 0;
@@ -69,7 +58,6 @@ html {
 .navbar li a, .navbar .navbar-brand {
     color: #ffffff !important;
 }
-
 .form-control {
     display: block;
     width: 100%;
@@ -83,12 +71,10 @@ html {
     border: 1px solid #ccc;
     border-radius: 4px;
 }
-
 .navbar-nav li a:hover, .navbar-nav li.active a {
     color: #0F4364 !important;
     background-color: #ffffff !important;
 }
-
 .navbar-brand {
     float: left;
     height: 50px;
@@ -96,7 +82,6 @@ html {
     font-size: 16.5px;
     line-height: 20px;
 }
-
 .navbar-toggle {
     position: relative;
     float: right;
@@ -111,99 +96,79 @@ html {
     right: 15px;
     margin-right: 0px;
 }
-
 .collapsing.in-remove-active {
     overflow: hidden;
 }
-
-.errorMessageBox{
-	color:#f44242;
-	padding-bottom:10px;
+.errorMessageBox {
+    color: #f44242;
+    padding-bottom: 10px;
 }
-
-.form-group p.verificationStatus.pending, .form-group p.profileVisible.private{
-	color:#ff6100;
+.form-group p.verificationStatus.pending, .form-group p.profileVisible.private {
+    color: #ff6100;
 }
-
-.form-group p.verificationStatus.verified, .form-group p.profileVisible.visible{
-	color:#63c617;
+.form-group p.verificationStatus.verified, .form-group p.profileVisible.visible {
+    color: #63c617;
 }
-
-.form-inline > .form-control{
-	display:inline-block !important;
-	width: inherit !important;
-	margin-right:3px;
+.form-inline > .form-control {
+    display: inline-block !important;
+    width: inherit !important;
+    margin-right: 3px;
 }
-
 #profile-form .ng-enter, #profile-form .ng-leave {
-	--webkit-transition: none !important;
-  	transition:none !important;
+    --webkit-transition: none !important;
+    transition: none !important;
 }
-
 [ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
-  	display: none !important;
+    display: none !important;
 }
-
 #upgradeBtn.btn.btn-success {
-	margin-bottom:10px;
+    margin-bottom: 10px;
 }
-
-
-div.ui-select-match{
-	overflow:hidden;
+div.ui-select-match {
+    overflow: hidden;
 }
-
 .btn-default-focus {
-  outline: none !important;
-  box-shadow: none !important;
+    outline: none !important;
+    box-shadow: none !important;
 }
-
 ul.searchResultList, ul.searchResultList > li {
-	padding-left:0 !important;
-	list-style:none;
+    padding-left: 0 !important;
+    list-style: none;
 }
-
-datePicker{
-	padding:2px 7px !important;
+datePicker {
+    padding: 2px 7px !important;
 }
-
 .strikethrough {
-	color: grey;
- 	text-decoration: line-through;
+    color: grey;
+    text-decoration: line-through;
 }
-
 .moment-picker-container {
-	border-color: black !important;
+    border-color: black !important;
 }
-
 .moment-picker-container:before {
-	/*content: none !important;*/
-	border-bottom-color: black !important;
-}
 
+    /*content: none !important;*/
+    border-bottom-color: black !important;
+}
 .moment-picker-container:after {
-	/*content: none !important;*/
-	border-top-color: black !important;
-}
 
+    /*content: none !important;*/
+    border-top-color: black !important;
+}
 .no-header .header-view {
-	display: none;
+    display: none;
 }
-
 textarea {
-	resize: vertical;
+    resize: vertical;
 }
-
 a:-webkit-any-link {
     color: -webkit-link;
     cursor: auto;
 }
-
 li {
     display: list-item;
     text-align: -webkit-match-parent;
 }
-
 ul, menu, dir {
     display: block;
     list-style-type: disc;
@@ -213,13 +178,24 @@ ul, menu, dir {
     -webkit-margin-end: 0px;
     -webkit-padding-start: 40px;
 }
-
 #footer {
-   position:absolute;
-   bottom:0;
-   width:100%;
-   height:60px;   /* Height of the footer */
-   background: transparent;
-   text-align: center;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 60px;   /* Height of the footer */
+    background: transparent;
+    text-align: center;
 }
 
+/* For Mobile Devices */
+
+/* background-attachment: fixed and background-size:cover causes issues on Android devices. */
+/* For now, must be restricted only to large screens */
+@media screen and (min-width:1024px) {
+    .body {
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+    }
+}
