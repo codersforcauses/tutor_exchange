@@ -90,6 +90,8 @@
 
   run.$inject = ['$rootScope', 'authService', '$state'];
   function run($rootScope, authService, $state) {
+    authService.retrieveToken();
+
     $rootScope.$on('$stateChangeStart', function(event, next) {
       if (next.data && next.data.authRequired) {
         if (!authService.isAuthenticated()) {
