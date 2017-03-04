@@ -355,6 +355,61 @@ app.use('/auth/upgrade', function(req, res) {
 });
 
 
+// Returns user details and a fresh token if presented with a token
+app.use('/auth/me', function(req, res) {
+  var user = getUser(req);
+
+  if (!user) {
+    res.end();
+    return;
+  }
+
+  var name, role;
+
+  connection.query('SELECT firstName, emailVerified FROM user WHERE userID = ?', [user.id], function(err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(503).send(err);
+      return;
+    }
+
+    if (rows.length === 0) {
+      res.end();
+      return;
+    }
+
+    name = rows[0].firstName;
+
+    if (rows[0].emailVerified === 0) {
+      role = USER_ROLES.pendingUser;
+      var token = jwt.sign({id: user.id, role: role}, app.get('secret'));
+      res.json({success: true, id: user.id, name: name, role: role, token: token});
+      return;
+    }
+
+    connection.query('SELECT userid, verified FROM tutor WHERE userID = ?', [user.id], function(err, rows, fields) {
+      if (err) {
+        console.log(err);
+        res.status(503).send(err);
+        return;
+      }
+
+      if (rows.length === 0) {
+        role = USER_ROLES.student;
+      } else if (rows[0].verified) {
+        role = USER_ROLES.tutor;
+      } else {
+        role = USER_ROLES.pendingTutor;
+      }
+
+      var token = jwt.sign({id: user.id, role: role}, app.get('secret'));
+      res.json({success: true, id: user.id, name: name, role: role, token: token});
+      return;
+    });
+  });
+});
+
+
 // Fetch all Units/Languages available. Useful for Applyform and others
 app.use('/api/data/units',function(req,res) {
     connection.query('SELECT * FROM unit', function(err, result, fields) {
