@@ -186,12 +186,25 @@ ul, menu, dir {
     background: transparent;
     text-align: center;
 }
+body, html {
+    overflow-x: hidden;
+    overflow-y: auto;
+}
 
 /* For Mobile Devices */
 
 /* background-attachment: fixed and background-size:cover causes issues on Android devices. */
-/* For now, must be restricted only to large screens */
+
+/* For now, background-size:cover must be restricted only to large screens */
 @media screen and (min-width:1024px) {
+    .body {
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+    }
+}
+@media screen and (min-height:1120px) {
     .body {
         -webkit-background-size: cover;
         -moz-background-size: cover;
