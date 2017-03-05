@@ -627,12 +627,6 @@ app.use('/api/session/create_request', function(req, res) {
     return;
   }
 
-  if (req.body.session.otherUser.userID === currentUser.id) {
-    res.status(400).send('Cannot Start a Session with Yourself');
-    return;
-  }
-
-
   var requestData = {
     tutor: currentUser.id,
     tutee: req.body.session.otherUser.userID,
@@ -644,13 +638,52 @@ app.use('/api/session/create_request', function(req, res) {
     hoursAwarded: 0,
   };
 
-  connection.query('INSERT INTO session SET ?', requestData, function(err, result, fields) {
+
+  if (requestData.tutor === requestData.tutee) {
+    res.status(400).send('Cannot Start a Session with Yourself');
+    return;
+  }
+
+  if (Date.parse(requestData.time) < Date.now()) {
+    res.status(400).send('Cannot start a session in the past');
+    return;
+  }
+
+  connection.query('SELECT COUNT(*) as userExists FROM user WHERE userID = ?;', [requestData.tutee], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
       return;
     }
-    res.end();
+
+    if (!result[0].userExists) {
+      res.status(400).send('Student is not yet registered');
+      return;
+    }
+
+    connection.query('select \'tutee\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1 UNION select \'tutor\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1;', [requestData.tutee, requestData.tutee, requestData.tutor, requestData.tutor], function(err, result, fields) {
+      if (err) {
+        console.log(err);
+        res.status(503).send(err);
+        return;
+      }
+
+      for (var i=0; i<result.length; i++) {
+        if (Math.abs(Date.parse(result[i].time) - Date.parse(requestData.time)) < 1*60*60*1000) {
+          res.status(400).send(result[i].role + ' has a timetable clash');
+          return;
+        }
+      }
+
+      connection.query('INSERT INTO session SET ?', requestData, function(err, result, fields) {
+        if (err) {
+          console.log(err);
+          res.status(503).send(err);
+          return;
+        }
+        res.end();
+      });
+    });
   });
 });
 
