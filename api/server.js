@@ -639,7 +639,7 @@ app.use('/api/session/create_request', function(req, res) {
   };
 
 
-  if (requestData.tutor === requestData.tutee) {
+  if (parseInt(requestData.tutor) === parseInt(requestData.tutee)) {
     res.json({success: false, message: 'You cannot have a tutoring session with yourself'});
     return;
   }
@@ -661,7 +661,7 @@ app.use('/api/session/create_request', function(req, res) {
       return;
     }
 
-    connection.query('select \'tutee\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1 UNION select \'tutor\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1;', [requestData.tutee, requestData.tutee, requestData.tutor, requestData.tutor], function(err, result, fields) {
+    connection.query('select \'Student\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1 UNION select \'Tutor\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1;', [requestData.tutee, requestData.tutee, requestData.tutor, requestData.tutor], function(err, result, fields) {
       if (err) {
         console.log(err);
         res.status(503).send(err);
