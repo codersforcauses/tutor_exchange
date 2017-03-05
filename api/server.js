@@ -507,7 +507,7 @@ app.use('/api/session/get_requests', function(req, res) {
   }
 
   //connection.query('SELECT * FROM session WHERE sessionStatus = 0 AND (tutee = ? OR tutor = ?)',[currentUser.id, currentUser.id], function(err, result, fields) {
-  connection.query('SELECT session.*, firstName, lastName, phone FROM session JOIN user ON session.tutor = user.userID WHERE sessionStatus = 0 AND tutee = ? UNION SELECT session.*, user.firstName, user.lastName, phone FROM session JOIN user ON session.tutee = user.userID WHERE sessionStatus = 0 AND tutor = ?;', [currentUser.id, currentUser.id], function(err, result, fields) {
+  connection.query('(SELECT session.*, firstName, lastName, phone FROM session JOIN user ON session.tutor = user.userID WHERE sessionStatus = 0 AND tutee = ?) UNION (SELECT session.*, firstName, lastName, phone FROM session JOIN user ON session.tutee = user.userID WHERE sessionStatus = 0 AND tutor = ?) ORDER BY time;', [currentUser.id, currentUser.id], function(err, result, fields) {
 
     if (err) {
       console.log(err);
@@ -546,7 +546,7 @@ app.use('/api/session/get_appointments', function(req, res) {
     return;
   }
   //connection.query('SELECT * FROM session WHERE sessionStatus = 1 AND hoursAwarded = 0 AND (tutee = ? OR tutor = ?)',[currentUser.id, currentUser.id], function(err, result, fields) {
-  connection.query('SELECT session.*, firstName, lastName, phone FROM session JOIN user ON session.tutor = user.userID WHERE (sessionStatus = 1 OR sessionStatus = 3) AND tutee = ? UNION SELECT session.*, firstName, lastName, phone FROM session JOIN user ON session.tutee = user.userID WHERE (sessionStatus = 1 OR sessionStatus = 3) AND tutor = ?',[currentUser.id, currentUser.id], function(err, result, fields) {
+  connection.query('(SELECT session.*, firstName, lastName, phone FROM session JOIN user ON session.tutor = user.userID WHERE (sessionStatus = 1 OR sessionStatus = 3) AND tutee = ?) UNION (SELECT session.*, firstName, lastName, phone FROM session JOIN user ON session.tutee = user.userID WHERE (sessionStatus = 1 OR sessionStatus = 3) AND tutor = ?) ORDER BY time;', [currentUser.id, currentUser.id], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
@@ -586,7 +586,7 @@ app.use('/api/session/get_open_sessions', function(req, res) {
   }
 
   //confirmationStatus - 0: Not Confirmed,    1: Confirmed by Tutor,    2: Confirmed by Tutee    3: Fully Confirmed
-  connection.query('SELECT session.*, firstName, lastName FROM session JOIN user ON session.tutor = user.userID WHERE sessionStatus = 2 AND tutee = ? AND (confirmationStatus = 0 OR confirmationStatus = 1) UNION SELECT session.*, firstName, lastName FROM session JOIN user ON session.tutee = user.userID WHERE sessionStatus = 2 AND tutor = ? AND (confirmationStatus = 0 OR confirmationStatus = 2)',[currentUser.id, currentUser.id], function(err, result, fields) {
+  connection.query('(SELECT session.*, firstName, lastName FROM session JOIN user ON session.tutor = user.userID WHERE sessionStatus = 2 AND tutee = ? AND (confirmationStatus = 0 OR confirmationStatus = 1)) UNION (SELECT session.*, firstName, lastName FROM session JOIN user ON session.tutee = user.userID WHERE sessionStatus = 2 AND tutor = ? AND (confirmationStatus = 0 OR confirmationStatus = 2)) ORDER BY time;',[currentUser.id, currentUser.id], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
