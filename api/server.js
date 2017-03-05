@@ -640,16 +640,16 @@ app.use('/api/session/create_request', function(req, res) {
 
 
   if (requestData.tutor === requestData.tutee) {
-    res.status(400).send('Cannot Start a Session with Yourself');
+    res.json({success: false, message: 'You cannot have a tutoring session with yourself'});
     return;
   }
 
   if (Date.parse(requestData.time) < Date.now()) {
-    res.status(400).send('Cannot start a session in the past');
+    res.json({success: false, message: 'You cannot arrange tutoring sessions in the past'});
     return;
   }
 
-  connection.query('SELECT COUNT(*) as userExists FROM user WHERE userID = ?;', [requestData.tutee], function(err, result, fields) {
+  connection.query('SELECT COUNT(*) as userExists FROM user WHERE userID = ? AND emailVerified = 1;', [requestData.tutee], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
@@ -657,7 +657,7 @@ app.use('/api/session/create_request', function(req, res) {
     }
 
     if (!result[0].userExists) {
-      res.status(400).send('Student is not yet registered');
+      res.json({success: false, message: 'Student is not yet fully registered with the system'});
       return;
     }
 
@@ -670,7 +670,7 @@ app.use('/api/session/create_request', function(req, res) {
 
       for (var i=0; i<result.length; i++) {
         if (Math.abs(Date.parse(result[i].time) - Date.parse(requestData.time)) < 1*60*60*1000) {
-          res.status(400).send(result[i].role + ' has a timetable clash');
+          res.json({success: false, message: (result[i].role + ' has a timetable clash')});
           return;
         }
       }
@@ -681,7 +681,7 @@ app.use('/api/session/create_request', function(req, res) {
           res.status(503).send(err);
           return;
         }
-        res.end();
+        res.json({success: true});
       });
     });
   });

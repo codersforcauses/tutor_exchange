@@ -75,7 +75,10 @@
 
     function createRequest(session) {
       sessionService.createRequest(session)
-        .then(function() {
+        .then(function(response) {
+          if (response.data && !response.data.success) {
+            alert('ERROR: ' + response.data.message);
+          }
           getRequests();
         });
     }
