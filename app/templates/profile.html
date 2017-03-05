@@ -4,9 +4,9 @@
       <div id="profile-form">
         <br>
         <h1>Profile</h1>
-              <div style="line-height:75%;">
-        <br>
-      </div>
+        <div style="line-height:75%;">
+          <br>
+        </div>
         <form name="profileForm" novalidate>
           <div class="form-group">
             <label for="text">Account Type:</label>
@@ -74,6 +74,12 @@
               <textarea ng-if="editMode" name="bio" class="form-control" ng-maxlength="255" rows="4" cols="50" ng-model="edituser.bio">
               </textarea>
               <div ng-if="editMode" class="help-block">Max 255 Characters</div>
+            </div>
+            <div ng-if="upgradeAccount">
+              <hr>
+              <div class="form-group" ng-class="{ 'has-error': profileForm.interviewAgree.$invalid && profile-form.$submitted }">
+                <div class="checkbox"><label><input type="checkbox" name="interviewAgree" ng-model="interviewAgree" required> I agree to be interviewed prior to being accepted as a Tutor</label></div>
+              </div>
             </div>
             <div class="accountStatusBox" ng-if="!upgradeAccount">
               <hr>

@@ -12,9 +12,9 @@
       $state.go('dashboard');// Already Logged in
     }
 
-    $scope.submit = function(user) {
+    $scope.submit = function(user, rememberMe) {
       userFunctions
-        .login(user)
+        .login(user, rememberMe)
         .then(function(response) {
           if (userFunctions.isLoggedIn()) {
             $state.go('dashboard');
