@@ -7,6 +7,8 @@ var nodemailer = require('nodemailer');
 var smtpTransport = require('nodemailer-smtp-transport');
 var handlebars = require('handlebars');
 var fs = require('fs');
+var cheerio = require('cheerio'),
+    $ = cheerio.load('<ul id="verifyEmail">...</ul>');
 
 var config      = require(__dirname + '/config');
 var USER_ROLES  = require(__dirname + '/userRoles');
@@ -891,7 +893,6 @@ app.use('/emailVerify', function(req,res) {
   });
 });
 
-<<<<<<< HEAD
 //allow users to send an email with a link to a password reset page
 //ideally will be linked to from the login page
 //will require front-end support
@@ -920,7 +921,7 @@ app.use('/auth/forgotPassword', function(req,res) {
     }
   });
 });
-=======
+
 // Get name from student number
 app.use('/api/who/get_name', function(req, res) {
   var currentUser = getUser(req);
@@ -956,9 +957,6 @@ app.use('/api/who/get_name', function(req, res) {
   });
 
 });
-
-
->>>>>>> refs/remotes/origin/dev
 
 // Serve
 app.listen(config.server.port, function() {
@@ -1043,12 +1041,9 @@ function mysqlTransaction(queryA, queryB) {
   });
 }
 
-<<<<<<< HEAD
-=======
-function sendVerifyEmail2(userID, firstName, hostURL) { //hostURL eg. http://localhost:8080, www.volunteertutorexchange.com etc
+function sendVerifyEmail(userID, firstName, hostURL) { //hostURL eg. http://localhost:8080, www.volunteertutorexchange.com etc
   if (!config.devOptions.sendMail) return;
 
->>>>>>> refs/remotes/origin/dev
   var verifyCode = genRandomString(20);
   var userEmail = userID + '@student.uwa.edu.au';
   var verifyLink = hostURL+'/emailVerify?id='+userID+'&code='+verifyCode;
@@ -1058,9 +1053,10 @@ function sendVerifyEmail2(userID, firstName, hostURL) { //hostURL eg. http://loc
       console.log(err);
       return;
     }
-
-    readHTMLFile('http://staging.volunteertutorexchange.com/app/templates/verifyEmail.html', function(err, html) {
-      var template = handlebars.compile(html);
+    console.log(hostURL);
+    //readHTMLFile('/app/templates/verifyEmail.html', function(err, html) {
+      var sauce = $("#verify-email").html();
+      var template = handlebars.compile(/*html)*/sauce);
       var replacements = {
           firstName: firstName,
           verifyLink: verifyLink,
@@ -1070,13 +1066,13 @@ function sendVerifyEmail2(userID, firstName, hostURL) { //hostURL eg. http://loc
           from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
           to:   userEmail,
           subject: 'Email Verification',
-          text: {path: 'http://staging.volunteertutorexchange.com/app/text/verifyEmail.txt'},
+          text: /*{path: hostURL+'/app/text/verifyEmail.txt'}*/'pls',
           html: readyHTML,
       };
       sendMail(data);
     });
 
-  });
+  //});
 }
 
 /*send email using a template
