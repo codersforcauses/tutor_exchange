@@ -7,7 +7,8 @@ var nodemailer = require('nodemailer');
 
 var config      = require(__dirname + '/config');
 var USER_ROLES  = require(__dirname + '/userRoles');
-
+var SESSION_STATUS = require(__dirname + '/sessionStatus');
+var CONFIRM_STATUS = require(__dirname + '/confirmationStatus');
 
 var app = express();
 app.use(bodyParser.json()); //read json
@@ -33,8 +34,10 @@ app.use('/*', function(req, res, next) {
 
 
 // static routing
-app.use(express.static(__dirname + '/../app'));
-app.use('/bower_components', express.static(__dirname + '/../bower_components'));
+if (config.devOptions.serveStatic) {
+  app.use(express.static(__dirname + '/../app'));
+  app.use('/bower_components', express.static(__dirname + '/../bower_components'));
+}
 
 
 app.use('/auth/register', function(req, res) {
@@ -352,6 +355,61 @@ app.use('/auth/upgrade', function(req, res) {
 });
 
 
+// Returns user details and a fresh token if presented with a token
+app.use('/auth/me', function(req, res) {
+  var user = getUser(req);
+
+  if (!user) {
+    res.end();
+    return;
+  }
+
+  var name, role;
+
+  connection.query('SELECT firstName, emailVerified FROM user WHERE userID = ?', [user.id], function(err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(503).send(err);
+      return;
+    }
+
+    if (rows.length === 0) {
+      res.end();
+      return;
+    }
+
+    name = rows[0].firstName;
+
+    if (rows[0].emailVerified === 0) {
+      role = USER_ROLES.pendingUser;
+      var token = jwt.sign({id: user.id, role: role}, app.get('secret'));
+      res.json({success: true, id: user.id, name: name, role: role, token: token});
+      return;
+    }
+
+    connection.query('SELECT userid, verified FROM tutor WHERE userID = ?', [user.id], function(err, rows, fields) {
+      if (err) {
+        console.log(err);
+        res.status(503).send(err);
+        return;
+      }
+
+      if (rows.length === 0) {
+        role = USER_ROLES.student;
+      } else if (rows[0].verified) {
+        role = USER_ROLES.tutor;
+      } else {
+        role = USER_ROLES.pendingTutor;
+      }
+
+      var token = jwt.sign({id: user.id, role: role}, app.get('secret'));
+      res.json({success: true, id: user.id, name: name, role: role, token: token});
+      return;
+    });
+  });
+});
+
+
 // Fetch all Units/Languages available. Useful for Applyform and others
 app.use('/api/data/units',function(req,res) {
     connection.query('SELECT * FROM unit', function(err, result, fields) {
@@ -438,7 +496,6 @@ app.use('/api/search', function(req, res) {
 
 // sessionStatus - 0: Request,    1: Appointment,    2: Completed,    3: Cancelled
 //confirmationStatus - 0: Not Confirmed,    1: Confirmed by Tutor,    2: Confirmed by Tutee    3: Fully Confirmed
-// hasOccured - 0: Has Not Occured,    1: Has Occured
 
 // Returns a list of session requests.
 app.use('/api/session/get_requests', function(req, res) {
@@ -488,7 +545,7 @@ app.use('/api/session/get_appointments', function(req, res) {
     res.status(401).send('Not Logged in. Cannot Fetch API Data');
     return;
   }
-  //connection.query('SELECT * FROM session WHERE sessionStatus = 1 AND hasOccured = 0 AND (tutee = ? OR tutor = ?)',[currentUser.id, currentUser.id], function(err, result, fields) {
+  //connection.query('SELECT * FROM session WHERE sessionStatus = 1 AND hoursAwarded = 0 AND (tutee = ? OR tutor = ?)',[currentUser.id, currentUser.id], function(err, result, fields) {
   connection.query('SELECT session.*, firstName, lastName, phone FROM session JOIN user ON session.tutor = user.userID WHERE (sessionStatus = 1 OR sessionStatus = 3) AND tutee = ? UNION SELECT session.*, firstName, lastName, phone FROM session JOIN user ON session.tutee = user.userID WHERE (sessionStatus = 1 OR sessionStatus = 3) AND tutor = ?',[currentUser.id, currentUser.id], function(err, result, fields) {
     if (err) {
       console.log(err);
@@ -584,7 +641,7 @@ app.use('/api/session/create_request', function(req, res) {
     comments: req.body.session.comments,
     sessionStatus: 0,
     confirmationStatus: 0,
-    hasOccured: 0,
+    hoursAwarded: 0,
   };
 
   connection.query('INSERT INTO session SET ?', requestData, function(err, result, fields) {
@@ -762,30 +819,27 @@ app.use('/api/session/appeal_session', function(req, res) {
     }
 
 
-    connection.query('UPDATE session SET confirmationStatus = ?, hasOccured = 0 WHERE sessionID = ?', [confirmationStatus, req.body.sessionID], function(err, result, fields) {
+    connection.query('UPDATE session SET confirmationStatus = ?, hoursAwarded = 0 WHERE sessionID = ?', [confirmationStatus, req.body.sessionID], function(err, result, fields) {
       if (err) {
         console.log(err);
         res.status(503).send(err);
         return;
       }
 
+      var requestData = {
+        sessionID: req.body.sessionID,
+        userID: currentUser.id,
+        reason: req.body.reason || '',
+      };
 
-      // The problem here is that resolvedBy isn't needed anymore.  Resolved is, though.
-      //var requestData = {
-      //  sessionID: req.body.sessionID,
-      //  userID: currentUser.id,
-      //  reason: req.body.reason || '',
-      //  resolvedBy: 0,
-      //};
-
-      //connection.query('INSERT INTO sessionComplaint SET ?', requestData, function(err, result, fields) {
-      //  if (err) {
-      //    console.log(err);
-      //    res.status(503).send(err);
-      //    return;
-      //  }
+      connection.query('INSERT INTO sessionComplaint SET ?', requestData, function(err, result, fields) {
+        if (err) {
+          console.log(err);
+          res.status(503).send(err);
+          return;
+        }
         res.end();
-      //});
+      });
     });
   });
 });
@@ -943,6 +997,8 @@ function mysqlTransaction(queryA, queryB) {
 }
 
 function sendVerifyEmail(userID, hostURL) { //hostURL eg. http://localhost:8080, www.volunteertutorexchange.com etc
+  if (!config.devOptions.sendMail) return;
+
   var verifyCode = genRandomString(20);
   var userEmail = userID + '@student.uwa.edu.au';
   var verifyLink = hostURL+'/emailVerify?id='+userID+'&code='+verifyCode;
@@ -966,6 +1022,8 @@ function sendVerifyEmail(userID, hostURL) { //hostURL eg. http://localhost:8080,
 }
 
 function sendMail(mailOptions) {
+  if (!config.devOptions.sendMail) return;
+
   var transporter = nodemailer.createTransport({
     service: 'Mailgun',
     auth: config.mailgunServer,

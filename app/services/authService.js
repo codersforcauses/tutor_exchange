@@ -6,8 +6,8 @@
     .factory('authService', authService);
 
 
-  authService.$inject = ['$http', 'loginSession'];
-  function authService($http, loginSession) {
+  authService.$inject = ['$http', '$window', 'loginSession'];
+  function authService($http, $window, loginSession) {
 
     var data = {
     };
@@ -18,9 +18,8 @@
       logout:           logout,
       isAuthenticated:  isAuthenticated,
       isAuthorised:     isAuthorised,
-      storeSession:     storeSession,
-      retrieveSession:  retrieveSession,
-      removeSession:    removeSession,
+      storeToken:       storeToken,
+      retrieveToken:    retrieveToken,
     };
 
     return service;
@@ -62,6 +61,7 @@
     function logout() {
       $http.defaults.headers.common.Authorization = '';
       loginSession.destroy();
+      $window.localStorage.removeItem('token');
     }
 
 
@@ -77,22 +77,35 @@
       return (isAuthenticated() && roles.indexOf(loginSession.getUserRole()) !== -1);
     }
 
-    function storeSession() {
+
+    function storeToken() {
       // Store session details and/or token in local storage
-      return;
-    }
-
-    function retrieveSession() {
-      // Retrieve session details and/or token from local storage
-      return;
-    }
-
-    function removeSession() {
-      // If session details were stored in local storage, remove them.
-      return;
+      if ($window.localStorage) {
+        $window.localStorage.setItem('token', $http.defaults.headers.common.Authorization);
+      }
     }
 
 
+    function retrieveToken() {
+
+      var token = $window.localStorage && $window.localStorage.getItem('token');
+      if (!token) return;
+
+      $http.defaults.headers.common.Authorization = token; // Bearer already there!
+      return $http.get('/auth/me')
+        .then(
+          function(response) {
+            if (response.data && response.data.success) {
+              $http.defaults.headers.common.Authorization = 'Bearer ' + response.data.token;
+              loginSession.create(response.data.id, response.data.name, response.data.role);
+            }
+            return response;
+          },
+          function() {
+            logout();
+          }
+        );
+    }
 
   }
 

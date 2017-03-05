@@ -4,9 +4,8 @@
       <div id="login-form">
       <br>
       <h1>Login</h1>
-      <div style="line-height:75%;">
       <br/>
-        <form name="loginForm" ng-submit="submitted=true && loginForm.$valid && submit(user)" novalidate>
+        <form name="loginForm" ng-submit="submitted=true && loginForm.$valid && submit(user, rememberMe)" novalidate>
           <div class="form-group" ng-class="{ 'has-error': loginForm.id.$error && loginForm.$submitted}">
             <label for="text">Student Number: <i class="glyphicon glyphicon-info-sign" uib-tooltip="Login with a valid UWA student number"></i></label>
             <input type="text" class="form-control" name="id" ng-model="user.id" required>
@@ -16,7 +15,7 @@
             <input type="password" class="form-control" name="password" ng-model="user.password" required>
           </div>
           <div class="checkbox">
-            <label><input type="checkbox"> Remember me</label>
+            <label><input type="checkbox" ng-model="rememberMe"> Remember me</label>
           </div>
           <div class="errorMessageBox">{{errorMsg}}</div>
           <button type="submit" class="btn btn-default">Submit</button>
@@ -24,5 +23,4 @@
       </div>
     </div>
   </div>
-</div>
 </div>
