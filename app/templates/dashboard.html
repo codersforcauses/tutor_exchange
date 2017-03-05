@@ -4,12 +4,12 @@
 	<div style="line-height:10%;">
 		<br>
 	</div>
-	<div ng-if="session.role !== 'pendingUser'">
+<!-- 	<div ng-if="session.role !== 'pendingUser'">
 		<h3>Upcoming Sessions</h3>
 		<p>It appears you have no upcoming sessions! <a href="#!/search">Click here</a> to find a Tutor</p>
 		<br>
 		<h4><a href="#!/profile">View your Profile</a></h4>
-	</div>
+	</div> -->
 	<div ng-if="session.role === 'pendingUser'">
 		<h4>Your Account is not verified</h4> 
 		<p>A Verification Email has been sent to: {{session.id}}@student.uwa.edu.au</p>
