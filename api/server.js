@@ -4,6 +4,9 @@ var mysql       = require('mysql');
 var jwt         = require('jsonwebtoken');
 var crypto      = require('crypto');
 var nodemailer = require('nodemailer');
+var smtpTransport = require('nodemailer-smtp-transport');
+var handlebars = require('handlebars');
+var fs = require('fs');
 
 var config      = require(__dirname + '/config');
 var USER_ROLES  = require(__dirname + '/userRoles');
@@ -23,6 +26,19 @@ connection.connect (function(error) {
     console.log('Connected to mysql database');
   }
 });
+
+//from http://stackoverflow.com/questions/39489229/pass-variable-to-html-template-in-nodemailer
+var readHTMLFile = function(path, callback) {
+  fs.readFile(path, {encoding: 'utf-8'}, function (err, html) {
+        if (err) {
+            throw err;
+            callback(err);
+        }
+        else {
+            callback(null, html);
+        }
+    });
+};
 
 
 // middleware
@@ -73,7 +89,7 @@ app.use('/auth/register', function(req, res) {
       }
 
       if (req.body.user.accountType !== USER_ROLES.pendingTutor && req.body.user.accountType !== USER_ROLES.tutor) {
-        sendVerifyEmail(post.userID, req.headers.host);
+        sendVerifyEmail(post.userID, post.firstName, req.headers.host);
         var role = USER_ROLES.pendingUser;
         var token = jwt.sign({id: post.userID, role: role}, app.get('secret'));
         res.json({success: true, message: 'Registration was Successful', name: post.firstName, role: role, token: token});
@@ -104,7 +120,7 @@ app.use('/auth/register', function(req, res) {
                     res.status(503).send(err);
                     return;
                   }
-                  sendVerifyEmail(post.userID, req.headers.host);
+                  sendVerifyEmail(post.userID, post.firstName, req.headers.host);
                   var role = USER_ROLES.pendingUser;
                   var token = jwt.sign({id: post.userID, role: role}, app.get('secret'));
                   res.json({success: true, message: 'Registration was Successful', name: post.firstName, role: role, token: token});
@@ -816,6 +832,34 @@ app.use('/emailVerify', function(req,res) {
   });
 });
 
+//allow users to send an email with a link to a password reset page
+//ideally will be linked to from the login page
+//will require front-end support
+app.use('/auth/forgotPassword', function(req,res) {
+  var details = {
+    studentNumber: req.body.user.id, //need a field for the student number
+  };
+
+  //check if user exists and only send email if they do - but don't communicate this to the user
+  connection.query('SELECT * FROM user WHERE userID = ?', [details.studentNumber], function(err, rows, fields) {
+    if (rows.length === 1) { //if user exists
+      var userEmail = details.studentNumber + '@student.uwa.edu.au';
+      //set mail data
+      var data = {
+        from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
+        to:   userEmail,
+        subject: 'Reset Password Request',
+        text: verifyLink,
+        html: '<p>Hey '+rows[0].firstName+',<p> To reset your password, ' +
+        '<a href="'+verifyLink+'">Click Here</a> and follow the instructions provided.' +
+        ' <p>Didn\'t request a password reset? No worries, you can safely ignore this email.<p>' +
+        'Regards, <br> the Volunteer Tutor Exchange team</p>',
+      };
+
+      sendMail(data);
+    }
+  });
+});
 
 // Serve
 app.listen(config.server.port, function() {
@@ -900,7 +944,7 @@ function mysqlTransaction(queryA, queryB) {
   });
 }
 
-function sendVerifyEmail(userID, hostURL) { //hostURL eg. http://localhost:8080, www.volunteertutorexchange.com etc
+function sendVerifyEmail(userID, firstName, hostURL) { //hostURL eg. http://localhost:8080, www.volunteertutorexchange.com etc
   var verifyCode = genRandomString(20);
   var userEmail = userID + '@student.uwa.edu.au';
   var verifyLink = hostURL+'/emailVerify?id='+userID+'&code='+verifyCode;
@@ -911,18 +955,45 @@ function sendVerifyEmail(userID, hostURL) { //hostURL eg. http://localhost:8080,
       return;
     }
 
-    var data = {
-      from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
-      to:   userEmail,
-      subject: 'Time to Verify Matey',
-      text: verifyLink,
-      html: '<p>Hey Friendo you need to Verify this Email Address. <a href="'+verifyLink+'">Click Here</a> Buddy<p>',
-    };
+    readHTMLFile('http://staging.volunteertutorexchange.com/app/templates/verifyEmail.html', function(err, html) {
+      var template = handlebars.compile(html);
+      var replacements = {
+          firstName: firstName,
+          verifyLink: verifyLink,
+      };
+      var readyHTML = template(replacements);
+      var data = {
+          from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
+          to:   userEmail,
+          subject: 'Email Verification',
+          text: {path: 'http://staging.volunteertutorexchange.com/app/text/verifyEmail.txt'},
+          html: readyHTML,
+      };
+      sendMail(data);
+    });
 
-    sendMail(data);
   });
 }
 
+/*send email using a template
+function sendTemplateMail(mailData, context) {
+  var transporter = nodemailer.createTransport({
+    service: 'Mailgun',
+    auth: config.mailgunServer,
+  });
+
+  var send = transporter.templateSender(mailData);
+  
+  send(mailData, context, function(err, info) {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    console.log('Verification email sent to '+mailData.to);
+  });
+}*/
+
+//send basic, non-template email
 function sendMail(mailOptions) {
   var transporter = nodemailer.createTransport({
     service: 'Mailgun',
