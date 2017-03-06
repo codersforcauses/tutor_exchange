@@ -5,31 +5,38 @@
     color: #ffffff;
     width: 100%;
     height: 100%;
-    position: relative;
+    position: relative
 }
+
 .mainText {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%)
 }
+
 .jumbotron p {
-    font-size: 20px;
+    font-size: 20px
 }
+
 .nav .navbar-nav .navbar-right {
-    margin-right: -15px !important;
+    margin-right: -15px !important
 }
+
 .footer {
     padding-top: 10px;
     padding-bottom: 15px;
-    position: relative;
+    position: relative
 }
+
 html {
-    overflow-y: scroll;
+    overflow-y: scroll
 }
+
 .body {
-    background: url(../images/image2b.jpg) no-repeat center top fixed;
+    background: url(../images/image2b.jpg) no-repeat center top fixed
 }
+
 #background {
     width: 100%;
     height: 100%;
@@ -39,12 +46,14 @@ html {
     z-index: 0;
     padding: 95px;
     padding-bottom: 140px;
-    margin-bottom: 0px;
+    margin-bottom: 0px
 }
+
 .stretch {
     width: 100%;
-    height: auto;
+    height: auto
 }
+
 .navbar {
     color: #ffffff !important;
     margin-bottom: 0;
@@ -53,35 +62,42 @@ html {
     border-radius: 0;
     font-size: 12px !important;
     letter-spacing: 4px;
-    overflow: hidden;
+    overflow: hidden
 }
-.navbar li a, .navbar .navbar-brand {
-    color: #ffffff !important;
+
+.navbar li a,
+.navbar .navbar-brand {
+    color: #ffffff !important
 }
+
 .form-control {
     display: block;
     width: 100%;
     height: 34px;
     padding: 6px 9px;
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.42857143;
     color: #555;
     background-color: #fff;
     background-image: none;
     border: 1px solid #ccc;
-    border-radius: 4px;
+    border-radius: 4px
 }
-.navbar-nav li a:hover, .navbar-nav li.active a {
+
+.navbar-nav li a:hover,
+.navbar-nav li.active a {
     color: #0F4364 !important;
-    background-color: #ffffff !important;
+    background-color: #ffffff !important
 }
+
 .navbar-brand {
     float: left;
     height: 50px;
     padding: 16px 14px;
     font-size: 16.5px;
-    line-height: 20px;
+    line-height: 20px
 }
+
 .navbar-toggle {
     position: relative;
     float: right;
@@ -94,104 +110,136 @@ html {
     border-radius: 4px;
     top: 3px;
     right: 15px;
-    margin-right: 0px;
+    margin-right: 0px
 }
+
 .collapsing.in-remove-active {
-    overflow: hidden;
+    overflow: hidden
 }
+
 .errorMessageBox {
     color: #f44242;
-    padding-bottom: 10px;
+    padding-bottom: 10px
 }
-.form-group p.verificationStatus.pending, .form-group p.profileVisible.private {
-    color: #ff6100;
+
+.form-group p.verificationStatus.pending,
+.form-group p.profileVisible.private {
+    color: #ff6100
 }
-.form-group p.verificationStatus.verified, .form-group p.profileVisible.visible {
-    color: #63c617;
+
+.form-group p.verificationStatus.verified,
+.form-group p.profileVisible.visible {
+    color: #63c617
 }
+
 .form-inline > .form-control {
     display: inline-block !important;
     width: inherit !important;
-    margin-right: 3px;
+    margin-right: 3px
 }
-#profile-form .ng-enter, #profile-form .ng-leave {
+
+#profile-form .ng-enter,
+#profile-form .ng-leave {
     --webkit-transition: none !important;
-    transition: none !important;
+    transition: none !important
 }
-[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
-    display: none !important;
+
+[ng\:cloak],
+[ng-cloak],
+[data-ng-cloak],
+[x-ng-cloak],
+.ng-cloak,
+.x-ng-cloak {
+    display: none !important
 }
+
 #upgradeBtn.btn.btn-success {
-    margin-bottom: 10px;
+    margin-bottom: 10px
 }
+
 div.ui-select-match {
-    overflow: hidden;
+    overflow: hidden
 }
+
 .btn-default-focus {
     outline: none !important;
-    box-shadow: none !important;
+    box-shadow: none !important
 }
-ul.searchResultList, ul.searchResultList > li {
+
+ul.searchResultList,
+ul.searchResultList > li {
     padding-left: 0 !important;
-    list-style: none;
+    list-style: none
 }
+
 datePicker {
-    padding: 2px 7px !important;
+    padding: 2px 7px !important
 }
+
 .strikethrough {
     color: grey;
-    text-decoration: line-through;
+    text-decoration: line-through
 }
+
 .moment-picker-container {
-    border-color: black !important;
+    border-color: black !important
 }
+
 .moment-picker-container:before {
-
-    /*content: none !important;*/
-    border-bottom-color: black !important;
+    border-bottom-color: black !important
 }
+
 .moment-picker-container:after {
+    border-top-color: black !important
+}
 
-    /*content: none !important;*/
-    border-top-color: black !important;
-}
 .no-header .header-view {
-    display: none;
+    display: none
 }
+
 textarea {
-    resize: vertical;
+    resize: vertical
 }
+
 a:-webkit-any-link {
     color: -webkit-link;
-    cursor: auto;
+    cursor: auto
 }
+
 li {
     display: list-item;
-    text-align: -webkit-match-parent;
+    text-align: -webkit-match-parent
 }
-ul, menu, dir {
+
+ul,
+menu,
+dir {
     display: block;
     list-style-type: disc;
     -webkit-margin-before: 1em;
     -webkit-margin-after: 1em;
     -webkit-margin-start: 0px;
     -webkit-margin-end: 0px;
-    -webkit-padding-start: 40px;
+    -webkit-padding-start: 40px
 }
+
 #footer {
     position: absolute;
     bottom: 0;
     width: 100%;
-    height: 60px;   /* Height of the footer */
+    height: 60px;
     background: transparent;
-    text-align: center;
+    text-align: center
 }
 body, html {
     overflow-x: hidden;
     overflow-y: auto;
 }
 
-/* For Mobile Devices */
+a:hover,
+a:focus {
+    text-decoration: none !important
+}
 
 /* background-attachment: fixed and background-size:cover causes issues on Android devices. */
 
@@ -201,8 +249,16 @@ body, html {
         -webkit-background-size: cover;
         -moz-background-size: cover;
         -o-background-size: cover;
-        background-size: cover;
+        background-size: cover
     }
+}
+
+span.ng-binding {
+    color: #000000
+}
+
+span.ui-select-placeholder.text-muted.ng-binding {
+    color: #878787
 }
 @media screen and (min-height:1120px) {
     .body {
