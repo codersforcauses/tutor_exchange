@@ -644,7 +644,7 @@ app.use('/api/session/create_request', function(req, res) {
     return;
   }
 
-  if (Date.parse(requestData.time) < Date.now()) {
+  if (Date.parse(requestData.time + ' GMT+0800') < Date.now()) {
     res.json({success: false, message: 'You cannot arrange tutoring sessions in the past'});
     return;
   }
