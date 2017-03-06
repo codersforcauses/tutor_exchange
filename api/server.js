@@ -1141,6 +1141,7 @@ function sendVerifyEmail(userID, firstName, hostURL, callback) { //hostURL eg. h
         } else {
           callback(result, error);
         }
+      });
     });
   });
 }
