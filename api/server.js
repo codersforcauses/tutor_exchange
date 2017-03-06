@@ -722,6 +722,11 @@ app.use('/api/session/accept_request', function(req, res) {
       time: result[0].time,
     };
 
+    if (Date.parse(requestData.time + ' GMT+0800') < Date.now() + 1*60*60*1000) {
+      res.json({success: false, message: 'You cannot attend a tutoring sessions in the past without a time machine'});
+      return;
+    }
+
     connection.query('select \'Student\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1 UNION select \'Tutor\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1;', [requestData.tutee, requestData.tutee, requestData.tutor, requestData.tutor], function(err, result, fields) {
       if (err) {
         console.log(err);
