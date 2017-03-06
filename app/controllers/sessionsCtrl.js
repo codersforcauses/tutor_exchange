@@ -22,7 +22,7 @@
     $scope.openRejectModal = openRejectModal;
     $scope.openRequestModal = openRequestModal;
     $scope.openAppealModal = openAppealModal;
-    $scope.openCommentModal = openCommentModal;
+    $scope.openAlertModal = openAlertModal;
 
     $scope.refresh = refresh;
 
@@ -77,7 +77,7 @@
       sessionService.createRequest(session)
         .then(function(response) {
           if (response.data && !response.data.success) {
-            openFailedModal(response.data.message);
+            openAlertModal('Session request unsucessful', response.data.message);
           }
           getRequests();
         });
@@ -85,7 +85,10 @@
 
     function acceptRequest(sessionID) {
       sessionService.acceptRequest(sessionID)
-        .then(function() {
+        .then(function(response) {
+          if (response.data && !response.data.success) {
+            openAlertModal('Cannot accept request', response.data.message);
+          }
           getRequests();
           getAppointments();
         });
@@ -186,38 +189,21 @@
       );
     }
 
-    function openCommentModal(comment) {
+    function openAlertModal(heading, message) {
       var modalInstance = $uibModal.open({
-        templateUrl: 'templates/sessions_comment.html',
-        controller: 'SessionsCommentCtrl',
+        templateUrl: 'templates/sessions_alert.html',
+        controller: 'SessionsAlertCtrl',
         resolve: {
-          comment: function() {
-            return comment;
+          heading: function() {
+            return heading;
           },
-        },
-      });
-
-      modalInstance.result.then(
-        function() {},
-        function() {}
-      );
-    }
-
-    function openFailedModal(message) {
-      var modalInstance = $uibModal.open({
-        templateUrl: 'templates/sessions_failed.html',
-        controller: 'SessionsFailedCtrl',
-        resolve: {
           message: function() {
             return message;
           },
         },
       });
 
-      modalInstance.result.then(
-        function() {},
-        function() {}
-      );
+      modalInstance.result.then(function() {}, function() {});
     }
 
   }

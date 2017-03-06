@@ -640,12 +640,12 @@ app.use('/api/session/create_request', function(req, res) {
 
 
   if (parseInt(requestData.tutor) === parseInt(requestData.tutee)) {
-    res.json({success: false, message: 'You cannot have a tutoring session with yourself'});
+    res.json({success: false, message: 'You cannot have a tutoring session with yourself.'});
     return;
   }
 
   if (Date.parse(requestData.time + ' GMT+0800') < Date.now()) {
-    res.json({success: false, message: 'You cannot arrange tutoring sessions in the past'});
+    res.json({success: false, message: 'You cannot arrange tutoring sessions in the past.'});
     return;
   }
 
@@ -657,11 +657,11 @@ app.use('/api/session/create_request', function(req, res) {
     }
 
     if (!result[0].userExists) {
-      res.json({success: false, message: 'Student is not yet fully registered with the system'});
+      res.json({success: false, message: 'Your student isn\'t fully registered with the system yet.  Make sure he/she is signed up andhas responded to the confirmation email.'});
       return;
     }
 
-    connection.query('select \'Student\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1 UNION select \'Tutor\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1;', [requestData.tutee, requestData.tutee, requestData.tutor, requestData.tutor], function(err, result, fields) {
+    connection.query('select ? as userID, \'student\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1 UNION select ? as userID, \'tutor\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1;', [requestData.tutee, requestData.tutee, requestData.tutee, requestData.tutor, requestData.tutor, requestData.tutor], function(err, result, fields) {
       if (err) {
         console.log(err);
         res.status(503).send(err);
@@ -670,7 +670,8 @@ app.use('/api/session/create_request', function(req, res) {
 
       for (var i=0; i<result.length; i++) {
         if (Math.abs(Date.parse(result[i].time) - Date.parse(requestData.time)) < 1*60*60*1000) {
-          res.json({success: false, message: (result[i].role + ' has a timetable clash')});
+          var message = (result[i].userID == currentUser.id ? 'You have ': 'Your ' + result[i].role + ' has ') + 'a timetable clash.';
+          res.json({success: false, message: message});
           return;
         }
       }
@@ -703,14 +704,54 @@ app.use('/api/session/accept_request', function(req, res) {
     return;
   }
 
-  //Gets Session Details and Ensures session is not cancelled and is a request.
-  connection.query('UPDATE session SET sessionStatus = 1 WHERE sessionID = ? AND (tutee = ? OR tutor = ?)', [req.body.sessionID, currentUser.id, currentUser.id], function(err, result, fields) {
+  connection.query('SELECT tutor, tutee, time FROM session WHERE sessionID = ?', [req.body.sessionID], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
       return;
     }
-    res.end();
+
+    if (result.length === 0) {
+      res.status(400).send('Session does not exist');
+      return;
+    }
+
+    var requestData = {
+      sessionID: req.body.sessionID,
+      tutor: result[0].tutor,
+      tutee: result[0].tutee,
+      time: result[0].time,
+    };
+
+    if (Date.parse(requestData.time + ' GMT+0800') < Date.now() + 1*60*60*1000) {
+      res.json({success: false, message: 'You cannot attend a tutoring sessions in the past without a time machine.'});
+      return;
+    }
+
+    connection.query('select ? as userID, \'student\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1 UNION select ? as userID, \'tutor\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1;', [requestData.tutee, requestData.tutee, requestData.tutee, requestData.tutor, requestData.tutor, requestData.tutor], function(err, result, fields) {
+      if (err) {
+        console.log(err);
+        res.status(503).send(err);
+        return;
+      }
+
+      for (var i=0; i<result.length; i++) {
+        if (Math.abs(Date.parse(result[i].time) - Date.parse(requestData.time)) < 1*60*60*1000) {
+          var message = (result[i].userID == currentUser.id ? 'You have ': 'Your ' + result[i].role + ' has ') + 'a timetable clash.';
+          res.json({success: false, message: message});
+          return;
+        }
+      }
+
+      connection.query('UPDATE session SET sessionStatus = 1 WHERE sessionID = ? AND (tutee = ? OR tutor = ?)', [requestData.sessionID, currentUser.id, currentUser.id], function(err, result, fields) {
+        if (err) {
+          console.log(err);
+          res.status(503).send(err);
+          return;
+        }
+        res.json({success: true});
+      });
+    });
   });
 });
 
