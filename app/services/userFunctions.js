@@ -29,11 +29,13 @@
     return service;
 
 
-    function login(user) {
+    function login(user, rememberMe) {
       return authService.login(user.id, user.password)
         .then(function(response) {
           if (response.data.success) {
             console.log(loginSession.getUserName() + ' has logged in');
+            if (rememberMe) authService.storeToken();
+
           } else {
             console.log('Log in unsuccessful: ' + response.data.message);
           }

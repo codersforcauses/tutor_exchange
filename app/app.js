@@ -77,6 +77,11 @@
         controller: 'ApplyCtrl',
       })
 
+      .state('termsOfUse', {
+        url: '/termsOfUse',
+        templateUrl: 'templates/termsOfUse.html',
+      })
+
       .state('about', {
         url: '/about',
         templateUrl: 'templates/about.html',
@@ -85,6 +90,8 @@
 
   run.$inject = ['$rootScope', 'authService', '$state'];
   function run($rootScope, authService, $state) {
+    authService.retrieveToken();
+
     $rootScope.$on('$stateChangeStart', function(event, next) {
       if (next.data && next.data.authRequired) {
         if (!authService.isAuthenticated()) {
