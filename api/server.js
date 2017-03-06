@@ -703,14 +703,48 @@ app.use('/api/session/accept_request', function(req, res) {
     return;
   }
 
-  //Gets Session Details and Ensures session is not cancelled and is a request.
-  connection.query('UPDATE session SET sessionStatus = 1 WHERE sessionID = ? AND (tutee = ? OR tutor = ?)', [req.body.sessionID, currentUser.id, currentUser.id], function(err, result, fields) {
+  connection.query('SELECT tutor, tutee, time FROM session WHERE sessionID = ?', [req.body.sessionID], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
       return;
     }
-    res.end();
+
+    if (result.length === 0) {
+      res.status(400).send('Session does not exist');
+      return;
+    }
+
+    var requestData = {
+      sessionID: req.body.sessionID,
+      tutor: result[0].tutor,
+      tutee: result[0].tutee,
+      time: result[0].time,
+    };
+
+    connection.query('select \'Student\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1 UNION select \'Tutor\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1;', [requestData.tutee, requestData.tutee, requestData.tutor, requestData.tutor], function(err, result, fields) {
+      if (err) {
+        console.log(err);
+        res.status(503).send(err);
+        return;
+      }
+
+      for (var i=0; i<result.length; i++) {
+        if (Math.abs(Date.parse(result[i].time) - Date.parse(requestData.time)) < 1*60*60*1000) {
+          res.json({success: false, message: (result[i].role + ' has a timetable clash')});
+          return;
+        }
+      }
+
+      connection.query('UPDATE session SET sessionStatus = 1 WHERE sessionID = ? AND (tutee = ? OR tutor = ?)', [requestData.sessionID, currentUser.id, currentUser.id], function(err, result, fields) {
+        if (err) {
+          console.log(err);
+          res.status(503).send(err);
+          return;
+        }
+        res.json({success: true});
+      });
+    });
   });
 });
 

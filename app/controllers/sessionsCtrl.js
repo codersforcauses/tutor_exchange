@@ -77,7 +77,7 @@
       sessionService.createRequest(session)
         .then(function(response) {
           if (response.data && !response.data.success) {
-            openFailedModal(response.data.message);
+            openAlertModal('Session request unsucessful', response.data.message);
           }
           getRequests();
         });
@@ -85,7 +85,10 @@
 
     function acceptRequest(sessionID) {
       sessionService.acceptRequest(sessionID)
-        .then(function() {
+        .then(function(response) {
+          if (response.data && !response.data.success) {
+            openAlertModal('Cannot accept request', response.data.message);
+          }
           getRequests();
           getAppointments();
         });
@@ -203,11 +206,14 @@
       );
     }
 
-    function openFailedModal(message) {
+    function openAlertModal(heading, message) {
       var modalInstance = $uibModal.open({
-        templateUrl: 'templates/sessions_failed.html',
-        controller: 'SessionsFailedCtrl',
+        templateUrl: 'templates/sessions_alert.html',
+        controller: 'SessionsAlertCtrl',
         resolve: {
+          heading: function() {
+            return heading;
+          },
           message: function() {
             return message;
           },
