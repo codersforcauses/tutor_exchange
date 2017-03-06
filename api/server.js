@@ -1051,7 +1051,7 @@ app.use('/api/mail/sendVerifyEmail', function(req, res) {
         return;
       }
 
-      sendVerifyEmail(currentUser.id, rows[0], req.headers.host, function(result, err) {
+      sendVerifyEmail(currentUser.id, rows[0].firstName, req.headers.host, function(result, err) {
         if (err) {
           res.json({success: false, message: 'An Error Occurred when Sending Verification Email'});
           return;
