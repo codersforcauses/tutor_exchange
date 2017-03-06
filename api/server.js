@@ -446,7 +446,7 @@ app.use('/api/search', function(req, res) {
     var searchQuery;
     var resultQuery = [];
 
-    var queryString = 'SELECT GROUP_CONCAT(DISTINCT languageName) AS language, GROUP_CONCAT(DISTINCT unitID) AS unitID, tutor.userID, firstName, phone, bio FROM tutor JOIN languageTutored ON tutor.userID = languageTutored.tutor JOIN language ON languageTutored.language = language.languageCode JOIN unitTutored ON unitTutored.tutor = tutor.userID JOIN unit ON unitTutored.unit = unit.unitID JOIN user ON user.userID = tutor.userID WHERE visible = 1 AND tutor.userID <> ? GROUP BY tutor.userID HAVING unitID LIKE ? AND language LIKE ?';
+    var queryString = 'SELECT GROUP_CONCAT(DISTINCT languageName) AS language, GROUP_CONCAT(DISTINCT unitID) AS unitID, tutor.userID, firstName, phone, bio FROM tutor JOIN languageTutored ON tutor.userID = languageTutored.tutor JOIN language ON languageTutored.language = language.languageCode JOIN unitTutored ON unitTutored.tutor = tutor.userID JOIN unit ON unitTutored.unit = unit.unitID JOIN user ON user.userID = tutor.userID WHERE visible = 1 AND emailVerified = 1 AND Verified = 1 AND tutor.userID <> ? GROUP BY tutor.userID HAVING unitID LIKE ? AND language LIKE ?';
 
     if (!req.body.query.languages) {
       searchQuery = mysql.format(queryString, [currentUser.id,'%'+req.body.query.units.unitID+'%','%']);
