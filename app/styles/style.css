@@ -231,12 +231,19 @@ dir {
     background: transparent;
     text-align: center
 }
+body, html {
+    overflow-x: hidden;
+    overflow-y: auto;
+}
 
 a:hover,
 a:focus {
     text-decoration: none !important
 }
 
+/* background-attachment: fixed and background-size:cover causes issues on Android devices. */
+
+/* For now, background-size:cover must be restricted only to large screens */
 @media screen and (min-width:1024px) {
     .body {
         -webkit-background-size: cover;
@@ -244,7 +251,6 @@ a:focus {
         -o-background-size: cover;
         background-size: cover
     }
-
 }
 
 span.ng-binding {
@@ -253,4 +259,12 @@ span.ng-binding {
 
 span.ui-select-placeholder.text-muted.ng-binding {
     color: #878787
+}
+@media screen and (min-height:1120px) {
+    .body {
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+    }
 }

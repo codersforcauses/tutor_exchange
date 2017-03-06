@@ -75,7 +75,10 @@
 
     function createRequest(session) {
       sessionService.createRequest(session)
-        .then(function() {
+        .then(function(response) {
+          if (response.data && !response.data.success) {
+            openFailedModal(response.data.message);
+          }
           getRequests();
         });
     }
@@ -190,6 +193,23 @@
         resolve: {
           comment: function() {
             return comment;
+          },
+        },
+      });
+
+      modalInstance.result.then(
+        function() {},
+        function() {}
+      );
+    }
+
+    function openFailedModal(message) {
+      var modalInstance = $uibModal.open({
+        templateUrl: 'templates/sessions_failed.html',
+        controller: 'SessionsFailedCtrl',
+        resolve: {
+          message: function() {
+            return message;
           },
         },
       });
