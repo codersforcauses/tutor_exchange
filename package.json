@@ -4,6 +4,7 @@
   "description": "",
   "main": "app/app.js",
   "dependencies": {
+    "email-templates": "^2.5.4",
     "json-server": "^0.9.4",
     "jsonwebtoken": "^7.2.1",
     "nodemailer": "^3.1.3"

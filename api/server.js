@@ -1088,7 +1088,7 @@ function sendVerifyEmail(userID, firstName, hostURL) { //hostURL eg. http://loca
       return;
     }
     console.log(hostURL);
-    readHTMLFile(__dirname+'/../app/templates/verifyEmail.html', function(err, html) {
+    readHTMLFile(__dirname+'/../app/emailTemplates/verifyEmailInline.html', function(err, html) {
       //var sauce = $("#verify-email").html();
       var template = handlebars.compile(html)/*sauce*/;
       var replacements = {
@@ -1100,7 +1100,7 @@ function sendVerifyEmail(userID, firstName, hostURL) { //hostURL eg. http://loca
           from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
           to:   userEmail,
           subject: 'Email Verification',
-          text: /*{path: hostURL+'/app/text/verifyEmail.txt'}*/'pls',
+          text: 'Hi '+firstName+', welcome to Volunteer Tutor Exchange! Please click the link to verify your account. '+verifyLink,
           html: readyHTML,
       };
       sendMail(data);
