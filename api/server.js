@@ -33,15 +33,13 @@ connection.connect (function(error) {
 
 //from http://stackoverflow.com/questions/39489229/pass-variable-to-html-template-in-nodemailer
 var readHTMLFile = function(path, callback) {
-  fs.readFile(path, {encoding: 'utf-8'}, function (err, html) {
+  fs.readFile(path, {encoding: 'utf-8'}, function(err, html) {
         if (err) {
-            throw err;
-            callback(err);
+          callback(err);
+        } else {
+          callback(null, html);
         }
-        else {
-            callback(null, html);
-        }
-    });
+      });
 };
 
 
@@ -1045,14 +1043,14 @@ app.use('/api/mail/sendVerifyEmail', function(req, res) {
       res.status(403).send('Your Account is Already Verified');
       return;
     }
-    
+
     connection.query('SELECT firstName FROM user WHERE userID = ?', [currentUser.id], function(err, rows, fields) {
       if (err) {
         console.log(err);
         res.status(503).send(err);
         return;
       }
-      
+
       sendVerifyEmail(currentUser.id, rows[0], req.headers.host, function(result, err) {
         if (err) {
           res.json({success: false, message: 'An Error Occurred when Sending Verification Email'});
@@ -1060,8 +1058,8 @@ app.use('/api/mail/sendVerifyEmail', function(req, res) {
         }
         res.json(result);
       });
-     });
-    
+    });
+
   });
 
 // Serve
@@ -1167,7 +1165,7 @@ function sendVerifyEmail(userID, firstName, hostURL, callback) { //hostURL eg. h
       var replacements = {
           firstName: firstName,
           verifyLink: verifyLink,
-      };
+        };
       var readyHTML = template(replacements);
       var data = {
           from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
@@ -1175,7 +1173,7 @@ function sendVerifyEmail(userID, firstName, hostURL, callback) { //hostURL eg. h
           subject: 'Email Verification',
           text: 'Hi '+firstName+', welcome to Volunteer Tutor Exchange! Please click the link to verify your account. '+verifyLink,
           html: readyHTML,
-      };
+        };
       sendMail(data, function(result, error) {
         if (result && result.accepted[0] === userEmail) {
           callback({success: true, message: 'Verification Email Successfully Sent'});
