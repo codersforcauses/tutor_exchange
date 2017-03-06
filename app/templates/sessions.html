@@ -24,7 +24,7 @@
           </thead>
           <tbody>
             <tr ng-repeat="request in requests">
-              <td>{{request.time | date:'HH:mm dd/MM/yyyy'}}</td>
+              <td>{{request.time | date:'HH:mm dd/MM/yyyy':'+0800'}}</td>
               <td>{{request.unit}}</td>
               <td>{{request.otherUser.firstName}} {{request.otherUser.lastName}}
                 <i ng-if="request.otherUser.phone" class="glyphicon glyphicon-earphone" uib-popover="Phone: {{request.otherUser.phone}}" popover-trigger="'mouseenter'"></i>
@@ -65,7 +65,7 @@
           </thead>
           <tbody>
             <tr ng-repeat="appointment in appointments" ng-class="appointment.cancelled?'strikethrough':'null'">
-              <td>{{appointment.time | date:'HH:mm dd/MM/yyyy'}}</td>
+              <td>{{appointment.time | date:'HH:mm dd/MM/yyyy':'+0800'}}</td>
               <td>{{appointment.unit}}</td>
               <td>{{appointment.otherUser.firstName}} {{appointment.otherUser.lastName}}
                 <i ng-if="appointment.otherUser.phone" class="glyphicon glyphicon-earphone" uib-popover="Phone: {{appointment.otherUser.phone}}" popover-trigger="'mouseenter'"></i>
@@ -106,7 +106,7 @@
           </thead>
           <tbody>
             <tr ng-repeat="openSession in openSessions">
-              <td>{{openSession.time | date:'HH:mm dd/MM/yyyy'}}</td>
+              <td>{{openSession.time | date:'HH:mm dd/MM/yyyy':'+0800'}}</td>
               <td>{{openSession.unit}}</td>
               <td>{{openSession.otherUser.firstName}} {{openSession.otherUser.lastName}}</td>
               <td>{{openSession.isTutor ? 'Tutor' : 'Student'}}</td>

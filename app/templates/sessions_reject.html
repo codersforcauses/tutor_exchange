@@ -16,7 +16,7 @@
     </thead>
     <tbody>
       <tr>
-        <td>{{session.time | date:'HH:mm dd/MM/yyyy'}}</td>
+        <td>{{session.time | date:'HH:mm dd/MM/yyyy':'+0800'}}</td>
         <td>{{session.unit}}</td>
         <td>{{session.otherUser.firstName}} {{session.otherUser.lastName}}</td>
         <td>{{session.isTutor ? 'Tutor' : 'Student'}}</td>
