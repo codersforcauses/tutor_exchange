@@ -30,7 +30,7 @@
                 <i ng-if="request.otherUser.phone" class="glyphicon glyphicon-earphone" uib-popover="Phone: {{request.otherUser.phone}}" popover-trigger="'mouseenter'"></i>
               </td>
               <td>{{request.isTutor ? 'Tutor' : 'Student'}}
-                <i ng-if="request.comments" class="glyphicon glyphicon-comment" ng-click="openCommentModal(request.comments)"></i>
+                <i ng-if="request.comments" class="glyphicon glyphicon-comment" ng-click="openAlertModal('Session comments', request.comments)"></i>
               </td>
               <td>
                 {{request.isTutor ? 'Waiting for response' : ''}}
@@ -71,7 +71,7 @@
                 <i ng-if="appointment.otherUser.phone" class="glyphicon glyphicon-earphone" uib-popover="Phone: {{appointment.otherUser.phone}}" popover-trigger="'mouseenter'"></i>
               </td>
               <td>{{appointment.isTutor ? 'Tutor' : 'Student'}}
-                <i ng-if="appointment.comments" class="glyphicon glyphicon-comment" ng-click="openCommentModal(appointment.comments)"></i>
+                <i ng-if="appointment.comments" class="glyphicon glyphicon-comment" ng-click="openAlertModal('Session comments', appointment.comments)"></i>
               </td>
               <td>
                 <button ng-if="appointment.isTutor && !appointment.cancelled" type="button" class="btn btn-default" ng-click="openRequestModal(appointment, 'reschedule')">
