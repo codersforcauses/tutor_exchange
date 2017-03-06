@@ -4,16 +4,40 @@
 	<div style="line-height:10%;">
 		<br>
 	</div>
-<!-- 	<div ng-if="session.role !== 'pendingUser'">
-		<h3>Upcoming Sessions</h3>
-		<p>It appears you have no upcoming sessions! <a href="#!/search">Click here</a> to find a Tutor</p>
-		<br>
-		<h4><a href="#!/profile">View your Profile</a></h4>
-	</div> -->
+	<div ng-if="session.role !== 'pendingUser'">
+	<h3>Upcoming Sessions: </h3>
+	<table ng-if="hasAppointments" class="table table-striped">
+		<thead>
+			<tr>
+				<th>Time & Date</th>
+				<th>Unit</th>
+				<th>With</th>
+				<th>Role</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="appointment in appointments" ng-class="appointment.cancelled?'strikethrough':'null'">
+				<td>{{appointment.time | date:'HH:mm dd/MM/yyyy'}}</td>
+				<td>{{appointment.unit}}</td>
+				<td>{{appointment.otherUser.firstName}} {{appointment.otherUser.lastName}}
+					<i ng-if="appointment.otherUser.phone" class="glyphicon glyphicon-earphone" uib-popover="Phone: {{appointment.otherUser.phone}}" popover-trigger="'mouseenter'"></i>
+				</td>
+				<td>{{appointment.isTutor ? 'Tutor' : 'Student'}}
+					<i ng-if="appointment.comments" class="glyphicon glyphicon-comment" ng-click="openCommentModal(appointment.comments)"></i>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<p ng-if="!hasAppointments">It appears you have no upcoming sessions! <a href="#!/search">Click here</a> to find a Tutor</p>
+	<br>
+	<h4><a href="#!/sessions">View All Session Info</a></h4>
+	</div>
+	
 	<div ng-if="session.role === 'pendingUser'">
-		<h4>Your Account is not verified</h4> 
+		<h4>Your Account is not verified</h4>
 		<p>A Verification Email has been sent to: {{session.id}}@student.uwa.edu.au</p>
-		<p><a href="#">Click Here</a> to Resend</p>
+		<p ng-show="!emailSent"><a href="" ng-click="resendVerify()">Click Here</a> to Resend</p>
+		<div class="errorMessageBox" ng-class="emailSendResult.success ? 'success' : 'error'">{{emailSendResult.message}}</div>
 	</div>
 	<br>
 	<h4>Logged in as: </h4><p>{{session.name}}</p> <p>Student Number: {{session.id}}</p> <p>Account Type: {{session.role}}</p><a href="" ng-click="logout()">Logout</a>

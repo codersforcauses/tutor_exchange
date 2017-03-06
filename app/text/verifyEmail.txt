@@ -1,0 +1,20 @@
+( http://www.volunteertutorexchange.com )
+
+***********
+Hi {{firstName}},
+***********
+
+Welcome to Volunteer Tutor Exchange!
+Please confirm your email address by clicking the link below.
+
+If you're currently logged in to the site you may need
+to log in again depending on your browser settings.
+
+We hope you enjoy your time with Volunteer Tutor
+Exchange!
+
+Confirm email address ( {{verifyLink}} )
+
+— The Volunteer Tutor Exchange team
+
+Find Volunteer Tutor Exchange ( https://www.facebook.com/vteuwa/ ) on Facebook.

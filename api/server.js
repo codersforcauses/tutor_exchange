@@ -4,6 +4,10 @@ var mysql       = require('mysql');
 var jwt         = require('jsonwebtoken');
 var crypto      = require('crypto');
 var nodemailer = require('nodemailer');
+var smtpTransport = require('nodemailer-smtp-transport');
+var handlebars = require('handlebars');
+var fs = require('fs');
+
 
 var config      = require(__dirname + '/config');
 var USER_ROLES  = require(__dirname + '/userRoles');
@@ -15,6 +19,8 @@ app.use(bodyParser.json()); //read json
 app.use(bodyParser.urlencoded({extended: true})); //read data sent in url
 app.set('secret', config.secret);
 
+/*var cheerio = require('cheerio'),
+    $ = cheerio.load(fs.readFile(__dirname+'/app/templates/verifyEmail.html'));*/
 
 var connection = mysql.createConnection(config.mysqlSettings);
 connection.connect (function(error) {
@@ -24,6 +30,19 @@ connection.connect (function(error) {
     console.log('Connected to mysql database');
   }
 });
+
+//from http://stackoverflow.com/questions/39489229/pass-variable-to-html-template-in-nodemailer
+var readHTMLFile = function(path, callback) {
+  fs.readFile(path, {encoding: 'utf-8'}, function (err, html) {
+        if (err) {
+            throw err;
+            callback(err);
+        }
+        else {
+            callback(null, html);
+        }
+    });
+};
 
 
 // middleware
@@ -76,7 +95,7 @@ app.use('/auth/register', function(req, res) {
       }
 
       if (req.body.user.accountType !== USER_ROLES.pendingTutor && req.body.user.accountType !== USER_ROLES.tutor) {
-        sendVerifyEmail(post.userID, req.headers.host);
+        sendVerifyEmail(post.userID, post.firstName, req.headers.host);
         var role = USER_ROLES.pendingUser;
         var token = jwt.sign({id: post.userID, role: role}, app.get('secret'));
         res.json({success: true, message: 'Registration was Successful', name: post.firstName, role: role, token: token});
@@ -107,7 +126,7 @@ app.use('/auth/register', function(req, res) {
                     res.status(503).send(err);
                     return;
                   }
-                  sendVerifyEmail(post.userID, req.headers.host);
+                  sendVerifyEmail(post.userID, post.firstName, req.headers.host);
                   var role = USER_ROLES.pendingUser;
                   var token = jwt.sign({id: post.userID, role: role}, app.get('secret'));
                   res.json({success: true, message: 'Registration was Successful', name: post.firstName, role: role, token: token});
@@ -640,12 +659,12 @@ app.use('/api/session/create_request', function(req, res) {
 
 
   if (parseInt(requestData.tutor) === parseInt(requestData.tutee)) {
-    res.json({success: false, message: 'You cannot have a tutoring session with yourself'});
+    res.json({success: false, message: 'You cannot have a tutoring session with yourself.'});
     return;
   }
 
-  if (Date.parse(requestData.time) < Date.now()) {
-    res.json({success: false, message: 'You cannot arrange tutoring sessions in the past'});
+  if (Date.parse(requestData.time + ' GMT+0800') < Date.now()) {
+    res.json({success: false, message: 'You cannot arrange tutoring sessions in the past.'});
     return;
   }
 
@@ -657,11 +676,11 @@ app.use('/api/session/create_request', function(req, res) {
     }
 
     if (!result[0].userExists) {
-      res.json({success: false, message: 'Student is not yet fully registered with the system'});
+      res.json({success: false, message: 'Your student isn\'t fully registered with the system yet.  Make sure he/she is signed up andhas responded to the confirmation email.'});
       return;
     }
 
-    connection.query('select \'Student\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1 UNION select \'Tutor\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1;', [requestData.tutee, requestData.tutee, requestData.tutor, requestData.tutor], function(err, result, fields) {
+    connection.query('select ? as userID, \'student\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1 UNION select ? as userID, \'tutor\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1;', [requestData.tutee, requestData.tutee, requestData.tutee, requestData.tutor, requestData.tutor, requestData.tutor], function(err, result, fields) {
       if (err) {
         console.log(err);
         res.status(503).send(err);
@@ -670,7 +689,8 @@ app.use('/api/session/create_request', function(req, res) {
 
       for (var i=0; i<result.length; i++) {
         if (Math.abs(Date.parse(result[i].time) - Date.parse(requestData.time)) < 1*60*60*1000) {
-          res.json({success: false, message: (result[i].role + ' has a timetable clash')});
+          var message = (result[i].userID == currentUser.id ? 'You have ': 'Your ' + result[i].role + ' has ') + 'a timetable clash.';
+          res.json({success: false, message: message});
           return;
         }
       }
@@ -703,14 +723,54 @@ app.use('/api/session/accept_request', function(req, res) {
     return;
   }
 
-  //Gets Session Details and Ensures session is not cancelled and is a request.
-  connection.query('UPDATE session SET sessionStatus = 1 WHERE sessionID = ? AND (tutee = ? OR tutor = ?)', [req.body.sessionID, currentUser.id, currentUser.id], function(err, result, fields) {
+  connection.query('SELECT tutor, tutee, time FROM session WHERE sessionID = ?', [req.body.sessionID], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
       return;
     }
-    res.end();
+
+    if (result.length === 0) {
+      res.status(400).send('Session does not exist');
+      return;
+    }
+
+    var requestData = {
+      sessionID: req.body.sessionID,
+      tutor: result[0].tutor,
+      tutee: result[0].tutee,
+      time: result[0].time,
+    };
+
+    if (Date.parse(requestData.time + ' GMT+0800') < Date.now() + 1*60*60*1000) {
+      res.json({success: false, message: 'You cannot attend a tutoring sessions in the past without a time machine.'});
+      return;
+    }
+
+    connection.query('select ? as userID, \'student\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1 UNION select ? as userID, \'tutor\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1;', [requestData.tutee, requestData.tutee, requestData.tutee, requestData.tutor, requestData.tutor, requestData.tutor], function(err, result, fields) {
+      if (err) {
+        console.log(err);
+        res.status(503).send(err);
+        return;
+      }
+
+      for (var i=0; i<result.length; i++) {
+        if (Math.abs(Date.parse(result[i].time) - Date.parse(requestData.time)) < 1*60*60*1000) {
+          var message = (result[i].userID == currentUser.id ? 'You have ': 'Your ' + result[i].role + ' has ') + 'a timetable clash.';
+          res.json({success: false, message: message});
+          return;
+        }
+      }
+
+      connection.query('UPDATE session SET sessionStatus = 1 WHERE sessionID = ? AND (tutee = ? OR tutor = ?)', [requestData.sessionID, currentUser.id, currentUser.id], function(err, result, fields) {
+        if (err) {
+          console.log(err);
+          res.status(503).send(err);
+          return;
+        }
+        res.json({success: true});
+      });
+    });
   });
 });
 
@@ -908,6 +968,35 @@ app.use('/emailVerify', function(req,res) {
   });
 });
 
+//allow users to send an email with a link to a password reset page
+//ideally will be linked to from the login page
+//will require front-end support
+app.use('/auth/forgotPassword', function(req,res) {
+  var details = {
+    studentNumber: req.body.user.id, //need a field for the student number
+  };
+
+  //check if user exists and only send email if they do - but don't communicate this to the user
+  connection.query('SELECT * FROM user WHERE userID = ?', [details.studentNumber], function(err, rows, fields) {
+    if (rows.length === 1) { //if user exists
+      var userEmail = details.studentNumber + '@student.uwa.edu.au';
+      //set mail data
+      var data = {
+        from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
+        to:   userEmail,
+        subject: 'Reset Password Request',
+        text: verifyLink,
+        html: '<p>Hey '+rows[0].firstName+',<p> To reset your password, ' +
+        '<a href="'+verifyLink+'">Click Here</a> and follow the instructions provided.' +
+        ' <p>Didn\'t request a password reset? No worries, you can safely ignore this email.<p>' +
+        'Regards, <br> the Volunteer Tutor Exchange team</p>',
+      };
+
+      sendMail(data);
+    }
+  });
+});
+
 // Get name from student number
 app.use('/api/who/get_name', function(req, res) {
   var currentUser = getUser(req);
@@ -944,7 +1033,36 @@ app.use('/api/who/get_name', function(req, res) {
 
 });
 
+app.use('/api/mail/sendVerifyEmail', function(req, res) {
+    var currentUser = getUser(req);
 
+    if (!currentUser) {
+      res.status(401).send('Not Logged in');
+      return;
+    }
+
+    if (currentUser.role !== USER_ROLES.pendingUser) {
+      res.status(403).send('Your Account is Already Verified');
+      return;
+    }
+    
+    connection.query('SELECT firstName FROM user WHERE userID = ?', [currentUser.id], function(err, rows, fields) {
+      if (err) {
+        console.log(err);
+        res.status(503).send(err);
+        return;
+      }
+      
+      sendVerifyEmail(currentUser.id, rows[0], req.headers.host, function(result, err) {
+        if (err) {
+          res.json({success: false, message: 'An Error Occurred when Sending Verification Email'});
+          return;
+        }
+        res.json(result);
+      });
+     });
+    
+  });
 
 // Serve
 app.listen(config.server.port, function() {
@@ -1029,7 +1147,8 @@ function mysqlTransaction(queryA, queryB) {
   });
 }
 
-function sendVerifyEmail(userID, hostURL) { //hostURL eg. http://localhost:8080, www.volunteertutorexchange.com etc
+
+function sendVerifyEmail(userID, firstName, hostURL, callback) { //hostURL eg. http://localhost:8080, www.volunteertutorexchange.com etc
   if (!config.devOptions.sendMail) return;
 
   var verifyCode = genRandomString(20);
@@ -1041,20 +1160,34 @@ function sendVerifyEmail(userID, hostURL) { //hostURL eg. http://localhost:8080,
       console.log(err);
       return;
     }
-
-    var data = {
-      from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
-      to:   userEmail,
-      subject: 'Time to Verify Matey',
-      text: verifyLink,
-      html: '<p>Hey Friendo you need to Verify this Email Address. <a href="'+verifyLink+'">Click Here</a> Buddy<p>',
-    };
-
-    sendMail(data);
+    console.log(hostURL);
+    readHTMLFile(__dirname+'/../app/emailTemplates/verifyEmailInline.html', function(err, html) {
+      //var sauce = $("#verify-email").html();
+      var template = handlebars.compile(html)/*sauce*/;
+      var replacements = {
+          firstName: firstName,
+          verifyLink: verifyLink,
+      };
+      var readyHTML = template(replacements);
+      var data = {
+          from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
+          to:   userEmail,
+          subject: 'Email Verification',
+          text: 'Hi '+firstName+', welcome to Volunteer Tutor Exchange! Please click the link to verify your account. '+verifyLink,
+          html: readyHTML,
+      };
+      sendMail(data, function(result, error) {
+        if (result && result.accepted[0] === userEmail) {
+          callback({success: true, message: 'Verification Email Successfully Sent'});
+        } else {
+          callback(result, error);
+        }
+      });
+    });
   });
 }
 
-function sendMail(mailOptions) {
+function sendMail(mailOptions, callback) {
   if (!config.devOptions.sendMail) return;
 
   var transporter = nodemailer.createTransport({
@@ -1064,9 +1197,9 @@ function sendMail(mailOptions) {
 
   transporter.sendMail(mailOptions, function(error, info) {
     if (error) {
-      return console.log(error);
+      return callback(info, error);
     }
-    return;
+    return callback(info);
   });
 
 }
