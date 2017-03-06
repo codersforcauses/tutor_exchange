@@ -118,17 +118,16 @@ html {
 }
 
 .errorMessageBox {
-    color: #f44242;
     padding-bottom: 10px
 }
 
 .form-group p.verificationStatus.pending,
-.form-group p.profileVisible.private {
+.form-group p.profileVisible.private, .errorMessageBox.error {
     color: #ff6100
 }
 
 .form-group p.verificationStatus.verified,
-.form-group p.profileVisible.visible {
+.form-group p.profileVisible.visible, .errorMessageBox.success {
     color: #63c617
 }
 
