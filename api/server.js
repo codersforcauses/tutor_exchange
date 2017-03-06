@@ -7,8 +7,7 @@ var nodemailer = require('nodemailer');
 var smtpTransport = require('nodemailer-smtp-transport');
 var handlebars = require('handlebars');
 var fs = require('fs');
-var cheerio = require('cheerio'),
-    $ = cheerio.load('<ul id="verifyEmail">...</ul>');
+
 
 var config      = require(__dirname + '/config');
 var USER_ROLES  = require(__dirname + '/userRoles');
@@ -20,6 +19,8 @@ app.use(bodyParser.json()); //read json
 app.use(bodyParser.urlencoded({extended: true})); //read data sent in url
 app.set('secret', config.secret);
 
+/*var cheerio = require('cheerio'),
+    $ = cheerio.load(fs.readFile(__dirname+'/app/templates/verifyEmail.html'));*/
 
 var connection = mysql.createConnection(config.mysqlSettings);
 connection.connect (function(error) {
@@ -1087,9 +1088,9 @@ function sendVerifyEmail(userID, firstName, hostURL) { //hostURL eg. http://loca
       return;
     }
     console.log(hostURL);
-    //readHTMLFile('/app/templates/verifyEmail.html', function(err, html) {
-      var sauce = $("#verify-email").html();
-      var template = handlebars.compile(/*html)*/sauce);
+    readHTMLFile(__dirname+'/../app/templates/verifyEmail.html', function(err, html) {
+      //var sauce = $("#verify-email").html();
+      var template = handlebars.compile(html)/*sauce*/;
       var replacements = {
           firstName: firstName,
           verifyLink: verifyLink,
@@ -1105,7 +1106,7 @@ function sendVerifyEmail(userID, firstName, hostURL) { //hostURL eg. http://loca
       sendMail(data);
     });
 
-  //});
+  });
 }
 
 /*send email using a template
