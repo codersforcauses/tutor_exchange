@@ -985,6 +985,27 @@ app.use('/api/who/get_name', function(req, res) {
 
 });
 
+app.use('/api/mail/sendVerifyEmail', function(req, res) {
+    var currentUser = getUser(req);
+
+    if (!currentUser) {
+      res.status(401).send('Not Logged in');
+      return;
+    }
+
+    if (currentUser.role !== USER_ROLES.pendingUser) {
+      res.status(403).send('Your Account is Already Verified');
+      return;
+    }
+    sendVerifyEmail(currentUser.id, req.headers.host, function(result, err) {
+      if (err) {
+        res.json({success: false, message: 'An Error Occurred when Sending Verification Email'});
+        return;
+      }
+      res.json(result);
+    });
+  });
+
 
 
 // Serve
@@ -1070,7 +1091,7 @@ function mysqlTransaction(queryA, queryB) {
   });
 }
 
-function sendVerifyEmail(userID, hostURL) { //hostURL eg. http://localhost:8080, www.volunteertutorexchange.com etc
+function sendVerifyEmail(userID, hostURL, callback) { //hostURL eg. http://localhost:8080, www.volunteertutorexchange.com etc
   if (!config.devOptions.sendMail) return;
 
   var verifyCode = genRandomString(20);
@@ -1091,11 +1112,17 @@ function sendVerifyEmail(userID, hostURL) { //hostURL eg. http://localhost:8080,
       html: '<p>Hey Friendo you need to Verify this Email Address. <a href="'+verifyLink+'">Click Here</a> Buddy<p>',
     };
 
-    sendMail(data);
+    sendMail(data, function(result, error) {
+      if (result && result.accepted[0] === userEmail) {
+        callback({success: true, message: 'Verification Email Successfully Sent'});
+      } else {
+        callback(result, error);
+      }
+    });
   });
 }
 
-function sendMail(mailOptions) {
+function sendMail(mailOptions, callback) {
   if (!config.devOptions.sendMail) return;
 
   var transporter = nodemailer.createTransport({
@@ -1105,9 +1132,9 @@ function sendMail(mailOptions) {
 
   transporter.sendMail(mailOptions, function(error, info) {
     if (error) {
-      return console.log(error);
+      return callback(info, error);
     }
-    return;
+    return callback(info);
   });
 
 }
