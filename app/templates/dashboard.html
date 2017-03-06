@@ -13,7 +13,8 @@
 	<div ng-if="session.role === 'pendingUser'">
 		<h4>Your Account is not verified</h4> 
 		<p>A Verification Email has been sent to: {{session.id}}@student.uwa.edu.au</p>
-		<p><a href="#">Click Here</a> to Resend</p>
+		<p ng-show="!emailSent"><a href="" ng-click="resendVerify()">Click Here</a> to Resend</p>
+		<div class="errorMessageBox" ng-class="emailSendResult.success ? 'success' : 'error'">{{emailSendResult.message}}</div>
 	</div>
 	<br>
 	<h4>Logged in as: </h4><p>{{session.name}}</p> <p>Student Number: {{session.id}}</p> <p>Account Type: {{session.role}}</p><a href="" ng-click="logout()">Logout</a>
