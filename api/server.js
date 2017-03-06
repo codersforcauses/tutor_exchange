@@ -992,6 +992,37 @@ app.use('/api/who/get_name', function(req, res) {
 
 });
 
+app.use('/api/mail/sendVerifyEmail', function(req, res) {
+    var currentUser = getUser(req);
+
+    if (!currentUser) {
+      res.status(401).send('Not Logged in');
+      return;
+    }
+
+    if (currentUser.role !== USER_ROLES.pendingUser) {
+      res.status(403).send('Your Account is Already Verified');
+      return;
+    }
+    
+    connection.query('SELECT firstName FROM user WHERE userID = ?', [currentUser.id], function(err, rows, fields) {
+      if (err) {
+        console.log(err);
+        res.status(503).send(err);
+        return;
+      }
+      
+      sendVerifyEmail(currentUser.id, rows[0], req.headers.host, function(result, err) {
+        if (err) {
+          res.json({success: false, message: 'An Error Occurred when Sending Verification Email'});
+          return;
+        }
+        res.json(result);
+      });
+     });
+    
+  });
+
 // Serve
 app.listen(config.server.port, function() {
   console.log('Live at http://localhost:' + config.server.port);
@@ -1075,7 +1106,8 @@ function mysqlTransaction(queryA, queryB) {
   });
 }
 
-function sendVerifyEmail(userID, firstName, hostURL) { //hostURL eg. http://localhost:8080, www.volunteertutorexchange.com etc
+
+function sendVerifyEmail(userID, firstName, hostURL, callback) { //hostURL eg. http://localhost:8080, www.volunteertutorexchange.com etc
   if (!config.devOptions.sendMail) return;
 
   var verifyCode = genRandomString(20);
@@ -1103,32 +1135,17 @@ function sendVerifyEmail(userID, firstName, hostURL) { //hostURL eg. http://loca
           text: 'Hi '+firstName+', welcome to Volunteer Tutor Exchange! Please click the link to verify your account. '+verifyLink,
           html: readyHTML,
       };
-      sendMail(data);
+      sendMail(data, function(result, error) {
+        if (result && result.accepted[0] === userEmail) {
+          callback({success: true, message: 'Verification Email Successfully Sent'});
+        } else {
+          callback(result, error);
+        }
     });
-
   });
 }
 
-/*send email using a template
-function sendTemplateMail(mailData, context) {
-  var transporter = nodemailer.createTransport({
-    service: 'Mailgun',
-    auth: config.mailgunServer,
-  });
-
-  var send = transporter.templateSender(mailData);
-  
-  send(mailData, context, function(err, info) {
-    if (err) {
-      console.log(err);
-      return;
-    }
-    console.log('Verification email sent to '+mailData.to);
-  });
-}*/
-
-//send basic, non-template email
-function sendMail(mailOptions) {
+function sendMail(mailOptions, callback) {
   if (!config.devOptions.sendMail) return;
 
   var transporter = nodemailer.createTransport({
@@ -1138,9 +1155,9 @@ function sendMail(mailOptions) {
 
   transporter.sendMail(mailOptions, function(error, info) {
     if (error) {
-      return console.log(error);
+      return callback(info, error);
     }
-    return;
+    return callback(info);
   });
 
 }
