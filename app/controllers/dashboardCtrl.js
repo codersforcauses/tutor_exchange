@@ -6,8 +6,18 @@
     .controller('DashboardCtrl', DashboardCtrl);
 
 
-  DashboardCtrl.$inject = ['$scope', '$state', '$http', 'userFunctions', 'mailService'];
-  function DashboardCtrl($scope, $state, $http, userFunctions, mailService) {
+  DashboardCtrl.$inject = ['$scope', '$state', '$http', 'userFunctions', 'mailService', 'sessionService'];
+  function DashboardCtrl($scope, $state, $http, userFunctions, mailService, sessionService) {
+
+    sessionService.getAppointments()
+    .then(function(response) {
+      if (response.data) {
+        $scope.appointments = response.data;
+        $scope.hasAppointments = $scope.appointments && $scope.appointments.length !== 0;
+      } else {
+        $scope.hasAppointments = false;
+      }
+    });
 
     $scope.session = userFunctions.getSessionDetails(); // Will cause problems if userFunctions.getSessionDetails() changes.
     $scope.resendVerify = function() {
@@ -21,6 +31,7 @@
             }
           });
     };
+
     $scope.logout = function() {
       userFunctions.logout();
     };
