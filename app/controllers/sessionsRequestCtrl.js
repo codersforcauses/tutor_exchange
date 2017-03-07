@@ -15,8 +15,8 @@
 
     if (session) {
       angular.copy(session, $scope.session);
-      $scope.preFormatTime.date = moment(session.time).format('DD/MM/YYYY');
-      $scope.preFormatTime.time = moment(session.time).format('HH:mm');
+      $scope.preFormatTime.date = moment.utc(session.time).format('DD/MM/YYYY');
+      $scope.preFormatTime.time = moment.utc(session.time).format('HH:mm');
     }
 
 
