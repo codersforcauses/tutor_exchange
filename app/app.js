@@ -10,6 +10,7 @@
       'ngMessages',
       'ngSanitize',
       'moment-picker',
+      'wt.responsive',
     ])
     .config(config)
     .run(run);
