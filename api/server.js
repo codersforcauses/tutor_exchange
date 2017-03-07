@@ -919,14 +919,14 @@ app.use('/emailVerify', function(req,res) {
           return;
         }
         //check if tutor to send tutor info email
-        connection.query('SELECT firstName, verified FROM user JOIN tutor ON userID WHERE userID = ?', [req.query.id], function(err, result, fields) {
+        connection.query('SELECT firstName, verified FROM user NATURAL JOIN tutor WHERE userID = ?', [req.query.id], function(err, result, fields) {
           if (err) {
             console.log(err);
             res.status(503).send(err);
             return;
           }
-          if (rows.length !== 0) { //is a pendingTutor
-            sendTutorInfoEmail(req.query.id, rows[0].firstName);
+          if (result.length !== 0) { //is a pendingTutor
+            sendTutorInfoEmail(req.query.id, result[0].firstName);
           }
         });
         res.redirect('/#!/login');//Maybe have a seperate 'verify success' page?
@@ -1153,7 +1153,8 @@ function sendVerifyEmail(userID, firstName, hostURL, callback) { //hostURL eg. h
         }
       });
     });
-  }
+  });
+}
 
 function sendTutorInfoEmail(userID, firstName, callback) {
   if (!config.devOptions.sendMail) return;
