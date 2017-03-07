@@ -6,8 +6,8 @@ angular
   .controller('ProfileCtrl', ProfileCtrl);
 
 
-ProfileCtrl.$inject = ['$scope', '$state', '$http', 'userFunctions', 'fetchService'];
-function ProfileCtrl($scope, $state, $http, userFunctions, fetchService) {
+ProfileCtrl.$inject = ['$scope', '$state', '$http', 'userFunctions', 'fetchService', '$uibModal'];
+function ProfileCtrl($scope, $state, $http, userFunctions, fetchService, $uibModal) {
 
   loadAPIData();
   loadUserData();
@@ -104,6 +104,15 @@ function ProfileCtrl($scope, $state, $http, userFunctions, fetchService) {
     if ($scope.user && $scope.edituser) {
       $scope.edituser.visible = !$scope.edituser.visible;
     }
+  };
+
+  $scope.openChangePassword = function() {
+    var modalInstance = $uibModal.open({
+      templateUrl: 'templates/changePassword.html',
+      controller: 'ChangePasswordCtrl',
+      backdrop: 'static',
+      keyboard: false,
+    });
   };
 
 }
