@@ -31,7 +31,7 @@
               <input type="radio" name="sex" ng-model="user.sex" value="O" required>Other
             </label>
           </div>
-          <div class="form-group" ng-class="{ 'has-error': applyForm.datePicker.$invalid && applyForm.$submitted}">
+          <div class="form-group"  ng-class="{ 'has-error': applyForm.datePicker.$invalid && applyForm.$submitted}">
             <label for="text">Date of Birth:</label>
             <div class="form-inline" ng-include="'templates/datePicker.html'"></div>
           </div>
@@ -84,7 +84,7 @@
           </div>
           <hr>
           <div class="form-group" ng-class="{ 'has-error': applyForm.termsAgree.$invalid && (applyForm.$submitted || applyForm.termsAgree.$dirty) }">
-            <div class="checkbox"><label><input type="checkbox" name="termsAgree" ng-model="termsAgree" required> I agree to our <a href="#!/termsOfUse" target="_blank"> Terms of Use </a></label></div>
+            <div class="checkbox"><label><input type="checkbox" name="termsAgree" ng-model="termsAgree" required> I agree to our <a href="#!/termsOfUse" target="_blank"><b> Terms of Use </b></a></label></div>
           </div>
           <div ng-if="user.tutor" class="form-group" ng-class="{ 'has-error': applyForm.interviewAgree.$invalid && (applyForm.$submitted || applyForm.interviewAgree.$dirty) }">
             <div class="checkbox"><label><input type="checkbox" name="interviewAgree" ng-model="interviewAgree" required> I agree to be interviewed prior to being accepted as a Tutor</label></div>

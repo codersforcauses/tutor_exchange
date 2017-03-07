@@ -232,7 +232,7 @@ dir {
 }
 body, html {
     overflow-x: hidden;
-    overflow-y: auto;
+/*    overflow-y: auto;*/
 }
 
 a:hover,
@@ -267,3 +267,15 @@ span.ui-select-placeholder.text-muted.ng-binding {
         background-size: cover;
     }
 }
+/*smaller info sign*/
+.gi-small{font-size: 0.6em;}
+
+.container.logo {
+max-width: 100%; 
+display:block; 
+height: auto;
+}
+/*.container.logo > img {
+    vertical-align: top !important;
+}*/
+

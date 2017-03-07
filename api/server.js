@@ -957,6 +957,17 @@ app.use('/emailVerify', function(req,res) {
           res.status(503).send(err);
           return;
         }
+        //check if tutor to send tutor info email
+        connection.query('SELECT firstName, verified FROM user NATURAL JOIN tutor WHERE userID = ?', [req.query.id], function(err, result, fields) {
+          if (err) {
+            console.log(err);
+            res.status(503).send(err);
+            return;
+          }
+          if (result.length !== 0) { //is a pendingTutor
+            sendTutorInfoEmail(req.query.id, result[0].firstName);
+          }
+        });
         res.redirect('/#!/login');//Maybe have a seperate 'verify success' page?
       });
     } else {
@@ -971,29 +982,88 @@ app.use('/emailVerify', function(req,res) {
 //will require front-end support
 app.use('/auth/forgotPassword', function(req,res) {
   var details = {
-    studentNumber: req.body.user.id, //need a field for the student number
+    studentNumber: req.body.userID, //need a field for the student number
   };
 
   //check if user exists and only send email if they do - but don't communicate this to the user
   connection.query('SELECT * FROM user WHERE userID = ?', [details.studentNumber], function(err, rows, fields) {
     if (rows.length === 1) { //if user exists
-      var userEmail = details.studentNumber + '@student.uwa.edu.au';
-      //set mail data
-      var data = {
-        from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
-        to:   userEmail,
-        subject: 'Reset Password Request',
-        text: verifyLink,
-        html: '<p>Hey '+rows[0].firstName+',<p> To reset your password, ' +
-        '<a href="'+verifyLink+'">Click Here</a> and follow the instructions provided.' +
-        ' <p>Didn\'t request a password reset? No worries, you can safely ignore this email.<p>' +
-        'Regards, <br> the Volunteer Tutor Exchange team</p>',
-      };
+      var firstName = rows[0].firstName;
 
-      sendMail(data);
+      var verifyToken = genRandomString(30);
+      var hashedToken = saltHashPassword(verifyToken);
+      var verifyLink = req.headers.host + '/#!/resetPassword?id='+details.studentNumber+'&token='+verifyToken;
+
+      connection.query('UPDATE user SET resetPasswordHash = ?, resetPasswordSalt = ? WHERE userID = ?', [hashedToken.passwordHash, hashedToken.salt, details.studentNumber], function(err, result) {
+        if (err) {
+          res.status(503).send(err);
+          return;
+        }
+
+        var userEmail = details.studentNumber + '@student.uwa.edu.au';
+        readHTMLFile(__dirname+'/../app/emailTemplates/passwordResetEmailInline.html', function(err, html) {
+          var template = handlebars.compile(html);
+          var replacements = {
+              firstName: firstName,
+              verifyLink: verifyLink,
+            };
+          var readyHTML = template(replacements);
+          var data = {
+              from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
+              to:   userEmail,
+              subject: 'Reset Password Request',
+              text: verifyLink,
+              html: readyHTML,
+            };
+          sendMail(data, function(result, error) {
+            if (result && result.accepted[0] === userEmail) {
+              res.json({success: true, message: 'Password Reset Email Successfully Sent'});
+            } else {
+              res.json({success: false, message: 'An Error Occurred'});
+            }
+          });
+        });
+      });
     }
   });
 });
+
+app.use('/auth/resetPassword', function(req,res) {
+  if (!req.body.resetData || !req.body.resetData.id || !req.body.resetData.token || !req.body.resetData.password) {
+    res.status(401).send('Invalid Password Reset Request');
+  }
+
+  var resetData = req.body.resetData;
+  connection.query('SELECT resetPasswordHash, resetPasswordSalt FROM user WHERE userID = ?', [resetData.id], function(err, rows) {
+    if (err) {
+      res.status(503).send(err);
+      return;
+    }
+    if (rows.length !== 1) {
+      res.status(401).send('User Not Found');
+      return;
+    }
+    if (rows[0].resetPasswordHash === null || rows[0].resetPasswordSalt === null) {
+      res.json({success: false, message: 'Reset Token already used or has expired'});
+      return;
+    }
+    if (sha512(resetData.token, rows[0].resetPasswordSalt).passwordHash === rows[0].resetPasswordHash) {
+      var passhashsalt = saltHashPassword(resetData.password); //holds both hash and salt
+      connection.query('UPDATE user SET passwordHash = ?, passwordSalt = ? WHERE userID = ?', [passhashsalt.passwordHash, passhashsalt.salt, resetData.id], function(err, rows) {
+        if (err) {
+          res.status(503).send(err);
+          return;
+        }
+        clearResetToken(resetData.id);
+        res.json({success: true, message: 'Password Successfully Reset'});
+      });
+    } else {
+      res.json({success: false, message: 'Token was Invalid'});
+    }
+  });
+
+});
+
 
 // Get name from student number
 app.use('/api/who/get_name', function(req, res) {
@@ -1051,7 +1121,7 @@ app.use('/api/mail/sendVerifyEmail', function(req, res) {
         return;
       }
 
-      sendVerifyEmail(currentUser.id, rows[0], req.headers.host, function(result, err) {
+      sendVerifyEmail(currentUser.id, rows[0].firstName, req.headers.host, function(result, err) {
         if (err) {
           res.json({success: false, message: 'An Error Occurred when Sending Verification Email'});
           return;
@@ -1060,6 +1130,40 @@ app.use('/api/mail/sendVerifyEmail', function(req, res) {
       });
     });
 
+  });
+
+app.use('/auth/changePassword', function(req,res) {
+    var currentUser = getUser(req);
+
+    if (!currentUser) {
+      res.status(401).send('Not Logged in');
+      return;
+    }
+
+    if (!req.body.updatePassword || !req.body.updatePassword.old || !req.body.updatePassword.password) {
+      res.status(400).send('Invalid Change Password Request');
+      return;
+    }
+    var passwordData = req.body.updatePassword;
+    connection.query('SELECT passwordHash, passwordSalt FROM user WHERE userID = ?', [currentUser.id], function(err, rows, fields) {
+      if (err) {
+        res.status(503).send(err);
+        return;
+      }
+
+      if (sha512(passwordData.old,rows[0].passwordSalt).passwordHash === rows[0].passwordHash) {
+        var passhashsalt = saltHashPassword(passwordData.password);
+        connection.query('UPDATE user SET passwordHash = ?, passwordSalt = ? WHERE userID = ?', [passhashsalt.passwordHash, passhashsalt.salt, currentUser.id], function(err, rows) {
+          if (err) {
+            res.status(503).send(err);
+            return;
+          }
+          res.json({success: true, message: 'Password Successfully Changed'});
+        });
+      } else {
+        res.json({success: false, message: 'Your Old Password is Incorrect'});
+      }
+    });
   });
 
 // Serve
@@ -1158,7 +1262,6 @@ function sendVerifyEmail(userID, firstName, hostURL, callback) { //hostURL eg. h
       console.log(err);
       return;
     }
-    console.log(hostURL);
     readHTMLFile(__dirname+'/../app/emailTemplates/verifyEmailInline.html', function(err, html) {
       //var sauce = $("#verify-email").html();
       var template = handlebars.compile(html)/*sauce*/;
@@ -1185,6 +1288,34 @@ function sendVerifyEmail(userID, firstName, hostURL, callback) { //hostURL eg. h
   });
 }
 
+function sendTutorInfoEmail(userID, firstName, callback) {
+  if (!config.devOptions.sendMail) return;
+
+  var userEmail = userID + '@student.uwa.edu.au';
+
+  readHTMLFile(__dirname+'/../app/emailTemplates/tutorInfoEmailInline.html', function(err, html) {
+      var template = handlebars.compile(html);
+      var replacements = {
+          firstName: firstName,
+        };
+      var readyHTML = template(replacements);
+      var data = {
+          from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
+          to:   userEmail,
+          subject: 'Tutor Information',
+          text: 'Hi '+firstName+', thanks for applying as a Volunteer Tutor! Please check the About page (https://volunteertutorexchange.com/about) for instructions on gettign verified.',
+          html: readyHTML,
+        };
+      sendMail(data, function(result, error) {
+        if (result && result.accepted[0] === userEmail) {
+          callback({success: true, message: 'Tutor Information Email Successfully Sent'});
+        } else {
+          callback(result, error);
+        }
+      });
+    });
+}
+
 function sendMail(mailOptions, callback) {
   if (!config.devOptions.sendMail) return;
 
@@ -1199,7 +1330,19 @@ function sendMail(mailOptions, callback) {
     }
     return callback(info);
   });
+}
 
+
+// Removes the Password reset tokens from the Database after use.
+// Will also be done with a daily reset.
+function clearResetToken(userID) {
+  connection.query('UPDATE user SET resetPasswordHash = NULL, resetPasswordSalt = NULL WHERE userID = ?', [userID], function(err, rows) {
+      if (err) {
+        res.status(503).send(err);
+        return;
+      }
+      return;
+    });
 }
 
 /** [from https://code.ciphertrick.com/2016/01/18/salt-hash-passwords-using-nodejs-crypto/]

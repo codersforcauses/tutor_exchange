@@ -26,7 +26,7 @@
     </div>
 
     <div class="form-group" ng-class="{'has-error': (!sessionForm.student.$pristine || sessionForm.$submitted) && sessionForm.student.$error.required || sessionForm.$submitted && sessionForm.student.$error.pattern}">
-      <label for="text">Student Number:</label>
+      <label for="text">Student Number: <i class="glyphicon glyphicon-info-sign" uib-tooltip="Enter the ID of your student"></i></label> 
       <input ng-if="!reschedule" type="text" name="student" class="form-control" ng-model="session.otherUser.userID" ng-pattern="/^[0-9]{8}$/" ng-required="true">
       <div ng-show="(!sessionForm.student.$pristine || sessionForm.$submitted) && sessionForm.student.$error.required" class="errorMessageBox">Please enter a student number</div>
       <div ng-show="sessionForm.$submitted && sessionForm.student.$error.pattern" class="errorMessageBox">Please enter a valid student number</div>
