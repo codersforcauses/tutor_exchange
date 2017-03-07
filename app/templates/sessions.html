@@ -1,8 +1,8 @@
 <div class="container">
   <div class="row">
     <div class="col-sm-12">
-
-    <h1>My sessions </h1>
+    <br>
+    <h1>My Sessions </h1>
     <br/>
       <div id="create_request_button" ng-if="isTutor">
         <button type="button" class="btn btn-primary" ng-click="openRequestModal()">Send tutoring session invite</button>
@@ -10,9 +10,15 @@
       </div>
 
       <div id="requests">
-        <h3>Session Requests</h3>
+        <span>
+          <div class= "h3">
+            Session Requests
+            <div class= "glyphicon glyphicon-info-sign gi-small" uib-tooltip="Accept or decline requests to confirm a tutoring session"></div>
+          </span>
+          </div>
+        
 
-        <table ng-if="hasRequests" class="table">
+        <table ng-if="hasRequests" class="table table-striped">
           <thead>
             <tr>
               <th>Time & Date</th>
@@ -51,9 +57,16 @@
       <br/>
 
       <div id="appointments">
-        <h3>Upcoming Sessions</h3>
+        <span>
+          <div class ="h3">
+            Upcoming Sessions
+            <div class= "glyphicon glyphicon-info-sign gi-small" uib-tooltip="You can notify your students of session changes by clicking 'Reschedule' or 'Cancel' which will strikethrough the sessions">
+            </div>
+          </div>
+        </span>
+      
 
-        <table ng-if="hasAppointments" class="table">
+        <table ng-if="hasAppointments" class="table table-striped">
           <thead>
             <tr>
               <th>Time & Date</th>
@@ -91,10 +104,17 @@
       <br/>
 
 
-      <div id="open-sessions">
-        <h3>Sessions for sign off</h3>
 
-        <table ng-if="hasOpenSessions" class="table">
+    <div id="open-sessions">
+      <span>
+        <div class ="h3">
+          Sessions for Sign off
+          <div class= "glyphicon glyphicon-info-sign gi-small" uib-tooltip="You must confirm the completion of each session otherwise lodge an appeal as to why it did not occur">
+          </div>
+        </div>
+      </span>
+
+        <table ng-if="hasOpenSessions" class="table table-striped">
           <thead>
             <tr>
               <th>Time & Date</th>
