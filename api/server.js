@@ -1006,7 +1006,7 @@ app.use('/auth/forgotPassword', function(req,res) {
           var replacements = {
               firstName: firstName,
               verifyLink: verifyLink,
-          };
+            };
           var readyHTML = template(replacements);
           var data = {
               from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
@@ -1014,12 +1014,12 @@ app.use('/auth/forgotPassword', function(req,res) {
               subject: 'Reset Password Request',
               text: verifyLink,
               html: readyHTML,
-          };
+            };
           sendMail(data, function(result, error) {
             if (result && result.accepted[0] === userEmail) {
               callback({success: true, message: 'Password Reset Email Successfully Sent'});
             } else {
-              callback(result, error);
+              res.json({success: false, message: 'An Error Occurred'});
             }
           });
         });
@@ -1035,13 +1035,16 @@ app.use('/auth/resetPassword', function(req,res) {
 
   var resetData = req.body.resetData;
   connection.query('SELECT resetPasswordHash, resetPasswordSalt FROM user WHERE userID = ?', [resetData.id], function(err, rows) {
-    console.log(rows);
     if (err) {
       res.status(503).send(err);
       return;
     }
     if (rows.length !== 1) {
       res.status(401).send('User Not Found');
+      return;
+    }
+    if (rows[0].resetPasswordHash === null || rows[0].resetPasswordSalt === null) {
+      res.json({success: false, message: 'Reset Token already used or has expired'});
       return;
     }
     if (sha512(resetData.token, rows[0].resetPasswordSalt).passwordHash === rows[0].resetPasswordHash) {
@@ -1127,6 +1130,40 @@ app.use('/api/mail/sendVerifyEmail', function(req, res) {
       });
     });
 
+  });
+
+app.use('/auth/changePassword', function(req,res) {
+    var currentUser = getUser(req);
+
+    if (!currentUser) {
+      res.status(401).send('Not Logged in');
+      return;
+    }
+
+    if (!req.body.updatePassword || !req.body.updatePassword.old || !req.body.updatePassword.password) {
+      res.status(400).send('Invalid Change Password Request');
+      return;
+    }
+    var passwordData = req.body.updatePassword;
+    connection.query('SELECT passwordHash, passwordSalt FROM user WHERE userID = ?', [currentUser.id], function(err, rows, fields) {
+      if (err) {
+        res.status(503).send(err);
+        return;
+      }
+
+      if (sha512(passwordData.old,rows[0].passwordSalt).passwordHash === rows[0].passwordHash) {
+        var passhashsalt = saltHashPassword(passwordData.password);
+        connection.query('UPDATE user SET passwordHash = ?, passwordSalt = ? WHERE userID = ?', [passhashsalt.passwordHash, passhashsalt.salt, currentUser.id], function(err, rows) {
+          if (err) {
+            res.status(503).send(err);
+            return;
+          }
+          res.json({success: true, message: 'Password Successfully Changed'});
+        });
+      } else {
+        res.json({success: false, message: 'Your Old Password is Incorrect'});
+      }
+    });
   });
 
 // Serve
@@ -1260,7 +1297,7 @@ function sendTutorInfoEmail(userID, firstName, callback) {
       var template = handlebars.compile(html);
       var replacements = {
           firstName: firstName,
-      };
+        };
       var readyHTML = template(replacements);
       var data = {
           from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
@@ -1268,7 +1305,7 @@ function sendTutorInfoEmail(userID, firstName, callback) {
           subject: 'Tutor Information',
           text: 'Hi '+firstName+', thanks for applying as a Volunteer Tutor! Please check the About page (https://volunteertutorexchange.com/about) for instructions on gettign verified.',
           html: readyHTML,
-      };
+        };
       sendMail(data, function(result, error) {
         if (result && result.accepted[0] === userEmail) {
           callback({success: true, message: 'Tutor Information Email Successfully Sent'});
