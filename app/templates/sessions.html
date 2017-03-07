@@ -30,7 +30,7 @@
           </thead>
           <tbody>
             <tr ng-repeat="request in requests">
-              <td>{{formatTime(request.time)}}</td>
+              <td>{{request.time | date:'HH:mm dd/MM/yyyy':'UTC'}}</td>
               <td>{{request.unit}}</td>
               <td>{{request.otherUser.firstName}} {{request.otherUser.lastName}}
                 <i ng-if="request.otherUser.phone" class="glyphicon glyphicon-earphone" uib-popover="Phone: {{request.otherUser.phone}}" popover-trigger="'mouseenter'"></i>
@@ -128,7 +128,7 @@
           </thead>
           <tbody>
             <tr ng-repeat="openSession in openSessions">
-              <td>{{formatTime(openSession.time)}}</td>
+              <td>{{openSession.time | date:'HH:mm dd/MM/yyyy':'UTC'}}</td>
               <td>{{openSession.unit}}</td>
               <td>{{openSession.otherUser.firstName}} {{openSession.otherUser.lastName}}</td>
               <td>{{openSession.isTutor ? 'Tutor' : 'Student'}}</td>
