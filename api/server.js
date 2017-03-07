@@ -977,7 +977,7 @@ app.use('/emailVerify', function(req,res) {
   });
 });
 
-/*//allow users to send an email with a link to a password reset page
+//allow users to send an email with a link to a password reset page
 //ideally will be linked to from the login page
 //will require front-end support
 app.use('/auth/forgotPassword', function(req,res) {
@@ -1001,29 +1001,32 @@ app.use('/auth/forgotPassword', function(req,res) {
         }
 
         var userEmail = details.studentNumber + '@student.uwa.edu.au';
-        var data = {
-          from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
-          to:   userEmail,
-          subject: 'Reset Password Request',
-          text: verifyLink,
-          html: '<p>Hey '+ firstName +',<p> To reset your password, ' +
-          '<a href="'+verifyLink+'">Click Here</a> and follow the instructions provided.' +
-          ' <p>Didn\'t request a password reset? No worries, you can safely ignore this email.<p>' +
-          'Regards, <br> the Volunteer Tutor Exchange team '+verifyLink+'</p>',
-        };
-
-        sendMail(data, function(result, err) {
-          if (result && result.accepted[0] === userEmail) {
-            res.json({success: true, message: 'Password Reset Sent Successfully'});
-            console.log('Success');
-          } else {
-            res.json(result, error);
-          }
+        readHTMLFile(__dirname+'/../app/emailTemplates/passwordResetEmailInline.html', function(err, html) {
+          var template = handlebars.compile(html);
+          var replacements = {
+              firstName: firstName,
+              verifyLink: verifyLink,
+          };
+          var readyHTML = template(replacements);
+          var data = {
+              from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
+              to:   userEmail,
+              subject: 'Reset Password Request',
+              text: verifyLink,
+              html: readyHTML,
+          };
+          sendMail(data, function(result, error) {
+            if (result && result.accepted[0] === userEmail) {
+              callback({success: true, message: 'Password Reset Email Successfully Sent'});
+            } else {
+              callback(result, error);
+            }
+          });
         });
       });
     }
   });
-});*/
+});
 
 app.use('/auth/resetPassword', function(req,res) {
   if (!req.body.resetData || !req.body.resetData.id || !req.body.resetData.token || !req.body.resetData.password) {
