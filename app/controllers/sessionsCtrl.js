@@ -31,7 +31,8 @@
 
     $scope.formatTime = function(date) {
       console.log(date);
-      date = moment(date).format('HH:mm DD/MM/YYYY');
+      date = moment(date.substring(0, 19)).format('HH:mm DD/MM/YYYY');
+      console.log(date);
       return date;
     };
 
