@@ -927,7 +927,7 @@ app.use('/emailVerify', function(req,res) {
   });
 });
 
-//allow users to send an email with a link to a password reset page
+/*//allow users to send an email with a link to a password reset page
 //ideally will be linked to from the login page
 //will require front-end support
 app.use('/auth/forgotPassword', function(req,res) {
@@ -954,7 +954,7 @@ app.use('/auth/forgotPassword', function(req,res) {
       sendMail(data);
     }
   });
-});
+});*/
 
 // Get name from student number
 app.use('/api/who/get_name', function(req, res) {
