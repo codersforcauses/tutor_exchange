@@ -60,7 +60,9 @@
         <span>
           <div class ="h3">
             Upcoming Sessions
-            <div class= "glyphicon glyphicon-info-sign gi-small" uib-tooltip="You can notify your students of session changes by clicking 'Reschedule' or 'Cancel' which will strikethrough the sessions">
+            <div ng-if="isTutor" class= "glyphicon glyphicon-info-sign gi-small" uib-tooltip="You can notify your students of session changes by clicking 'Reschedule' or 'Cancel' which will strikethrough the sessions">
+            </div>
+            <div ng-if="!isTutor" class= "glyphicon glyphicon-info-sign gi-small" uib-tooltip="Please contact your tutor to cancel or reschedule a tutoring session">
             </div>
           </div>
         </span>
