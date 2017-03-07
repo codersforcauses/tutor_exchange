@@ -1017,7 +1017,7 @@ app.use('/auth/forgotPassword', function(req,res) {
             };
           sendMail(data, function(result, error) {
             if (result && result.accepted[0] === userEmail) {
-              callback({success: true, message: 'Password Reset Email Successfully Sent'});
+              res.json({success: true, message: 'Password Reset Email Successfully Sent'});
             } else {
               res.json({success: false, message: 'An Error Occurred'});
             }
