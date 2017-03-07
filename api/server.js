@@ -1024,6 +1024,8 @@ app.use('/auth/forgotPassword', function(req,res) {
           });
         });
       });
+    } else {
+      res.json({success: false, message: 'An Error Occurred'});
     }
   });
 });
