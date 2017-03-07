@@ -33,15 +33,13 @@ connection.connect (function(error) {
 
 //from http://stackoverflow.com/questions/39489229/pass-variable-to-html-template-in-nodemailer
 var readHTMLFile = function(path, callback) {
-  fs.readFile(path, {encoding: 'utf-8'}, function (err, html) {
+  fs.readFile(path, {encoding: 'utf-8'}, function(err, html) {
         if (err) {
-            throw err;
-            callback(err);
+          callback(err);
+        } else {
+          callback(null, html);
         }
-        else {
-            callback(null, html);
-        }
-    });
+      });
 };
 
 
@@ -659,12 +657,12 @@ app.use('/api/session/create_request', function(req, res) {
 
 
   if (parseInt(requestData.tutor) === parseInt(requestData.tutee)) {
-    res.json({success: false, message: 'You cannot have a tutoring session with yourself'});
+    res.json({success: false, message: 'You cannot have a tutoring session with yourself.'});
     return;
   }
 
-  if (Date.parse(requestData.time) < Date.now()) {
-    res.json({success: false, message: 'You cannot arrange tutoring sessions in the past'});
+  if (Date.parse(requestData.time + ' GMT+0800') < Date.now()) {
+    res.json({success: false, message: 'You cannot arrange tutoring sessions in the past.'});
     return;
   }
 
@@ -676,11 +674,11 @@ app.use('/api/session/create_request', function(req, res) {
     }
 
     if (!result[0].userExists) {
-      res.json({success: false, message: 'Student is not yet fully registered with the system'});
+      res.json({success: false, message: 'Your student isn\'t fully registered with the system yet.  Make sure he/she is signed up andhas responded to the confirmation email.'});
       return;
     }
 
-    connection.query('select \'Student\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1 UNION select \'Tutor\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1;', [requestData.tutee, requestData.tutee, requestData.tutor, requestData.tutor], function(err, result, fields) {
+    connection.query('select ? as userID, \'student\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1 UNION select ? as userID, \'tutor\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1;', [requestData.tutee, requestData.tutee, requestData.tutee, requestData.tutor, requestData.tutor, requestData.tutor], function(err, result, fields) {
       if (err) {
         console.log(err);
         res.status(503).send(err);
@@ -689,7 +687,8 @@ app.use('/api/session/create_request', function(req, res) {
 
       for (var i=0; i<result.length; i++) {
         if (Math.abs(Date.parse(result[i].time) - Date.parse(requestData.time)) < 1*60*60*1000) {
-          res.json({success: false, message: (result[i].role + ' has a timetable clash')});
+          var message = (result[i].userID == currentUser.id ? 'You have ': 'Your ' + result[i].role + ' has ') + 'a timetable clash.';
+          res.json({success: false, message: message});
           return;
         }
       }
@@ -722,14 +721,54 @@ app.use('/api/session/accept_request', function(req, res) {
     return;
   }
 
-  //Gets Session Details and Ensures session is not cancelled and is a request.
-  connection.query('UPDATE session SET sessionStatus = 1 WHERE sessionID = ? AND (tutee = ? OR tutor = ?)', [req.body.sessionID, currentUser.id, currentUser.id], function(err, result, fields) {
+  connection.query('SELECT tutor, tutee, time FROM session WHERE sessionID = ?', [req.body.sessionID], function(err, result, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
       return;
     }
-    res.end();
+
+    if (result.length === 0) {
+      res.status(400).send('Session does not exist');
+      return;
+    }
+
+    var requestData = {
+      sessionID: req.body.sessionID,
+      tutor: result[0].tutor,
+      tutee: result[0].tutee,
+      time: result[0].time,
+    };
+
+    if (Date.parse(requestData.time + ' GMT+0800') < Date.now() + 1*60*60*1000) {
+      res.json({success: false, message: 'You cannot attend a tutoring sessions in the past without a time machine.'});
+      return;
+    }
+
+    connection.query('select ? as userID, \'student\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1 UNION select ? as userID, \'tutor\' as role, time from session where (tutor = ? OR tutee = ?) AND sessionStatus = 1;', [requestData.tutee, requestData.tutee, requestData.tutee, requestData.tutor, requestData.tutor, requestData.tutor], function(err, result, fields) {
+      if (err) {
+        console.log(err);
+        res.status(503).send(err);
+        return;
+      }
+
+      for (var i=0; i<result.length; i++) {
+        if (Math.abs(Date.parse(result[i].time) - Date.parse(requestData.time)) < 1*60*60*1000) {
+          var message = (result[i].userID == currentUser.id ? 'You have ': 'Your ' + result[i].role + ' has ') + 'a timetable clash.';
+          res.json({success: false, message: message});
+          return;
+        }
+      }
+
+      connection.query('UPDATE session SET sessionStatus = 1 WHERE sessionID = ? AND (tutee = ? OR tutor = ?)', [requestData.sessionID, currentUser.id, currentUser.id], function(err, result, fields) {
+        if (err) {
+          console.log(err);
+          res.status(503).send(err);
+          return;
+        }
+        res.json({success: true});
+      });
+    });
   });
 });
 
@@ -943,29 +982,82 @@ app.use('/emailVerify', function(req,res) {
 //will require front-end support
 app.use('/auth/forgotPassword', function(req,res) {
   var details = {
-    studentNumber: req.body.user.id, //need a field for the student number
+    studentNumber: req.body.userID, //need a field for the student number
   };
 
   //check if user exists and only send email if they do - but don't communicate this to the user
   connection.query('SELECT * FROM user WHERE userID = ?', [details.studentNumber], function(err, rows, fields) {
     if (rows.length === 1) { //if user exists
-      var userEmail = details.studentNumber + '@student.uwa.edu.au';
-      //set mail data
-      var data = {
-        from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
-        to:   userEmail,
-        subject: 'Reset Password Request',
-        text: verifyLink,
-        html: '<p>Hey '+rows[0].firstName+',<p> To reset your password, ' +
-        '<a href="'+verifyLink+'">Click Here</a> and follow the instructions provided.' +
-        ' <p>Didn\'t request a password reset? No worries, you can safely ignore this email.<p>' +
-        'Regards, <br> the Volunteer Tutor Exchange team</p>',
-      };
+      var firstName = rows[0].firstName;
 
-      sendMail(data);
+      var verifyToken = genRandomString(30);
+      var hashedToken = saltHashPassword(verifyToken);
+      var verifyLink = req.headers.host + '/#!/resetPassword?id='+details.studentNumber+'&token='+verifyToken;
+
+      connection.query('UPDATE user SET resetPasswordHash = ?, resetPasswordSalt = ? WHERE userID = ?', [hashedToken.passwordHash, hashedToken.salt, details.studentNumber], function(err, result) {
+        if (err) {
+          res.status(503).send(err);
+          return;
+        }
+
+        var userEmail = details.studentNumber + '@student.uwa.edu.au';
+        var data = {
+          from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
+          to:   userEmail,
+          subject: 'Reset Password Request',
+          text: verifyLink,
+          html: '<p>Hey '+ firstName +',<p> To reset your password, ' +
+          '<a href="'+verifyLink+'">Click Here</a> and follow the instructions provided.' +
+          ' <p>Didn\'t request a password reset? No worries, you can safely ignore this email.<p>' +
+          'Regards, <br> the Volunteer Tutor Exchange team '+verifyLink+'</p>',
+        };
+
+        sendMail(data, function(result, err) {
+          if (result && result.accepted[0] === userEmail) {
+            res.json({success: true, message: 'Password Reset Sent Successfully'});
+            console.log('Success');
+          } else {
+            res.json(result, error);
+          }
+        });
+      });
     }
   });
 });*/
+
+app.use('/auth/resetPassword', function(req,res) {
+  if (!req.body.resetData || !req.body.resetData.id || !req.body.resetData.token || !req.body.resetData.password) {
+    res.status(401).send('Invalid Password Reset Request');
+  }
+
+  var resetData = req.body.resetData;
+  connection.query('SELECT resetPasswordHash, resetPasswordSalt FROM user WHERE userID = ?', [resetData.id], function(err, rows) {
+    console.log(rows);
+    if (err) {
+      res.status(503).send(err);
+      return;
+    }
+    if (rows.length !== 1) {
+      res.status(401).send('User Not Found');
+      return;
+    }
+    if (sha512(resetData.token, rows[0].resetPasswordSalt).passwordHash === rows[0].resetPasswordHash) {
+      var passhashsalt = saltHashPassword(resetData.password); //holds both hash and salt
+      connection.query('UPDATE user SET passwordHash = ?, passwordSalt = ? WHERE userID = ?', [passhashsalt.passwordHash, passhashsalt.salt, resetData.id], function(err, rows) {
+        if (err) {
+          res.status(503).send(err);
+          return;
+        }
+        clearResetToken(resetData.id);
+        res.json({success: true, message: 'Password Successfully Reset'});
+      });
+    } else {
+      res.json({success: false, message: 'Token was Invalid'});
+    }
+  });
+
+});
+
 
 // Get name from student number
 app.use('/api/who/get_name', function(req, res) {
@@ -1015,23 +1107,23 @@ app.use('/api/mail/sendVerifyEmail', function(req, res) {
       res.status(403).send('Your Account is Already Verified');
       return;
     }
-    
+
     connection.query('SELECT firstName FROM user WHERE userID = ?', [currentUser.id], function(err, rows, fields) {
       if (err) {
         console.log(err);
         res.status(503).send(err);
         return;
       }
-      
-      sendVerifyEmail(currentUser.id, rows[0], req.headers.host, function(result, err) {
+
+      sendVerifyEmail(currentUser.id, rows[0].firstName, req.headers.host, function(result, err) {
         if (err) {
           res.json({success: false, message: 'An Error Occurred when Sending Verification Email'});
           return;
         }
         res.json(result);
       });
-     });
-    
+    });
+
   });
 
 // Serve
@@ -1136,7 +1228,7 @@ function sendVerifyEmail(userID, firstName, hostURL, callback) { //hostURL eg. h
       var replacements = {
           firstName: firstName,
           verifyLink: verifyLink,
-      };
+        };
       var readyHTML = template(replacements);
       var data = {
           from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
@@ -1144,7 +1236,7 @@ function sendVerifyEmail(userID, firstName, hostURL, callback) { //hostURL eg. h
           subject: 'Email Verification',
           text: 'Hi '+firstName+', welcome to Volunteer Tutor Exchange! Please click the link to verify your account. '+verifyLink,
           html: readyHTML,
-      };
+        };
       sendMail(data, function(result, error) {
         if (result && result.accepted[0] === userEmail) {
           callback({success: true, message: 'Verification Email Successfully Sent'});
@@ -1198,7 +1290,19 @@ function sendMail(mailOptions, callback) {
     }
     return callback(info);
   });
+}
 
+
+// Removes the Password reset tokens from the Database after use.
+// Will also be done with a daily reset.
+function clearResetToken(userID) {
+  connection.query('UPDATE user SET resetPasswordHash = NULL, resetPasswordSalt = NULL WHERE userID = ?', [userID], function(err, rows) {
+      if (err) {
+        res.status(503).send(err);
+        return;
+      }
+      return;
+    });
 }
 
 /** [from https://code.ciphertrick.com/2016/01/18/salt-hash-passwords-using-nodejs-crypto/]

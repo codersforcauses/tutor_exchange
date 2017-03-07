@@ -12,7 +12,7 @@
       <div id="requests">
         <h3>Session Requests</h3>
 
-        <table ng-if="hasRequests" class="table">
+        <table ng-if="hasRequests" class="table table-striped">
           <thead>
             <tr>
               <th>Time & Date</th>
@@ -24,13 +24,13 @@
           </thead>
           <tbody>
             <tr ng-repeat="request in requests">
-              <td>{{request.time | date:'HH:mm dd/MM/yyyy'}}</td>
+              <td>{{request.time | date:'HH:mm dd/MM/yyyy':'+0800'}}</td>
               <td>{{request.unit}}</td>
               <td>{{request.otherUser.firstName}} {{request.otherUser.lastName}}
                 <i ng-if="request.otherUser.phone" class="glyphicon glyphicon-earphone" uib-popover="Phone: {{request.otherUser.phone}}" popover-trigger="'mouseenter'"></i>
               </td>
               <td>{{request.isTutor ? 'Tutor' : 'Student'}}
-                <i ng-if="request.comments" class="glyphicon glyphicon-comment" ng-click="openCommentModal(request.comments)"></i>
+                <i ng-if="request.comments" class="glyphicon glyphicon-comment" ng-click="openAlertModal('Session comments', request.comments)"></i>
               </td>
               <td>
                 {{request.isTutor ? 'Waiting for response' : ''}}
@@ -53,7 +53,7 @@
       <div id="appointments">
         <h3>Upcoming Sessions</h3>
 
-        <table ng-if="hasAppointments" class="table">
+        <table ng-if="hasAppointments" class="table table-striped">
           <thead>
             <tr>
               <th>Time & Date</th>
@@ -65,13 +65,13 @@
           </thead>
           <tbody>
             <tr ng-repeat="appointment in appointments" ng-class="appointment.cancelled?'strikethrough':'null'">
-              <td>{{appointment.time | date:'HH:mm dd/MM/yyyy'}}</td>
+              <td>{{appointment.time | date:'HH:mm dd/MM/yyyy':'+0800'}}</td>
               <td>{{appointment.unit}}</td>
               <td>{{appointment.otherUser.firstName}} {{appointment.otherUser.lastName}}
                 <i ng-if="appointment.otherUser.phone" class="glyphicon glyphicon-earphone" uib-popover="Phone: {{appointment.otherUser.phone}}" popover-trigger="'mouseenter'"></i>
               </td>
               <td>{{appointment.isTutor ? 'Tutor' : 'Student'}}
-                <i ng-if="appointment.comments" class="glyphicon glyphicon-comment" ng-click="openCommentModal(appointment.comments)"></i>
+                <i ng-if="appointment.comments" class="glyphicon glyphicon-comment" ng-click="openAlertModal('Session comments', appointment.comments)"></i>
               </td>
               <td>
                 <button ng-if="appointment.isTutor && !appointment.cancelled" type="button" class="btn btn-default" ng-click="openRequestModal(appointment, 'reschedule')">
@@ -94,7 +94,7 @@
       <div id="open-sessions">
         <h3>Sessions for sign off</h3>
 
-        <table ng-if="hasOpenSessions" class="table">
+        <table ng-if="hasOpenSessions" class="table table-striped">
           <thead>
             <tr>
               <th>Time & Date</th>
@@ -106,7 +106,7 @@
           </thead>
           <tbody>
             <tr ng-repeat="openSession in openSessions">
-              <td>{{openSession.time | date:'HH:mm dd/MM/yyyy'}}</td>
+              <td>{{openSession.time | date:'HH:mm dd/MM/yyyy':'+0800'}}</td>
               <td>{{openSession.unit}}</td>
               <td>{{openSession.otherUser.firstName}} {{openSession.otherUser.lastName}}</td>
               <td>{{openSession.isTutor ? 'Tutor' : 'Student'}}</td>
