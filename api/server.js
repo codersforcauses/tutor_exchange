@@ -918,6 +918,17 @@ app.use('/emailVerify', function(req,res) {
           res.status(503).send(err);
           return;
         }
+        //check if tutor to send tutor info email
+        connection.query('SELECT firstName, verified FROM user NATURAL JOIN tutor WHERE userID = ?', [req.query.id], function(err, result, fields) {
+          if (err) {
+            console.log(err);
+            res.status(503).send(err);
+            return;
+          }
+          if (result.length !== 0) { //is a pendingTutor
+            sendTutorInfoEmail(req.query.id, result[0].firstName);
+          }
+        });
         res.redirect('/#!/login');//Maybe have a seperate 'verify success' page?
       });
     } else {
@@ -927,7 +938,7 @@ app.use('/emailVerify', function(req,res) {
   });
 });
 
-//allow users to send an email with a link to a password reset page
+/*//allow users to send an email with a link to a password reset page
 //ideally will be linked to from the login page
 //will require front-end support
 app.use('/auth/forgotPassword', function(req,res) {
@@ -954,7 +965,7 @@ app.use('/auth/forgotPassword', function(req,res) {
       sendMail(data);
     }
   });
-});
+});*/
 
 // Get name from student number
 app.use('/api/who/get_name', function(req, res) {
@@ -1119,7 +1130,6 @@ function sendVerifyEmail(userID, firstName, hostURL, callback) { //hostURL eg. h
       console.log(err);
       return;
     }
-    console.log(hostURL);
     readHTMLFile(__dirname+'/../app/emailTemplates/verifyEmailInline.html', function(err, html) {
       //var sauce = $("#verify-email").html();
       var template = handlebars.compile(html)/*sauce*/;
@@ -1141,8 +1151,37 @@ function sendVerifyEmail(userID, firstName, hostURL, callback) { //hostURL eg. h
         } else {
           callback(result, error);
         }
+      });
     });
   });
+}
+
+function sendTutorInfoEmail(userID, firstName, callback) {
+  if (!config.devOptions.sendMail) return;
+
+  var userEmail = userID + '@student.uwa.edu.au';
+
+  readHTMLFile(__dirname+'/../app/emailTemplates/tutorInfoEmailInline.html', function(err, html) {
+      var template = handlebars.compile(html);
+      var replacements = {
+          firstName: firstName,
+      };
+      var readyHTML = template(replacements);
+      var data = {
+          from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
+          to:   userEmail,
+          subject: 'Tutor Information',
+          text: 'Hi '+firstName+', thanks for applying as a Volunteer Tutor! Please check the About page (https://volunteertutorexchange.com/about) for instructions on gettign verified.',
+          html: readyHTML,
+      };
+      sendMail(data, function(result, error) {
+        if (result && result.accepted[0] === userEmail) {
+          callback({success: true, message: 'Tutor Information Email Successfully Sent'});
+        } else {
+          callback(result, error);
+        }
+      });
+    });
 }
 
 function sendMail(mailOptions, callback) {
