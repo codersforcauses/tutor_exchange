@@ -29,6 +29,8 @@
       var modalInstance = $uibModal.open({
         templateUrl: 'templates/forgotPassword.html',
         controller: 'ForgotPasswordCtrl',
+        backdrop: 'static',
+        keyboard: false,
       });
     };
 

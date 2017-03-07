@@ -1003,10 +1003,10 @@ app.use('/auth/forgotPassword', function(req,res) {
 
         sendMail(data, function(result, err) {
           if (result && result.accepted[0] === userEmail) {
-            res.json({success: true, message: 'Password Reset Sent Successfully'});
+            res.json({success: true, message: 'Reset Code Sent Successfully'});
             console.log('Success');
           } else {
-            res.json(result, error);
+            res.json({success: false, message: 'An Error Occurred'});
           }
         });
       });
@@ -1021,13 +1021,16 @@ app.use('/auth/resetPassword', function(req,res) {
 
   var resetData = req.body.resetData;
   connection.query('SELECT resetPasswordHash, resetPasswordSalt FROM user WHERE userID = ?', [resetData.id], function(err, rows) {
-    console.log(rows);
     if (err) {
       res.status(503).send(err);
       return;
     }
     if (rows.length !== 1) {
       res.status(401).send('User Not Found');
+      return;
+    }
+    if (rows[0].resetPasswordHash === null || rows[0].resetPasswordSalt === null) {
+      res.json({success: false, message: 'Reset Token already used or has expired'});
       return;
     }
     if (sha512(resetData.token, rows[0].resetPasswordSalt).passwordHash === rows[0].resetPasswordHash) {

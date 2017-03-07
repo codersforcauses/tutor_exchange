@@ -17,7 +17,11 @@
       passwordService
         .resetPassword(resetData)
         .then(function(response) {
-          console.log(response);
+          if (response.data.success) {
+            $state.go('login');
+          } else {
+            $scope.passwordReset = response.data;
+          }
         });
     };
 

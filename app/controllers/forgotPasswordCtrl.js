@@ -6,15 +6,23 @@
     .controller('ForgotPasswordCtrl', ForgotPasswordCtrl);
 
 
-  ForgotPasswordCtrl.$inject = ['$scope', 'passwordService'];
-  function ForgotPasswordCtrl($scope, passwordService) {
+  ForgotPasswordCtrl.$inject = ['$scope', 'passwordService', '$uibModalInstance'];
+  function ForgotPasswordCtrl($scope, passwordService, $uibModalInstance) {
     $scope.submit = function(userID) {
+      $scope.emailSent = true;
       passwordService
         .forgotPassword(userID)
         .then(function(response) {
-          console.log(response);
+          $scope.emailSendResult = response.data;
+          if (!response.data.success) {
+            delete $scope.emailSent;
+          }
         });
     };
-
+    $scope.cancel = function() {
+      if (!$scope.emailSent || $scope.emailSendResult.success) {
+        $uibModalInstance.dismiss('close');
+      }
+    };
   }
 })(angular);
