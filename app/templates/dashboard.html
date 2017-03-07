@@ -22,9 +22,7 @@
 				<td>{{appointment.otherUser.firstName}} {{appointment.otherUser.lastName}}
 					<i ng-if="appointment.otherUser.phone" class="glyphicon glyphicon-earphone" uib-popover="Phone: {{appointment.otherUser.phone}}" popover-trigger="'mouseenter'"></i>
 				</td>
-				<td>{{appointment.isTutor ? 'Tutor' : 'Student'}}
-					<i ng-if="appointment.comments" class="glyphicon glyphicon-comment" ng-click="openCommentModal(appointment.comments)"></i>
-				</td>
+				<td>{{appointment.isTutor ? 'Tutor' : 'Student'}}</td>
 			</tr>
 		</tbody>
 	</table>
