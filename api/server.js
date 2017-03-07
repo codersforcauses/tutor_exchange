@@ -971,29 +971,82 @@ app.use('/emailVerify', function(req,res) {
 //will require front-end support
 app.use('/auth/forgotPassword', function(req,res) {
   var details = {
-    studentNumber: req.body.user.id, //need a field for the student number
+    studentNumber: req.body.userID, //need a field for the student number
   };
 
   //check if user exists and only send email if they do - but don't communicate this to the user
   connection.query('SELECT * FROM user WHERE userID = ?', [details.studentNumber], function(err, rows, fields) {
     if (rows.length === 1) { //if user exists
-      var userEmail = details.studentNumber + '@student.uwa.edu.au';
-      //set mail data
-      var data = {
-        from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
-        to:   userEmail,
-        subject: 'Reset Password Request',
-        text: verifyLink,
-        html: '<p>Hey '+rows[0].firstName+',<p> To reset your password, ' +
-        '<a href="'+verifyLink+'">Click Here</a> and follow the instructions provided.' +
-        ' <p>Didn\'t request a password reset? No worries, you can safely ignore this email.<p>' +
-        'Regards, <br> the Volunteer Tutor Exchange team</p>',
-      };
+      var firstName = rows[0].firstName;
 
-      sendMail(data);
+      var verifyToken = genRandomString(30);
+      var hashedToken = saltHashPassword(verifyToken);
+      var verifyLink = req.headers.host + '/#!/resetPassword?id='+details.studentNumber+'&token='+verifyToken;
+
+      connection.query('UPDATE user SET resetPasswordHash = ?, resetPasswordSalt = ? WHERE userID = ?', [hashedToken.passwordHash, hashedToken.salt, details.studentNumber], function(err, result) {
+        if (err) {
+          res.status(503).send(err);
+          return;
+        }
+
+        var userEmail = details.studentNumber + '@student.uwa.edu.au';
+        var data = {
+          from: '"Volunteer Tutor Exchange" <noreply@volunteertutorexchange.com>',
+          to:   userEmail,
+          subject: 'Reset Password Request',
+          text: verifyLink,
+          html: '<p>Hey '+ firstName +',<p> To reset your password, ' +
+          '<a href="'+verifyLink+'">Click Here</a> and follow the instructions provided.' +
+          ' <p>Didn\'t request a password reset? No worries, you can safely ignore this email.<p>' +
+          'Regards, <br> the Volunteer Tutor Exchange team '+verifyLink+'</p>',
+        };
+
+        sendMail(data, function(result, err) {
+          if (result && result.accepted[0] === userEmail) {
+            res.json({success: true, message: 'Password Reset Sent Successfully'});
+            console.log('Success');
+          } else {
+            res.json(result, error);
+          }
+        });
+      });
     }
   });
 });
+
+app.use('/auth/resetPassword', function(req,res) {
+  if (!req.body.resetData || !req.body.resetData.id || !req.body.resetData.token || !req.body.resetData.password) {
+    res.status(401).send('Invalid Password Reset Request');
+  }
+
+  var resetData = req.body.resetData;
+  connection.query('SELECT resetPasswordHash, resetPasswordSalt FROM user WHERE userID = ?', [resetData.id], function(err, rows) {
+    console.log(rows);
+    if (err) {
+      res.status(503).send(err);
+      return;
+    }
+    if (rows.length !== 1) {
+      res.status(401).send('User Not Found');
+      return;
+    }
+    if (sha512(resetData.token, rows[0].resetPasswordSalt).passwordHash === rows[0].resetPasswordHash) {
+      var passhashsalt = saltHashPassword(resetData.password); //holds both hash and salt
+      connection.query('UPDATE user SET passwordHash = ?, passwordSalt = ? WHERE userID = ?', [passhashsalt.passwordHash, passhashsalt.salt, resetData.id], function(err, rows) {
+        if (err) {
+          res.status(503).send(err);
+          return;
+        }
+        clearResetToken(resetData.id);
+        res.json({success: true, message: 'Password Successfully Reset'});
+      });
+    } else {
+      res.json({success: false, message: 'Token was Invalid'});
+    }
+  });
+
+});
+
 
 // Get name from student number
 app.use('/api/who/get_name', function(req, res) {
@@ -1199,7 +1252,19 @@ function sendMail(mailOptions, callback) {
     }
     return callback(info);
   });
+}
 
+
+// Removes the Password reset tokens from the Database after use.
+// Will also be done with a daily reset.
+function clearResetToken(userID) {
+  connection.query('UPDATE user SET resetPasswordHash = NULL, resetPasswordSalt = NULL WHERE userID = ?', [userID], function(err, rows) {
+      if (err) {
+        res.status(503).send(err);
+        return;
+      }
+      return;
+    });
 }
 
 /** [from https://code.ciphertrick.com/2016/01/18/salt-hash-passwords-using-nodejs-crypto/]

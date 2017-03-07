@@ -82,6 +82,12 @@
         templateUrl: 'templates/termsOfUse.html',
       })
 
+      .state('resetPassword', {
+        url: '/resetPassword?id&token',
+        templateUrl: 'templates/resetPassword.html',
+        controller: 'ResetPasswordCtrl',
+      })
+
       .state('about', {
         url: '/about',
         templateUrl: 'templates/about.html',

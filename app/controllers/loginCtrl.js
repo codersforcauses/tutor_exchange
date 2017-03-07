@@ -6,8 +6,8 @@
     .controller('LoginCtrl', LoginCtrl);
 
 
-  LoginCtrl.$inject = ['$scope', '$state', 'userFunctions'];
-  function LoginCtrl($scope, $state, userFunctions) {
+  LoginCtrl.$inject = ['$scope', '$state', 'userFunctions', '$uibModal'];
+  function LoginCtrl($scope, $state, userFunctions, $uibModal) {
     if (userFunctions.isLoggedIn()) {
       $state.go('dashboard');// Already Logged in
     }
@@ -24,6 +24,14 @@
           }
         });
     };
+
+    $scope.openForgotPassword = function() {
+      var modalInstance = $uibModal.open({
+        templateUrl: 'templates/forgotPassword.html',
+        controller: 'ForgotPasswordCtrl',
+      });
+    };
+
   }
 
 })(angular);
