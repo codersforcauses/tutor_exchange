@@ -38,7 +38,6 @@ function ProfileCtrl($scope, $state, $http, userFunctions, fetchService, $uibMod
     .then(function(response) {
         if (response.data) {
           $scope.user = response.data;
-          console.log(response.data);
         } else {
           console.log('Unable to Load User Data');
         }
@@ -56,7 +55,6 @@ function ProfileCtrl($scope, $state, $http, userFunctions, fetchService, $uibMod
 
   $scope.upgradeSubmit = function() {
     if ($scope.user) {
-      console.log($scope.edituser);
       userFunctions.upgradeAccount($scope.edituser)
       .then(function(response) {
         if (response.data && response.data.success) {
@@ -87,7 +85,6 @@ function ProfileCtrl($scope, $state, $http, userFunctions, fetchService, $uibMod
 
   $scope.save = function() {
     if ($scope.user && $scope.edituser) {
-      console.log($scope.edituser);
       userFunctions.updateProfile($scope.edituser)
       .then(function(response) {
         if (response.data && response.data.success) {

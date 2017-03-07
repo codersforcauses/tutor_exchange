@@ -31,7 +31,6 @@
       });
 
     $scope.submit = function(session, preFormatTime) {
-      console.log('SUBMIT!!!!!!!');
       session.time = moment(preFormatTime.date + preFormatTime.time, 'DD/MM/YYYYHH:mm').format('YYYY-MM-DD HH:mm:ss');
       if (session.unit.unitID) session.unit = session.unit.unitID;
 

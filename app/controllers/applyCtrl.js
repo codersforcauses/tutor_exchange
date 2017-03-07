@@ -61,8 +61,6 @@
 
       user.sex = user.sex.charAt(0);
 
-      console.log(user);
-
       // Set English for Default
       if (!user.languages) {
         user.languages = [{languageCode: 'en', languageName: 'English'}];
