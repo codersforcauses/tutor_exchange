@@ -17,7 +17,7 @@
 		</thead>
 		<tbody>
 			<tr ng-repeat="appointment in appointments" ng-class="appointment.cancelled?'strikethrough':'null'">
-				<td>{{appointment.time | date:'HH:mm dd/MM/yyyy'}}</td>
+				<td>{{appointment.time | date:'HH:mm dd/MM/yyyy':'+0000'}}</td>
 				<td>{{appointment.unit}}</td>
 				<td>{{appointment.otherUser.firstName}} {{appointment.otherUser.lastName}}
 					<i ng-if="appointment.otherUser.phone" class="glyphicon glyphicon-earphone" uib-popover="Phone: {{appointment.otherUser.phone}}" popover-trigger="'mouseenter'"></i>
@@ -39,6 +39,8 @@
 	</div>
 	<br>
 	<h4>Logged in as: </h4><p>{{session.name}}</p> <p>Student Number: {{session.id}}</p> <p>Account Type: {{session.role}}</p><a href="" ng-click="logout()">Logout</a>
+	<br><br><br>
+	<a href="https://goo.gl/forms/TwASylTNzFJ5xHl62" target="_blank"><button class="btn btn-primary">Send feedback / report bug</button></a>
 </div>
 </div>
 </div>

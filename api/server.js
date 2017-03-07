@@ -363,7 +363,18 @@ app.use('/auth/upgrade', function(req, res) {
             var role = USER_ROLES.pendingTutor;
             var token = jwt.sign({id: tutorpost.userID, role: role}, app.get('secret'));
             res.json({success: true, message: 'Successfully Upgraded to Tutor Account', role: role, token: token});
-            return;
+            //send tutor information email
+            connection.query('SELECT firstName FROM user WHERE userID = ?', [tutorpost.userID], function(err, rows, fields) {
+              if (err) {
+                console.log(err);
+                res.status(503).send(err);
+                return;
+              }
+
+              sendTutorInfoEmail(tutorpost.userID, rows[0].firstName);
+              return;
+            });
+            
           });
         }
       });
@@ -1024,6 +1035,8 @@ app.use('/auth/forgotPassword', function(req,res) {
           });
         });
       });
+    } else {
+      res.json({success: false, message: 'An Error Occurred'});
     }
   });
 });
