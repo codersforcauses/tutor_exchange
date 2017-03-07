@@ -29,6 +29,13 @@
     refresh();
 
 
+    $scope.formatTime = function(date) {
+      console.log(date);
+      date = moment(date).format('HH:mm DD/MM/YYYY');
+      return date;
+    };
+
+
 
 
     function refresh() {
