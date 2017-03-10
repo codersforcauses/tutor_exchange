@@ -554,7 +554,7 @@ app.use('/api/session/get_requests', function(req, res) {
           lastName: result[i].lastName,
           phone: result[i].phone,
         },
-        time: result[i].time,
+        time: Date.parse(result[i].time),
         unit: result[i].unit,
         comments: result[i].comments,
         isTutor: (result[i].tutor === currentUser.id),
@@ -592,7 +592,7 @@ app.use('/api/session/get_appointments', function(req, res) {
           lastName: result[i].lastName,
           phone: result[i].phone,
         },
-        time: result[i].time,
+        time: Date.parse(result[i].time),
         unit: result[i].unit,
         comments: result[i].comments,
         isTutor: (result[i].tutor === currentUser.id),
@@ -631,7 +631,7 @@ app.use('/api/session/get_open_sessions', function(req, res) {
           firstName: result[i].firstName,
           lastName: result[i].lastName,
         },
-        time: result[i].time,
+        time: Date.parse(result[i].time),
         unit: result[i].unit,
         isTutor: (result[i].tutor === currentUser.id),
       });
@@ -655,11 +655,13 @@ app.use('/api/session/create_request', function(req, res) {
     return;
   }
 
+  var tzoffset = (new Date()).getTimezoneOffset() * 60000;
+
   var requestData = {
     tutor: currentUser.id,
     tutee: req.body.session.otherUser.userID,
     unit: req.body.session.unit,
-    time: req.body.session.time,
+    time: (new Date(req.body.session.time - tzoffset)).toISOString().substring(0, 19).replace('T', ' '),
     comments: req.body.session.comments,
     sessionStatus: 0,
     confirmationStatus: 0,
@@ -672,10 +674,11 @@ app.use('/api/session/create_request', function(req, res) {
     return;
   }
 
-  if (Date.parse(requestData.time + ' GMT+0800') < Date.now()) {
+  if (Date.parse(requestData.time) < Date.now()) {
     res.json({success: false, message: 'You cannot arrange tutoring sessions in the past.'});
     return;
   }
+
 
   connection.query('SELECT COUNT(*) as userExists FROM user WHERE userID = ? AND emailVerified = 1;', [requestData.tutee], function(err, result, fields) {
     if (err) {
@@ -751,7 +754,8 @@ app.use('/api/session/accept_request', function(req, res) {
       time: result[0].time,
     };
 
-    if (Date.parse(requestData.time + ' GMT+0800') < Date.now() + 1*60*60*1000) {
+
+    if (Date.parse(requestData.time) < Date.now() + 1*60*60*1000) {
       res.json({success: false, message: 'You cannot attend a tutoring sessions in the past without a time machine.'});
       return;
     }
