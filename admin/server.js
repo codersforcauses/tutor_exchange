@@ -74,10 +74,10 @@ app.all('/auth/logout', function(req, res) {
 });
 
 
+
 //----------------------------------------
 // Approve pending tutors
 //----------------------------------------
-
 
 app.get('/approve', function(req, res) {
   db.query('SELECT user.userID, firstName, lastName, phone FROM user JOIN tutor ON user.userID = tutor.userID WHERE verified = 0;', function(err, results) {
@@ -91,7 +91,6 @@ app.get('/approve', function(req, res) {
 });
 
 app.post('/api/approve', function(req, res) {
-
   var approved = Object.keys(req.body);
   //console.log(approved);
 
@@ -106,13 +105,84 @@ app.post('/api/approve', function(req, res) {
 });
 
 
+//----------------------------------------
+// Resolve session appeals
+//----------------------------------------
+
+app.get('/appeals', function(req, res) {
+  db.query('SELECT sessionID, time, userID, firstName, lastName, reason, hoursAwarded FROM user JOIN sessionComplaint USING (userID) JOIN session USING (sessionID) WHERE resolved = 0;', function(err, results) {
+    if (err) {
+      console.log(err);
+      res.status(500).send(err);
+      return;
+    }
+    res.render('appeals', {appeals: results});
+  });
+});
+
+
+app.post('/api/appeals/resolve', function(req, res) {
+  var keys = Object.keys(req.body)[0].split(' ');
+  var sessionID = keys[0];
+  var userID = keys[1];
+  var hoursAwarded = req.body[keys.join(' ')] === 'Award' ? 1 : 0;
+
+  console.log(sessionID + ' ' + userID + ' ' + hoursAwarded);
+
+  db.beginTransaction(function(err) {
+    if (err) {
+      console.log(err);
+      res.status(500).send(err);
+      return;
+    }
+
+    db.query('UPDATE sessionComplaint SET resolved = 1 WHERE sessionID = ? AND userID = ?;', [sessionID, userID], function(err) {
+      if (err) {
+        return db.rollback(function() {
+          console.log(err);
+          res.status(500).send(err);
+          return;
+        });
+      }
+    });
+
+    db.query('UPDATE session SET hoursAwarded = ? WHERE sessionID = ?;', [hoursAwarded, sessionID], function(err) {
+      if (err) {
+        return db.rollback(function() {
+          console.log(err);
+          res.status(500).send(err);
+          return;
+        });
+      }
+    });
+
+    db.commit(function(err) {
+      if (err) {
+        return db.rollback(function() {
+          console.log(err);
+          res.status(500).send(err);
+          return;
+        });
+      }
+
+      res.redirect('/appeals');
+    });
+  });
+});
+
+
+//----------------------------------------
+// Default route to home
+//----------------------------------------
 
 app.use('/', function(req, res) {
   res.render('home');
 });
 
 
-
+//----------------------------------------
+// Serve
+//----------------------------------------
 
 app.listen(config.server.port, function() {
   console.log('server running on http://localhost:' + config.server.port);

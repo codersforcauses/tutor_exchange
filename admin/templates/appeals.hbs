@@ -1,0 +1,45 @@
+
+<h1>
+	Session Appeals
+</h1>
+<br>
+
+
+{{#if appeals}}
+
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>Session ID</th>
+				<th>User</th>
+				<th>Reason</th>
+				<th>Hours awarded</th>
+				<th>Resolve</th>
+			</tr>
+		</thead>
+
+		<tbody>
+			{{#each appeals}}
+				<tr>
+					<td>{{sessionID}}</td>
+					<td>{{firstName}} {{lastName}} {{userID}}</td>
+					<td>
+						<button type="button" class="btn btn-default" data-toggle="popover" data-content="{{reason}}">View</button>
+					</td>
+					<td>{{#if hoursAwarded}} Yes {{else}} No {{/if}}</td>
+					<td>
+						<form action="api/appeals/resolve" method="post">
+							<input type="submit" name="{{sessionID}} {{userID}}" class="btn btn-success" value="Award">
+							<input type="submit" name="{{sessionID}} {{userID}}" class="btn btn-danger" value="Deny">
+						</form>
+					</td>
+				</tr>
+			{{/each}}
+		</tbody>
+
+	</table>
+
+{{else}}
+	<h4>There are no unresolved appeals.</h4>
+{{/if}}
+
