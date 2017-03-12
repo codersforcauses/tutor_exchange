@@ -10,11 +10,12 @@ var config = require(__dirname + '/config');
 var app = express();
 
 // Init handlebars template engine
-app.engine('hbs', handlebars({extname: '.hbs', layoutsDir: 'templates/layouts/', defaultLayout: 'main'}));
+app.engine('hbs', handlebars({extname: '.hbs', layoutsDir: 'templates/layouts/', defaultLayout: 'layout'}));
 app.set('view engine', 'hbs');
 app.set('views', 'templates/');
 
 // Init body parser for reading messages from client
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
 // Init session cookie library
@@ -29,6 +30,9 @@ db.connect (function(error) {
     console.log('Connected to mysql database');
   }
 });
+
+// Serve public folder
+app.use(express.static('public'));
 
 
 // Middleware
@@ -48,18 +52,18 @@ app.use('/*', function(req, res, next) {
 // Login + logout
 //----------------------------------------
 app.get('/login', function(req, res) {
-  res.render('login', {layout: 'plain'});
+  res.render('login', {layout: 'layout_login'});
 });
 
 app.post('/auth/login', function(req, res) {
 
   if (!req.body.username || !req.body.password) {
-    res.status(400).render('login', {layout: 'plain', errMsg: 'User name or password not provided'});
+    res.status(400).render('login', {layout: 'layout_login', errMsg: 'User name or password not provided'});
     return;
   }
 
   if (req.body.username != config.admin.username || req.body.password != config.admin.password) {
-    res.status(400).render('login', {layout: 'plain', errMsg: 'Incorrect username or password'});
+    res.status(400).render('login', {layout: 'layout_login', errMsg: 'Incorrect username or password'});
     return;
   }
 
@@ -125,7 +129,7 @@ app.post('/api/appeals/resolve', function(req, res) {
   var userID = keys[1];
   var hoursAwarded = req.body[keys.join(' ')] === 'Award' ? 1 : 0;
 
-  console.log(sessionID + ' ' + userID + ' ' + hoursAwarded);
+  //console.log(sessionID + ' ' + userID + ' ' + hoursAwarded);
 
   db.beginTransaction(function(err) {
     if (err) {
@@ -204,6 +208,84 @@ app.post('/api/search', function(req, res) {
 
 
 //----------------------------------------
+// Banned users
+//----------------------------------------
+app.get('/banned', function(req, res) {
+  db.query('SELECT userID, firstName, lastName, reason FROM user JOIN bannedUser USING (userID);', function(err, results) {
+    if (err) {
+      console.log(err);
+      res.status(500).send(err);
+      return;
+    }
+    res.render('banned', {bannedUsers: results, scripts: ['banned.js']});
+  });
+});
+
+
+app.post('/api/banned/search', function(req, res) {
+  var userID = parseInt(req.body.userID);
+
+  if (!userID || userID < 1 || 99999999 < userID) {
+    res.json({success: false, message: 'Please enter an 8 digit student number.'});
+    return;
+  }
+
+  db.query('SELECT userID, firstName, lastName FROM user WHERE userID = ?;', [userID], function(err, results) {
+    if (err) {
+      console.log(err);
+      res.status(500).send(err);
+      return;
+    }
+
+    if (results.length === 0) {
+      res.json({success: false, message: 'Student number does not belong to any users.'});
+      return;
+    }
+
+    res.json({success: true, user: results[0]});
+    return;
+  });
+
+});
+
+app.post('/api/banned/ban', function(req, res) {
+  var userID = req.body.userID;
+  var reason = req.body.reason || '';
+
+  db.query('INSERT IGNORE INTO bannedUser VALUES (?, ?);', [userID, reason], function(err, results) {
+    if (err) {
+      console.log(err);
+      res.status(500).send(err);
+      return;
+    }
+    res.redirect('/banned');
+  });
+});
+
+app.post('/api/banned/reinstate', function(req, res) {
+  var reinstated = Object.keys(req.body);
+  //console.log(reinstated);
+
+  db.query('DELETE FROM bannedUser WHERE userID IN (?);', [reinstated], function(err, results) {
+    if (err) {
+      console.log(err);
+      res.status(500).send(err);
+      return;
+    }
+    res.redirect('/banned');
+  });
+});
+
+
+//----------------------------------------
+// Generate report for guild volunteering
+//----------------------------------------
+app.get('/report', function(req, res) {
+  res.render('report');
+});
+
+
+//----------------------------------------
 // Default route to home
 //----------------------------------------
 app.use('/', function(req, res) {
@@ -214,6 +296,7 @@ app.use('/', function(req, res) {
 //----------------------------------------
 // Serve
 //----------------------------------------
+
 app.listen(config.server.port, function() {
   console.log('server running on http://localhost:' + config.server.port);
 });

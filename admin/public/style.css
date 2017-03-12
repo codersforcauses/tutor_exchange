@@ -1,0 +1,12 @@
+th, td {
+	text-align: center;
+}
+
+.error {
+	color: red;
+}
+
+textarea {
+	min-width: 100%;
+	resize: vertical
+}

@@ -2,6 +2,7 @@
 <h1>
 	Search
 </h1>
+<br>
 
 <form action="/api/search" method="post">
 
@@ -11,9 +12,11 @@
 		<input type="submit" value="Search" class="btn btn-default">
 	</div>
 
-	<span style="color:red;">{{errMsg}}</span><br><br>
+	<span class="error">{{errMsg}}</span>
 
 </form>
+
+<br><br>
 
 {{#if user}}
 
@@ -28,6 +31,5 @@
 		<dd>{{user.phone}}</dd>
 
 	</dl>
-
 
 {{/if}}

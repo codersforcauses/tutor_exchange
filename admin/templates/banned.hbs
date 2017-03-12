@@ -1,0 +1,87 @@
+
+<h1>
+	Banned users
+</h1>
+<br>
+
+
+<h3>Ban a user</h3>
+<form id="search_form">
+
+	<div class="form-group">
+		<label for="search"> Search student number:</label>
+		<input type="text" name="userID" required>
+		<input type="submit" value="Search" class="btn btn-default">
+	</div>
+
+	<span id="err_msg" class="error"></span>
+
+</form>
+
+<br>
+
+<h3>Currently banned</h3>
+
+{{#if bannedUsers}}
+
+	<form action="/api/banned/reinstate" method="post">
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>Student number</th>
+					<th>First name</th>
+					<th>Last name</th>
+					<th>Reason</th>
+					<th>Reinstate</th>
+				</tr>
+			</thead>
+
+			<tbody>
+				{{#each bannedUsers}}
+					<tr>
+						<td>{{userID}}</td>
+						<td>{{firstName}}</td>
+						<td>{{lastName}}</td>
+						<td>
+							<button type="button" class="btn btn-default" data-toggle="popover" data-content="{{reason}}" data-placement="top">View</button>
+						</td>
+						<td><input type="checkbox" name="{{userID}}"></td>
+					</tr>
+				{{/each}}
+
+				<td></td><td></td><td></td><td></td>
+				<td><input type="submit" value="Submit" class="btn btn-default"></td>
+			</tbody>
+
+		</table>
+
+	</form>
+
+{{else}}
+	<h4>There are no banned users.</h4>
+{{/if}}
+
+
+<!--- MODAL DIALOGUE -->
+
+<div id="confirm_modal" class="modal fade" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<form action="/api/banned/ban" method="post">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+					<h4 class="modal-title">Please Confirm</h4>
+				</div>
+				<div class="modal-body">
+					<p>Are you sure you want to ban <b><span id="confirm_text_user"></span></b>?</p>
+					<label for="reason">Reason:</label><br>
+					<textarea name="reason" rows="10" required></textarea>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<button id="confirm_button_ban" type="submit" class="btn btn-danger" name="userID" value="">Ban</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
