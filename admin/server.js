@@ -97,6 +97,11 @@ app.post('/api/approve', function(req, res) {
   var approved = Object.keys(req.body);
   //console.log(approved);
 
+  if (approve.length === 0) {
+    res.redirect('/approve');
+    return;
+  }
+
   db.query('UPDATE tutor SET verified=1 WHERE userID IN (?);', [approved], function(err, results) {
     if (err) {
       console.log(err);
@@ -265,6 +270,11 @@ app.post('/api/banned/ban', function(req, res) {
 app.post('/api/banned/reinstate', function(req, res) {
   var reinstated = Object.keys(req.body);
   //console.log(reinstated);
+
+  if (reinstated.length === 0) {
+    res.redirect('/banned');
+    return;
+  }
 
   db.query('DELETE FROM bannedUser WHERE userID IN (?);', [reinstated], function(err, results) {
     if (err) {
