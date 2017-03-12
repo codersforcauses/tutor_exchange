@@ -78,7 +78,6 @@ app.all('/auth/logout', function(req, res) {
 //----------------------------------------
 // Approve pending tutors
 //----------------------------------------
-
 app.get('/approve', function(req, res) {
   db.query('SELECT user.userID, firstName, lastName, phone FROM user JOIN tutor ON user.userID = tutor.userID WHERE verified = 0;', function(err, results) {
     if (err) {
@@ -108,7 +107,6 @@ app.post('/api/approve', function(req, res) {
 //----------------------------------------
 // Resolve session appeals
 //----------------------------------------
-
 app.get('/appeals', function(req, res) {
   db.query('SELECT sessionID, time, userID, firstName, lastName, reason, hoursAwarded FROM user JOIN sessionComplaint USING (userID) JOIN session USING (sessionID) WHERE resolved = 0;', function(err, results) {
     if (err) {
@@ -172,9 +170,42 @@ app.post('/api/appeals/resolve', function(req, res) {
 
 
 //----------------------------------------
+// Search user details
+//----------------------------------------
+app.get('/search', function(req, res) {
+  res.render('search');
+});
+
+
+app.post('/api/search', function(req, res) {
+  //console.log(req.body);
+  var userID = parseInt(req.body.userID);
+
+  if (!userID || userID < 1 || 99999999 < userID) {
+    res.render('search', {errMsg: 'Please enter an 8 digit student number.'});
+    return;
+  }
+
+  db.query('SELECT userID, firstName, lastName, phone FROM user WHERE userID = ?;', [userID], function(err, results) {
+    if (err) {
+      console.log(err);
+      res.status(500).send(err);
+      return;
+    }
+
+    if (results.length === 0) {
+      res.render('search', {errMsg: 'Student number does not belong to any users.'});
+      return;
+    }
+
+    res.render('search', {user: results[0]});
+  });
+});
+
+
+//----------------------------------------
 // Default route to home
 //----------------------------------------
-
 app.use('/', function(req, res) {
   res.render('home');
 });
@@ -183,7 +214,6 @@ app.use('/', function(req, res) {
 //----------------------------------------
 // Serve
 //----------------------------------------
-
 app.listen(config.server.port, function() {
   console.log('server running on http://localhost:' + config.server.port);
 });

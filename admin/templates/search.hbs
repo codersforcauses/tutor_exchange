@@ -1,0 +1,33 @@
+
+<h1>
+	Search
+</h1>
+
+<form action="/api/search" method="post">
+
+	<div class="form-group">
+		<label for="search"> Search student number:</label>
+		<input type="text" name="userID" required>
+		<input type="submit" value="Search" class="btn btn-default">
+	</div>
+
+	<span style="color:red;">{{errMsg}}</span><br><br>
+
+</form>
+
+{{#if user}}
+
+	<dl>
+		<dt>Student number:</dt>
+		<dd>{{user.userID}}</dd>
+
+		<dt>Name:</dt>
+		<dd>{{user.firstName}} {{user.lastName}}</dd>
+
+		<dt>Contact:</dt>
+		<dd>{{user.phone}}</dd>
+
+	</dl>
+
+
+{{/if}}
