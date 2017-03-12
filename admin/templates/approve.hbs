@@ -1,0 +1,42 @@
+
+<h1>
+	Approve pending tutors
+</h1>
+<br>
+
+{{#if pendingTutors}}
+
+	<form action="/api/approve" method="post">
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>Student number</th>
+					<th>First name</th>
+					<th>Last name</th>
+					<th>Phone</th>
+					<th>Approve</th>
+				</tr>
+			</thead>
+
+			<tbody>
+				{{#each pendingTutors}}
+					<tr>
+						<td>{{userID}}</td>
+						<td>{{firstName}}</td>
+						<td>{{lastName}}</td>
+						<td>{{phone}}</td>
+						<td><input type="checkbox" name="{{userID}}"></td>
+					</tr>
+				{{/each}}
+
+				<td></td><td></td><td></td><td></td>
+				<td><input type="submit" value="Submit" class="btn btn-default"></td>
+			</tbody>
+
+		</table>
+
+	</form>
+
+{{else}}
+	<h4>There are no unverified tutors.</h4>
+{{/if}}
