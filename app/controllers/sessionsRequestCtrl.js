@@ -15,8 +15,8 @@
 
     if (session) {
       angular.copy(session, $scope.session);
-      $scope.preFormatTime.date = moment.utc(session.time).format('DD/MM/YYYY');
-      $scope.preFormatTime.time = moment.utc(session.time).format('HH:mm');
+      $scope.preFormatTime.date = moment(session.time).utcOffset('+0800').format('DD/MM/YYYY');
+      $scope.preFormatTime.time = moment(session.time).utcOffset('+0800').format('HH:mm');
     }
 
 
@@ -31,7 +31,9 @@
       });
 
     $scope.submit = function(session, preFormatTime) {
-      session.time = moment(preFormatTime.date + preFormatTime.time, 'DD/MM/YYYYHH:mm').format('YYYY-MM-DD HH:mm:ss');
+      session.time = moment.utc(preFormatTime.date + preFormatTime.time + '+08000', 'DD/MM/YYYYHH:mmZ').valueOf();
+      //console.log(session.time);
+      //console.log(new Date(session.time));
       if (session.unit.unitID) session.unit = session.unit.unitID;
 
       $uibModalInstance.close(session);
