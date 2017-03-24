@@ -74,7 +74,7 @@ app.post('/auth/login', function(req, res) {
 
 app.all('/auth/logout', function(req, res) {
   req.session.destroy();
-  res.status(200).redirect('/login');
+  res.redirect('/login');
 });
 
 
@@ -97,7 +97,7 @@ app.post('/api/approve', function(req, res) {
   var approved = Object.keys(req.body);
   //console.log(approved);
 
-  if (approve.length === 0) {
+  if (approved.length === 0) {
     res.redirect('/approve');
     return;
   }
