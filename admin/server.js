@@ -291,7 +291,23 @@ app.post('/api/banned/reinstate', function(req, res) {
 // Generate report for guild volunteering
 //----------------------------------------
 app.get('/report', function(req, res) {
-  res.render('report');
+  res.render('report', {scripts: ['report.js']});
+});
+
+app.post('/api/report', function(req, res) {
+
+  var query = 'SELECT userID, firstName, lastName, MIN(time) AS start, MAX(time) AS end, SUM(hoursAwarded) AS hours FROM user JOIN session ON user.userID = session.tutor GROUP BY userID;';
+
+  db.query(query, function(err, results) {
+    if (err) {
+      console.log(err);
+      res.status(500).send(err);
+      return;
+    }
+
+    res.json({data: results});
+    return;
+  });
 });
 
 
