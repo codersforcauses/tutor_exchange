@@ -6,12 +6,16 @@
 
 
 <h3>Ban a user</h3>
-<form id="search_form">
 
+<form id="search_form">
 	<div class="form-group">
-		<label for="search"> Search student number:</label>
-		<input type="text" name="userID" required>
-		<input type="submit" value="Search" class="btn btn-default">
+		<label for="search"> Search student number:</label><br>
+		<span class="input-group">
+			<input type="text" name="userID" class="form-control" required>
+			<span class="input-group-btn">
+				<input type="submit" value="Search" class="btn btn-default">
+			</span>
+		</span>
 	</div>
 
 	<span id="err_msg" class="error"></span>

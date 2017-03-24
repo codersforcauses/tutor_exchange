@@ -10,3 +10,7 @@ textarea {
 	min-width: 100%;
 	resize: vertical
 }
+
+.input-group {
+	max-width: 300px;
+}
