@@ -755,7 +755,7 @@ app.use('/api/session/accept_request', function(req, res) {
     };
 
 
-    if (Date.parse(requestData.time) < Date.now() + 1*60*60*1000) {
+    if (Date.parse(requestData.time) < Date.now() - 2*60*60*1000) {
       res.json({success: false, message: 'You cannot attend a tutoring sessions in the past without a time machine.'});
       return;
     }
