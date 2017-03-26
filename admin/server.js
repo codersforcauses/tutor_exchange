@@ -315,7 +315,15 @@ app.post('/api/report', function(req, res) {
 // Default route to home
 //----------------------------------------
 app.use('/', function(req, res) {
-  res.render('home');
+  db.query('SELECT * FROM (SELECT COUNT(*) AS pending FROM tutor WHERE verified = 0) AS A JOIN (SELECT COUNT(*) AS appeals FROM sessionComplaint WHERE resolved = 0) AS B;', function(err, results) {
+    if (err) {
+      console.log(err);
+      res.status(500).send(err);
+      return;
+    }
+
+    res.render('home', {summary: results[0]});
+  });
 });
 
 

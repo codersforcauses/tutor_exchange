@@ -7,3 +7,17 @@
 <p>
 	Welcome, admin user.
 </p>
+
+<br>
+
+{{#if summary}}
+
+<p>
+	You have:
+	<ul>
+		<li>{{summary.pending}} pending tutors</li>
+		<li>{{summary.appeals}} session appeals to resolve</li>
+	</ul>
+</p>
+
+{{/if}}
