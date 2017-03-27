@@ -188,14 +188,20 @@ app.get('/search', function(req, res) {
 
 app.post('/api/search', function(req, res) {
   //console.log(req.body);
-  var userID = parseInt(req.body.userID);
 
-  if (!userID || userID < 1 || 99999999 < userID) {
-    res.render('search', {errMsg: 'Please enter an 8 digit student number.'});
+  if (!req.body.query || req.body.query.trim().length < 1) {
+    res.render('search');
     return;
   }
 
-  db.query('SELECT userID, firstName, lastName, phone FROM user WHERE userID = ?;', [userID], function(err, results) {
+  var pattern = req.body.query.match(/[^ ]+/g).join('|');
+
+  if (pattern.length < 1) {
+    res.render('search');
+    return;
+  }
+
+  db.query('SELECT userID, firstName, lastName, phone FROM user WHERE userID REGEXP ? OR firstName REGEXP ? OR lastName REGEXP ?;', [pattern, pattern, pattern], function(err, results) {
     if (err) {
       console.log(err);
       res.status(500).send(err);
@@ -203,11 +209,11 @@ app.post('/api/search', function(req, res) {
     }
 
     if (results.length === 0) {
-      res.render('search', {errMsg: 'Student number does not belong to any users.'});
+      res.render('search', {errMsg: 'No results found.'});
       return;
     }
 
-    res.render('search', {user: results[0]});
+    res.render('search', {users: results});
   });
 });
 

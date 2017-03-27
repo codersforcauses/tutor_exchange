@@ -6,9 +6,9 @@
 
 <form action="/api/search" method="post">
 	<div class="form-group">
-		<label for="search"> Search student number:</label><br>
-		<span class="input-group">
-			<input type="text" name="userID" class="form-control" required>
+		<label for="search"> Search first name, last name or student number:</label><br>
+		<span class="input-group" style="width: 300px">
+			<input type="text" name="query" class="form-control" autocomplete="off" required>
 			<span class="input-group-btn">
 				<input type="submit" value="Search" class="btn btn-default">
 			</span>
@@ -21,18 +21,22 @@
 
 <br><br>
 
-{{#if user}}
+{{#if users}}
 
-	<dl>
-		<dt>Student number:</dt>
-		<dd>{{user.userID}}</dd>
+	{{#each users}}
 
-		<dt>Name:</dt>
-		<dd>{{user.firstName}} {{user.lastName}}</dd>
+		<dl>
+			<dt>Student number:</dt>
+			<dd>{{userID}}</dd>
 
-		<dt>Contact:</dt>
-		<dd>{{user.phone}}</dd>
+			<dt>Name:</dt>
+			<dd>{{firstName}} {{lastName}}</dd>
 
-	</dl>
+			<dt>Contact:</dt>
+			<dd>{{phone}}</dd>
+
+		</dl>
+
+	{{/each}}
 
 {{/if}}
