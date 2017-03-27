@@ -13,7 +13,7 @@
         <p>Find the perfect Tutor to fit your needs using the search form below.</p>
         <hr>
         <div class="form-group">
-          <h5>Find a Tutor: <i class="glyphicon glyphicon-info-sign" uib-tooltip="Search for a tutor by typing in a unit and the language you want to be tutored in!"></i></h5>
+          <h5>Find a Tutor: <i class="glyphicon glyphicon-info-sign" uib-tooltip="Search for a tutor by typing in a unit and then contact them so they can schedule a session for you!"></i></h5>
           <ui-select ng-model="query.units" theme="bootstrap" data-toggle="tooltip" title="Choose an address" required>
           <ui-select-match placeholder="Type to Search for Units...">{{$select.selected.unitID}}: {{$select.selected.unitName}}</ui-select-match>
           <ui-select-choices repeat="unit in availableUnits | filter: $select.search | limitTo: ($select.search.length <= 3) ? 0 : undefined">
