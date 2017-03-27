@@ -10,7 +10,14 @@ var config = require(__dirname + '/config');
 var app = express();
 
 // Init handlebars template engine
-app.engine('hbs', handlebars({extname: '.hbs', layoutsDir: 'templates/layouts/', defaultLayout: 'layout'}));
+app.engine('hbs', handlebars({
+  extname: '.hbs',
+  layoutsDir: 'templates/layouts/',
+  defaultLayout: 'layout',
+  helpers: {
+    plural: function(n) {return n===1 ? '' : 's';},
+  },
+}));
 app.set('view engine', 'hbs');
 app.set('views', 'templates/');
 
