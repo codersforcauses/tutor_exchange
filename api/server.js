@@ -1183,6 +1183,12 @@ app.use('/auth/changePassword', function(req,res) {
     });
   });
 
+
+app.use('/', function(req, res) {
+  res.redirect('/#!/');
+});
+
+
 // Serve
 app.listen(config.server.port, function() {
   console.log('Live at http://localhost:' + config.server.port);

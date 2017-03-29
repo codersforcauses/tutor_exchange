@@ -91,6 +91,15 @@
       .state('about', {
         url: '/about',
         templateUrl: 'templates/about.html',
+      })
+
+      .state('help', {
+        url: '/help',
+        templateUrl: 'templates/help.html',
+        data: {
+          authRequired: true,
+          authRoles: [USER_ROLES.pendingUser, USER_ROLES.student, USER_ROLES.pendingTutor, USER_ROLES.tutor],
+        },
       });
   }
 
