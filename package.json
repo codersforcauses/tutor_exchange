@@ -8,6 +8,7 @@
     "express-handlebars": "^3.0.0",
     "express-session": "^1.15.1",
     "handlebars": "^4.0.6",
+    "helmet": "^3.5.0",
     "json-server": "^0.9.4",
     "jsonwebtoken": "^7.2.1",
     "nodemailer": "^3.1.3",
