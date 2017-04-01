@@ -29,7 +29,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
 // Init session cookie library
-app.use(session({secret: config.secret, resave: false, saveUninitialized: true, cookie: {secure: config.devOptions.https},}));
+app.use(session({secret: config.secret, resave: false, saveUninitialized: true, cookie: {secure: config.devOptions.https, maxAge: 12*60*60*1000}}));
 
 // Init helmet (blocks http headers)
 app.use(helmet());
