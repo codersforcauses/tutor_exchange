@@ -208,7 +208,7 @@ app.post('/api/search', function(req, res) {
     return;
   }
 
-  db.query('SELECT userID, firstName, lastName, phone FROM user WHERE userID REGEXP ? OR firstName REGEXP ? OR lastName REGEXP ?;', [pattern, pattern, pattern], function(err, results) {
+  db.query('SELECT A.userID, firstName, lastName, sex, phone, emailVerified as isActivated, tutor.userID as isTutor, verified, B.hours, bannedUser.userID as isBanned, reason FROM (SELECT * FROM user WHERE userID REGEXP ? OR firstName REGEXP ? OR lastName REGEXP ?) AS A LEFT JOIN tutor ON A.userID = tutor.userID LEFT JOIN bannedUser ON A.userID = bannedUser.userID LEFT JOIN (SELECT tutor as userID, SUM(hoursAwarded) AS hours FROM session GROUP BY tutor) AS B ON A.userID = B.userID;', [pattern, pattern, pattern], function(err, results) {
     if (err) {
       console.log(err);
       res.status(500).send(err);
