@@ -43,6 +43,9 @@ def generate(username, password):
 	lines.append("  devOptions: {")
 	lines.append("    https: false,")
 	lines.append("  },")
+	lines.append("  captcha: {")
+	lines.append("    secretkey: '',")
+	lines.append("  },")
 	lines.append("};")
 	lines.append("")
 

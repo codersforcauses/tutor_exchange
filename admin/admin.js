@@ -3,6 +3,8 @@ var handlebars = require('express-handlebars');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var mysql = require('mysql');
+var request = require('request');
+
 
 var config = require(__dirname + '/config');
 
@@ -62,20 +64,34 @@ app.get('/login', function(req, res) {
   res.render('login', {layout: 'layout_login'});
 });
 
+//Adapted from: https://codeforgeek.com/2016/03/google-recaptcha-node-js-tutorial/
 app.post('/auth/login', function(req, res) {
 
-  if (!req.body.username || !req.body.password) {
-    res.status(400).render('login', {layout: 'layout_login', errMsg: 'User name or password not provided'});
+  if (req.body['g-recaptcha-response'] === undefined || req.body['g-recaptcha-response'] === '' || req.body['g-recaptcha-response'] === null) {
+    res.status(400).render('login', {layout: 'layout_login', errMsg: 'CAPTCHA was not provided'});
     return;
   }
+  var secretKey = config.captcha.secretkey;
+  var verificationUrl = 'https://www.google.com/recaptcha/api/siteverify?secret=' + secretKey + '&response=' + req.body['g-recaptcha-response'] + '&remoteip=' + req.connection.remoteAddress;
+  request(verificationUrl, function(error,response,body) {
+    if (req.body.success !== undefined && !req.body.success) {
+      res.status(400).render('login', {layout: 'layout_login', errMsg: 'CAPTCHA was incorrect'});
+      return;
+    }
 
-  if (req.body.username != config.admin.username || req.body.password != config.admin.password) {
-    res.status(400).render('login', {layout: 'layout_login', errMsg: 'Incorrect username or password'});
-    return;
-  }
+    if (!req.body.username || !req.body.password) {
+      res.status(400).render('login', {layout: 'layout_login', errMsg: 'User name or password not provided'});
+      return;
+    }
 
-  req.session.authorised = true;
-  res.redirect('/');
+    if (req.body.username != config.admin.username || req.body.password != config.admin.password) {
+      res.status(400).render('login', {layout: 'layout_login', errMsg: 'Incorrect username or password'});
+      return;
+    }
+
+    req.session.authorised = true;
+    res.redirect('/');
+  });
 
 });
 
@@ -207,6 +223,7 @@ app.post('/api/search', function(req, res) {
     res.render('search');
     return;
   }
+
 
   db.query('SELECT A.userID, firstName, lastName, sex, phone, emailVerified as isActivated, tutor.userID as isTutor, verified, B.hours, bannedUser.userID as isBanned, reason FROM (SELECT * FROM user WHERE userID REGEXP ? OR firstName REGEXP ? OR lastName REGEXP ?) AS A LEFT JOIN tutor ON A.userID = tutor.userID LEFT JOIN bannedUser ON A.userID = bannedUser.userID LEFT JOIN (SELECT tutor as userID, SUM(hoursAwarded) AS hours FROM session GROUP BY tutor) AS B ON A.userID = B.userID;', [pattern, pattern, pattern], function(err, results) {
     if (err) {
