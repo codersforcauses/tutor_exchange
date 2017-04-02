@@ -14,3 +14,7 @@ textarea {
 .input-group {
 	max-width: 300px;
 }
+
+.banned {
+	color: red;
+}

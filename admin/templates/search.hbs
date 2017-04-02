@@ -7,7 +7,7 @@
 <form action="/api/search" method="post">
 	<div class="form-group">
 		<label for="search"> Search first name, last name or student number:</label><br>
-		<span class="input-group" style="width: 300px">
+		<span class="input-group">
 			<input type="text" name="query" class="form-control" autocomplete="off" required>
 			<span class="input-group-btn">
 				<input type="submit" value="Search" class="btn btn-default">
@@ -25,17 +25,52 @@
 
 	{{#each users}}
 
-		<dl>
-			<dt>Student number:</dt>
-			<dd>{{userID}}</dd>
+	<div class="container">
 
-			<dt>Name:</dt>
-			<dd>{{firstName}} {{lastName}}</dd>
+		<dl class="dl-horizontal">
+
+			<h4>
+				<dt>{{userID}}</dt>
+				<dd>{{firstName}} {{lastName}}</dd>
+			</h4>
+
+		
+			<dt>Sex:</dt>
+			<dd>{{sex}}</dd>
 
 			<dt>Contact:</dt>
-			<dd>{{phone}}</dd>
+			<dd>{{#if phone}}{{phone}}{{else}}- No phone provided -{{/if}}</dd>
+
+			<dt>Account type:</dt>
+			{{#if isActivated}}
+				{{#if isTutor}}
+					<dd>Tutor</dd>
+				{{else}}
+					<dd>Student</dd>
+				{{/if}}
+			{{else}}
+				<dd>Not activated - verification email sent</dd>
+			{{/if}}
+
+			{{#if isTutor}}
+				<dt>Tutor Vetted:</dt>
+				<dd>{{#if verified}}Yes{{else}}No{{/if}}</dd>
+
+				<dt>Hours completed:</dt>
+				<dd>{{#if hours}}{{hours}}{{else}}0{{/if}}</dd>
+			{{/if}}
+
+			<dt>Banned status:</dt>
+			<dd>{{#if isBanned}}<span class="banned">BANNED</span>{{else}}Not banned{{/if}}</dd>
+
+			{{#if isBanned}}
+				<dt>Reason:</dt>
+				<dd>{{reason}}</dd>
+			{{/if}}
 
 		</dl>
+
+	</div>
 
 	{{/each}}
 
