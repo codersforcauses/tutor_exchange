@@ -76,14 +76,14 @@ app.use('/auth/register', function(req, res) {
     passwordSalt: passhashsalt.salt,  //<- Need to store salt with password.  Salt only protects against rainbow table attacks.
   };
 
-  connection.query('SELECT * FROM user WHERE userID = ?', post.userID, function(err, rows, fields) {
+  connection.query('CALL userExists(?)', post.userID, function(err, rows, fields) {
     if (err) {
       console.log(err);
       res.status(503).send(err);
       return;
     }
 
-    if (rows.length !== 0) {
+    if (!rows[0] || rows[0].exists) {
       res.json({success: false, message: 'User already Exists'});
       return;
     }
