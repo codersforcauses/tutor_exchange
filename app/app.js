@@ -10,6 +10,7 @@
       'ngMessages',
       'ngSanitize',
       'moment-picker',
+      'angular-loading-bar',
     ])
     .config(config)
     .run(run);
@@ -128,5 +129,12 @@
         });
       },
     ]);
+
+  angular.module('angular-loading-bar')
+.config(['cfpLoadingBarProvider', function(cfpLoadingBarProvider) {
+    cfpLoadingBarProvider.includeSpinner = false;
+  },]);
+
+
 
 })(angular);
