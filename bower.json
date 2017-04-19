@@ -22,6 +22,7 @@
     "angular-messages": "^1.6.1",
     "moment": "^2.17.1",
     "angular-sanitize": "^1.6.2",
-    "angular-moment-picker": "moment-picker#^0.9.5"
+    "angular-moment-picker": "moment-picker#^0.9.5",
+    "angular-loading-bar": "^0.9.0"
   }
 }
