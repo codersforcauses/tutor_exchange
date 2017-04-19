@@ -1,6 +1,6 @@
 use tutorexchange;
 
-------------------
+# ------------------
 # userExists(userID)
 # Returns single row containing the number of users with the specified student number
 # Since userID should be unique, returns 1 if user exists, 0 otherwise.
@@ -10,13 +10,13 @@ DROP PROCEDURE IF EXISTS userExists;
 DELIMITER $
 CREATE PROCEDURE `userExists` (ID INT(8))
 BEGIN
-	SELECT COUNT(*) AS exists
+	SELECT COUNT(*) AS 'exists'
 	FROM user
 	WHERE userID = ID;
 END $
 DELIMITER ;
 
-------------------
+# ------------------
 # createUser(userID, firstName, lastName, DOB, sex, phone, passwordHash, passwordSalt)
 # Adds a new user to the database (new row in users)
 # As seen in 
@@ -37,7 +37,7 @@ BEGIN
 END $
 DELIMITER ;
 
----------
+# ---------
 # getUser(userID)
 # Returns row of user information for a given student number
 DROP PROCEDURE IF EXISTS getUser;
