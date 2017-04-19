@@ -1,17 +1,35 @@
-.jumbotron {
-    padding: 95px;
-    padding-bottom: 140px;
-    margin-bottom: 0px;
-    color: #ffffff;
-    width: 100%;
+html {
+    overflow-y: scroll
+}
+
+body,
+html {
+    overflow-x: hidden;
+}
+
+.homepage-banner,
+.navbar-background {
+    background: url(../images/image2b.jpg) no-repeat center top fixed;
+}
+
+.homepage-banner {
     height: 100%;
-    position: relative
+    left: 0;
+    margin: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: 0;
+}
+
+.jumbotron {
+    color: #ffffff;
 }
 
 .mainText {
+    left: 50%;
     position: absolute;
     top: 50%;
-    left: 50%;
     transform: translate(-50%, -50%)
 }
 
@@ -19,102 +37,45 @@
     font-size: 20px
 }
 
-.nav .navbar-nav .navbar-right {
-    margin-right: -15px !important
-}
-
 .footer {
-    padding-top: 10px;
     padding-bottom: 15px;
+    padding-top: 10px;
     position: relative
 }
 
-html {
-    overflow-y: scroll
-}
-
-.body {
-    background: url(../images/image2b.jpg) no-repeat center top fixed
-}
-
-#background {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    left: 0px;
-    top: 0px;
-    z-index: 0;
-    padding: 95px;
-    padding-bottom: 140px;
-    margin-bottom: 0px
-}
-
-.stretch {
-    width: 100%;
-    height: auto
-}
-
 .navbar {
-    color: #ffffff !important;
-    margin-bottom: 0;
     background-color: transparent;
     border: 0;
     border-radius: 0;
-    font-size: 12px !important;
+    font-size: 12px;
     letter-spacing: 4px;
-    overflow: hidden
+    margin-bottom: 0;
+    overflow: hidden;
 }
 
 .navbar li a,
 .navbar .navbar-brand {
-    color: #ffffff !important
+    color: #ffffff !important;
 }
 
-.form-control {
-    display: block;
-    width: 100%;
-    height: 34px;
-    padding: 6px 9px;
-    font-size: 14px;
-    line-height: 1.42857143;
-    color: #555;
-    background-color: #fff;
-    background-image: none;
-    border: 1px solid #ccc;
-    border-radius: 4px
+.navbar .navbar-brand > img {
+    display: inline-block;
+}
+
+.navbar-header .navbar-brand {
+    padding-top: 11px;
+}
+
+.navbar-header .navbar-logo {
+    height: 32px;
+    margin-left: 10px;
+    width: 45px;
 }
 
 .navbar-nav li a:hover,
-.navbar-nav li.active a {
+.navbar-nav .active a {
+    background-color: #ffffff !important;
     color: #0F4364 !important;
-    background-color: #ffffff !important
-}
-
-.navbar-brand {
-    float: left;
-    height: 50px;
-    padding: 16px 14px;
-    font-size: 16.5px;
-    line-height: 20px
-}
-
-.navbar-toggle {
-    position: relative;
-    float: right;
-    padding: 10px 10px;
-    margin-top: 8px;
-    margin-bottom: 8px;
-    background-color: transparent;
-    background-image: none;
-    border: 0px solid transparent;
-    border-radius: 4px;
-    top: 3px;
-    right: 15px;
-    margin-right: 0px
-}
-
-.collapsing.in-remove-active {
-    overflow: hidden
 }
 
 .errorMessageBox {
@@ -122,19 +83,21 @@ html {
 }
 
 .form-group p.verificationStatus.pending,
-.form-group p.profileVisible.private, .errorMessageBox.error {
+.form-group p.profileVisible.private,
+.errorMessageBox.error {
     color: #ff6100
 }
 
 .form-group p.verificationStatus.verified,
-.form-group p.profileVisible.visible, .errorMessageBox.success {
+.form-group p.profileVisible.visible,
+.errorMessageBox.success {
     color: #63c617
 }
 
 .form-inline > .form-control {
     display: inline-block !important;
+    margin-right: 3px;
     width: inherit !important;
-    margin-right: 3px
 }
 
 #profile-form .ng-enter,
@@ -222,34 +185,9 @@ dir {
     -webkit-padding-start: 40px
 }
 
-#footer {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 60px;
-    background: transparent;
-    text-align: center
-}
-body, html {
-    overflow-x: hidden;
-/*    overflow-y: auto;*/
-}
-
 a:hover,
 a:focus {
     text-decoration: none !important
-}
-
-/* background-attachment: fixed and background-size:cover causes issues on Android devices. */
-
-/* For now, background-size:cover must be restricted only to large screens */
-@media screen and (min-width:1024px) {
-    .body {
-        -webkit-background-size: cover;
-        -moz-background-size: cover;
-        -o-background-size: cover;
-        background-size: cover
-    }
 }
 
 span.ng-binding {
@@ -259,23 +197,39 @@ span.ng-binding {
 span.ui-select-placeholder.text-muted.ng-binding {
     color: #878787
 }
+
+/*smaller info sign*/
+.gi-small {
+    font-size: 0.6em;
+}
+
+.container.logo {
+    max-width: 100%;
+    display: block;
+    height: auto;
+}
+
+/* Fix for Firefox */
+div#datePicker > .form-control {
+    padding: 5px 5px;
+}
+
+@media screen and (min-width:1024px) {
+    .homepage-banner,
+    .navbar-background {
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover
+    }
+}
+
 @media screen and (min-height:1120px) {
-    .body {
+    .homepage-banner,
+    .navbar-background {
         -webkit-background-size: cover;
         -moz-background-size: cover;
         -o-background-size: cover;
         background-size: cover;
     }
 }
-/*smaller info sign*/
-.gi-small{font-size: 0.6em;}
-
-.container.logo {
-max-width: 100%; 
-display:block; 
-height: auto;
-}
-/*.container.logo > img {
-    vertical-align: top !important;
-}*/
-
