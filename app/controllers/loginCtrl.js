@@ -17,6 +17,7 @@
         .login(user, rememberMe)
         .then(function(response) {
           if (userFunctions.isLoggedIn()) {
+            $scope.loginForm.$setPristine();
             $state.go('dashboard');
           } else {
             $scope.errorMsg = response.data.message;
