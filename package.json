@@ -26,6 +26,7 @@
     "grunt-contrib-jshint": "^1.1.0",
     "grunt-contrib-uglify": "^2.0.0",
     "grunt-processhtml": "^0.4.1",
+    "jasmine": "^2.6.0",
     "jshint": "^2.9.4",
     "jshint-stylish": "^2.2.1"
   },
