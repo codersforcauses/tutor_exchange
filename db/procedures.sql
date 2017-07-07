@@ -2,8 +2,14 @@ use tutorexchange;
 
 # ------------------
 # userExists(userID)
-# Returns single row containing the number of users with the specified student number
-# Since userID should be unique, returns 1 if user exists, 0 otherwise.
+# Returns the number of users with a specified student number
+# Since userID is unique, will return 1 if user exists or 0 otherwise
+#
+# Param:
+# 	userID - user's student number (integer)
+#
+# Returns:
+#	1 column ('exists') 1 row table containing number of users with specified student number
 
 DROP PROCEDURE IF EXISTS userExists;
 
