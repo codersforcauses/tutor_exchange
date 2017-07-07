@@ -49,44 +49,72 @@ describe('Procedures unit tests:', function() {
   // ---------------------------------------- //
   // userExists(userID) TESTS
   describe('userExists(userID)', function() {
-    beforeAll(function(done) {
-      // Insert example user
-      connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
-        if (!!err) console.log(err);
-        done();
-      });
-    });
 
-    afterAll(function(done) {
-      // Remove example user
+    // Delete user 12345678 if it exists (hopefull no one has this id)
+    beforeAll(function(done) {
       connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
         if (!!err) console.log(err);
         done();
       });
     });
 
+    // Section 1: fake user present
+    describe('', function() {
+      // Insert fake user before tests
+      beforeEach(function(done) {
+        connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
 
-    it('should return 1 when user ' + fakeUser.userID + ' exists', function(done) {
-      connection.query('CALL userExists(?)', [fakeUser.userID], function(err, rows, fields) {
-        var exists = rows[0][0].exists;
-        expect(exists).toBe(1);
-        done();
+      // Now remove fake user
+      afterEach(function(done) {
+        connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      // Check fake user no longer exists
+      it('should return 1 when user ' + fakeUser.userID + ' exists', function(done) {
+        connection.query('CALL userExists(?)', [fakeUser.userID], function(err, rows, fields) {
+          var exists = rows[0][0].exists;
+          expect(exists).toBe(1);
+          done();
+        });
+      });
+
+    });
+
+    // Section 2: fake user not present
+    describe('', function() {
+      // Check fake user no longer exists
+      it('should return 0 when user ' + fakeUser.userID + ' doesn\'t exist', function(done) {
+        connection.query('CALL userExists(?)', [fakeUser.userID], function(err, rows, fields) {
+          var exists = rows[0][0].exists;
+          expect(exists).toBe(0);
+          done();
+        });
       });
     });
 
-    it('should return 0 when user ' + (fakeUser.userID + 1) + ' doesn\'t exist', function(done) {
-      connection.query('CALL userExists(?)', [fakeUser.userID+1], function(err, rows, fields) {
-        var exists = rows[0][0].exists;
-        expect(exists).toBe(0);
-        done();
-      });
-    });
   });
 
 
   // ---------------------------------------- //
   // createUser(userID, firstName, lastName, DOB, sex, phone, passwordHash, passwordSalt) TEST
   describe('createUser(userID, firstName, lastName, DOB, sex, phone, passwordHash, passwordSalt)', function() {
+
+    // Delete user 12345678 if it exists (hopefull no one has this id)
+    beforeAll(function(done) {
+      connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
+        if (!!err) console.log(err);
+        done();
+      });
+    });
+
+    // Now create user using createUser stored procedure
     beforeAll(function(done) {
       connection.query(
         'CALL createUser(?, ?, ?, ?, ?, ?, ?, ?)',
@@ -107,6 +135,7 @@ describe('Procedures unit tests:', function() {
       );
     });
 
+    // Remember to remove it again when tests are finished
     afterAll(function(done) {
       connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
         if (!!err) console.log(err);
@@ -114,60 +143,69 @@ describe('Procedures unit tests:', function() {
       });
     });
 
-    it('should add user to database', function(done) {
-      connection.query('SELECT * FROM user WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
-        if (!!err) console.log(err);
-        var newUser = rows[0];
-        expect(newUser.userID).toBe(fakeUser.userID);
-        expect(newUser.firstName).toBe(fakeUser.firstName);
-        expect(newUser.lastName).toBe(fakeUser.lastName);
-        expect(Date(newUser.DOB)).toBe(Date(fakeUser.DOB));
-        expect(newUser.sex).toBe(fakeUser.sex);
-        expect(newUser.phone).toBe(fakeUser.phone);
-        expect(newUser.passwordHash).toBe(fakeUser.passwordHash);
-        expect(newUser.passwordSalt).toBe(fakeUser.passwordSalt);
-        done();
-      });
-    });
-
-    // Try adding user with same id to database
-    var secondUser = {firstName: 'BOB'};
-    var errorFlag = false;
-    beforeEach(function(done) {
-      connection.query(
-        'CALL createUser(?, ?, ?, ?, ?, ?, ?, ?)',
-        [
-          fakeUser.userID,
-          secondUser.firstName,
-          fakeUser.lastName,
-          fakeUser.DOB,
-          fakeUser.sex,
-          fakeUser.phone,
-          fakeUser.passwordHash,
-          fakeUser.passwordSalt,
-        ],
-        function(err) {
-          if (!!err) errorFlag = true;
+    // Section 1: Check user is created properly
+    describe('', function() {
+      // Check fake user was added
+      it('should add user to database', function(done) {
+        connection.query('SELECT * FROM user WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var newUser = rows[0];
+          expect(newUser.userID).toBe(fakeUser.userID);
+          expect(newUser.firstName).toBe(fakeUser.firstName);
+          expect(newUser.lastName).toBe(fakeUser.lastName);
+          expect(Date(newUser.DOB)).toBe(Date(fakeUser.DOB));
+          expect(newUser.sex).toBe(fakeUser.sex);
+          expect(newUser.phone).toBe(fakeUser.phone);
+          expect(newUser.passwordHash).toBe(fakeUser.passwordHash);
+          expect(newUser.passwordSalt).toBe(fakeUser.passwordSalt);
           done();
-        }
-      );
-    });
-
-    it('should throw error if user is added with same userID', function() {
-      expect(errorFlag).toBe(true);
-    });
-
-    it('should result in only one user in table with userID = ' + fakeUser.userID, function(done) {
-      connection.query('SELECT COUNT(*) FROM user WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
-        expect(rows[0]['COUNT(*)']).toBe(1);
-        done();
+        });
       });
     });
 
-    it('should not overwrite user if user already exists', function(done) {
-      connection.query('SELECT firstName FROM user WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
-        expect(rows[0].firstName).toBe(fakeUser.firstName);
-        done();
+    // Section 2: Try adding user with same id to database
+    describe('', function() {
+      var secondUser = {firstName: 'BOB'};
+      var errorFlag = false;
+      beforeEach(function(done) {
+        connection.query(
+          'CALL createUser(?, ?, ?, ?, ?, ?, ?, ?)',
+          [
+            fakeUser.userID,
+            secondUser.firstName,
+            fakeUser.lastName,
+            fakeUser.DOB,
+            fakeUser.sex,
+            fakeUser.phone,
+            fakeUser.passwordHash,
+            fakeUser.passwordSalt,
+          ],
+          function(err) {
+            if (!!err) errorFlag = true;
+            done();
+          }
+        );
+      });
+
+      // mysql should throw an error when inserting with the same key
+      it('should throw error if user is added with same userID', function() {
+        expect(errorFlag).toBe(true);
+      });
+
+      // Again, keys should be unique
+      it('should result in only one user in table with userID = ' + fakeUser.userID, function(done) {
+        connection.query('SELECT COUNT(*) FROM user WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          expect(rows[0]['COUNT(*)']).toBe(1);
+          done();
+        });
+      });
+
+      // Check we didn't just overwrite existing user
+      it('should not overwrite user if user already exists', function(done) {
+        connection.query('SELECT firstName FROM user WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          expect(rows[0].firstName).toBe(fakeUser.firstName);
+          done();
+        });
       });
     });
 
