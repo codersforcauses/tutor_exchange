@@ -9,13 +9,13 @@ use tutorexchange;
 # 	userID - user's student number (integer)
 #
 # Returns:
-#	1 column ('exists') 1 row table containing number of users with specified student number
+#	1 column ('userExists') 1 row table containing number of users with specified student number
 DROP PROCEDURE IF EXISTS userExists;
 
 DELIMITER $
 CREATE PROCEDURE `userExists` (ID INT(8))
 BEGIN
-	SELECT COUNT(*) AS 'exists'
+	SELECT COUNT(*) AS 'userExists'
 	FROM user
 	WHERE userID = ID;
 END $
@@ -79,11 +79,21 @@ END $
 DELIMITER ;
 
 
-DROP PROCEDURE IF EXISTS userIsBanned;
+# ---------
+# isBanned(userID)
+# 
+# Param:
+#	userID - user's student number
+#
+# Returns:
+#	1 if user has been banned, 0 otherwise
+DROP PROCEDURE IF EXISTS isBanned;
 
 DELIMITER $
-CREATE PROCEDURE `userIsBanned` (ID INT(8))
+CREATE PROCEDURE `isBanned` (ID INT(8))
 BEGIN
-	SELECT COUNT(*) FROM bannedUser WHERE userID = ID;
+	SELECT COUNT(*) AS `isBanned`
+	FROM bannedUser
+	WHERE userID = ID;
 END $
 DELIMITER ;

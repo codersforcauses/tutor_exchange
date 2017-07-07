@@ -79,8 +79,8 @@ describe('Procedures unit tests:', function() {
       // Check fake user no longer exists
       it('should return 1 when user ' + fakeUser.userID + ' exists', function(done) {
         connection.query('CALL userExists(?)', [fakeUser.userID], function(err, rows, fields) {
-          var exists = rows[0][0].exists;
-          expect(exists).toBe(1);
+          var userExists = rows[0][0].userExists;
+          expect(userExists).toBe(1);
           done();
         });
       });
@@ -92,8 +92,8 @@ describe('Procedures unit tests:', function() {
       // Check fake user no longer exists
       it('should return 0 when user ' + fakeUser.userID + ' doesn\'t exist', function(done) {
         connection.query('CALL userExists(?)', [fakeUser.userID], function(err, rows, fields) {
-          var exists = rows[0][0].exists;
-          expect(exists).toBe(0);
+          var userExists = rows[0][0].userExists;
+          expect(userExists).toBe(0);
           done();
         });
       });
@@ -271,6 +271,98 @@ describe('Procedures unit tests:', function() {
 
   });
 
+  // ---------------------------------------- //
+  // isBanned(userID)
+  describe('getUser(userID)', function() {
 
+    // Section 1: User is banned
+    describe('', function() {
+      // Insert fake user before tests
+      beforeAll(function(done) {
+        connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      // Ban fake user
+      beforeEach(function(done) {
+        connection.query('INSERT INTO bannedUser VALUES (?, ?)', [fakeUser.userID, 'reason'], function(err) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      // unban fake user when done
+      afterEach(function(done) {
+        connection.query('DELETE FROM bannedUser WHERE userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      // Delete fake user
+      afterAll(function(done) {
+        connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      // Check user is banned
+      it('should return 1 when user is banned', function(done) {
+        connection.query('CALL isBanned(?)', [fakeUser.userID], function(err, rows, fields) {
+          var isBanned = rows[0][0].isBanned;
+          expect(isBanned).toBe(1);
+          done();
+        });
+      });
+
+
+
+    });
+
+    // Section 2: User is not banned
+    describe('', function() {
+      // Create fake user
+      beforeAll(function(done) {
+        connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      // Delete fake user
+      afterAll(function(done) {
+        connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      // Check user isnt banned
+      it('should return 0 when user isn\'t banned', function(done) {
+        connection.query('CALL isBanned(?)', [fakeUser.userID], function(err, rows, fields) {
+          var isBanned = rows[0][0].isBanned;
+          expect(isBanned).toBe(0);
+          done();
+        });
+      });
+
+    });
+
+
+    // Section 3: User doesn't exist
+    describe('', function() {
+      it('should return 0 when user doesn\'t exist', function(done) {
+        connection.query('CALL isBanned(?)', [fakeUser.userID], function(err, rows, fields) {
+          var isBanned = rows[0][0].isBanned;
+          expect(isBanned).toBe(0);
+          done();
+        });
+      });
+    });
+
+  });
 
 });
