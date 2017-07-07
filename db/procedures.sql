@@ -10,7 +10,6 @@ use tutorexchange;
 #
 # Returns:
 #	1 column ('exists') 1 row table containing number of users with specified student number
-
 DROP PROCEDURE IF EXISTS userExists;
 
 DELIMITER $
@@ -22,26 +21,40 @@ BEGIN
 END $
 DELIMITER ;
 
+
 # ------------------
 # createUser(userID, firstName, lastName, DOB, sex, phone, passwordHash, passwordSalt)
 # Adds a new user to the database (new row in users)
-# As seen in 
+# 
+# Param:
+# 	userID - student number (integer)
+#	firstName (string)
+#	lastName (string)
+#   DOB - Date of birth (YYYY-MM-DD)
+#	sex - 'M', 'F' or 'O' (char)
+# 	phone - phone number (string)
+# 	passwordHash - hash of password+salt
+#	passwordSalt - salt added to password
+#
+# Throws:
+#	Throws a mysql error if user already exists.  Does not replace user.
 DROP PROCEDURE IF EXISTS createUser;
 
 DELIMITER $
-CREATE PROCEDURE `createUser` (ID INT(8), first VARCHAR(100), last VARCHAR(100), dateOfBirth DATE, userSex CHAR(1), phoneNumber VARCHAR(20), pwHash VARCHAR(255), pwSalt VARCHAR(255))
+CREATE PROCEDURE `createUser` (userID_ INT(8), firstName_ VARCHAR(100), lastName_ VARCHAR(100), DOB_ DATE, sex_ CHAR(1), phone_ VARCHAR(20), passwordHash_ VARCHAR(255), passwordSalt_ VARCHAR(255))
 BEGIN
 	INSERT INTO user
-	SET userID = ID,
-		firstName = first,
-		lastName = last,
-		DOB = dateOfBirth,
-		sex = userSex,
-		phone = phoneNumber,
-		passwordHash = pwHash,
-		passwordSalt = pwSalt;
+	SET userID = userID_,
+		firstName = firstName_,
+		lastName = lastName_,
+		DOB = DOB_,
+		sex = sex_,
+		phone = phone_,
+		passwordHash = passwordHash_,
+		passwordSalt = passwordSalt_;
 END $
 DELIMITER ;
+
 
 # ---------
 # getUser(userID)
