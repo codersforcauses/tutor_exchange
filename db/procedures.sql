@@ -58,7 +58,15 @@ DELIMITER ;
 
 # ---------
 # getUser(userID)
-# Returns row of user information for a given student number
+# Returns user information for user with specified student number
+#
+# Param:
+#	userID - user's student number (integer)
+#
+# Returns:
+#	12 Columns table: (userID, firstName, lastName, DOB, sex, phone, emailVerified, passwordHash, passwordSalt, verifyCode, resetPasswordHash, resetPasswordSalt)
+#
+# Note: Returned table should have one row if user exists and no rows if user doesn't exist
 DROP PROCEDURE IF EXISTS getUser;
 
 DELIMITER $

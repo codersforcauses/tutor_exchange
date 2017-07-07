@@ -212,6 +212,65 @@ describe('Procedures unit tests:', function() {
   });
 
 
+  // ---------------------------------------- //
+  // getUser(userID)
+  describe('getUser(userID)', function() {
+
+    //Section 1: test when user exists
+    describe('', function() {
+      // Insert fake user before tests
+      beforeAll(function(done) {
+        connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      // Clean up when done
+      afterAll(function(done) {
+        connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      // Check procedure returns correct user
+      // Not checking fields filled with default values
+      it('should return user info', function(done) {
+        connection.query('CALL getUser(?)', [fakeUser.userID], function(err, rows, fields) {
+          expect(rows[0].length).toBe(1);
+
+          var returnedObject = rows[0][0];
+          expect(returnedObject).toBeDefined();
+          expect(returnedObject.userID).toBe(fakeUser.userID);
+          expect(returnedObject.firstName).toBe(fakeUser.firstName);
+          expect(returnedObject.lastName).toBe(fakeUser.lastName);
+          expect(Date(returnedObject.DOB)).toBe(Date(fakeUser.DOB));
+          expect(returnedObject.sex).toBe(fakeUser.sex);
+          expect(returnedObject.phone).toBe(fakeUser.phone);
+          expect(returnedObject.passwordHash).toBe(fakeUser.passwordHash);
+          expect(returnedObject.passwordSalt).toBe(fakeUser.passwordSalt);
+          done();
+        });
+      });
+    });
+
+    //Section 2: test when user doesn't exist
+    describe('', function() {
+      // Table should be empty if user doesn't exist
+      it('should return empty table when user does not exist', function(done) {
+        connection.query('CALL getUser(?)', [fakeUser.userID], function(err, rows, fields) {
+          expect(rows[0].length).toBe(0);
+
+          var returnedObject = rows[0][0];
+          expect(returnedObject).not.toBeDefined();
+          done();
+        });
+      });
+    });
+
+  });
+
 
 
 });
