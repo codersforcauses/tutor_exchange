@@ -486,4 +486,131 @@ describe('Procedures unit tests:', function() {
 
   });
 
+
+  // ---------------------------------------- //
+  // assignUnitTutored(userID, units)
+  describe('assignUnitTutored(userID, units)', function() {
+
+    // Situation 1: normal insert
+    describe('when user and unit exist', function() {
+      var myUnit = 'MATH1001';
+
+      // Insert fake user as tutor and then call function
+      beforeAll(function(done) {
+        connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+          if (!!err) console.log(err);
+          connection.query('INSERT INTO tutor SET ?', [{userID: fakeUser.userID}], function(err) {
+            if (!!err) console.log(err);
+            connection.query('CALL assignUnitTutored(?, ?)', [fakeUser.userID, myUnit], function(err) {
+              if (!!err) console.log(err);
+              done();
+            });
+          });
+        });
+      });
+
+      // Clean up when done
+      afterAll(function(done) {
+        connection.query('DELETE FROM unitTutored WHERE tutor = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM tutor WHERE userID = ?', [fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
+              if (!!err) console.log(err);
+              done();
+            });
+          });
+        });
+      });
+
+      // Check if row was put in table
+      it('should insert into database', function(done) {
+        connection.query('SELECT * FROM unitTutored WHERE tutor = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var returnedUnit = rows[0].unit;
+          expect(returnedUnit).toBe(myUnit);
+          done();
+        });
+      });
+
+    });
+
+    // Situation 2: user doesn't exist
+    describe('when user doesn\'t exist', function() {
+      var errorFlag = false;
+      var myUnit = 'MATH1001';
+
+      // Call function
+      beforeAll(function(done) {
+        connection.query('CALL assignUnitTutored(?, ?)', [fakeUser.userID, myUnit], function(err) {
+          if (!!err) errorFlag = true;
+          done();
+        });
+      });
+
+      // Check mysql error was thrown
+      it('should throw mysql error', function() {
+        expect(errorFlag).toBe(true);
+      });
+
+      // Check nothing was added to table
+      it('should not have added row', function(done) {
+        connection.query('SELECT COUNT(*) FROM unitTutored WHERE tutor = ?', [fakeUser.userID], function(err, rows, fields) {
+          var numUnitsTutored = rows[0]['COUNT(*)'];
+          expect(numUnitsTutored).toBe(0);
+          done();
+        });
+      });
+    });
+
+    // Situation 3: unit doesn't exist
+    describe('when unit doesn\'t exist', function() {
+      var errorFlag = false;
+      var badUnit = 'BAD_UNIT';
+
+      // Insert fake user as tutor and then call function
+      beforeAll(function(done) {
+        connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+          if (!!err) console.log(err);
+          connection.query('INSERT INTO tutor SET ?', [{userID: fakeUser.userID}], function(err) {
+            if (!!err) console.log(err);
+            connection.query('CALL assignUnitTutored(?, ?)', [fakeUser.userID, badUnit], function(err) {
+              if (!!err) errorFlag = true;
+              done();
+            });
+          });
+        });
+      });
+
+      // Clean up when done
+      afterAll(function(done) {
+        connection.query('DELETE FROM unitTutored WHERE tutor = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM tutor WHERE userID = ?', [fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
+              if (!!err) console.log(err);
+              done();
+            });
+          });
+        });
+      });
+
+      // Check mysql error was thrown
+      it('should throw mysql error', function() {
+        expect(errorFlag).toBe(true);
+      });
+
+      // Check nothing was added to table
+      it('should not have added row', function(done) {
+        connection.query('SELECT COUNT(*) FROM unitTutored WHERE tutor = ?', [fakeUser.userID], function(err, rows, fields) {
+          var numUnitsTutored = rows[0]['COUNT(*)'];
+          expect(numUnitsTutored).toBe(0);
+          done();
+        });
+      });
+    });
+
+  });
+
 });

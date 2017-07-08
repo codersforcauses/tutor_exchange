@@ -118,3 +118,22 @@ BEGIN
 	SET userID = userID_;
 END $
 DELIMITER ;
+
+
+# ---------
+# assignUnitTutored(userID, units)
+# Assigns a tutor to teach a list of units
+#
+# Param:
+#	userID - user's student number
+#	units - list of units tutored
+DROP PROCEDURE IF EXISTS assignUnitTutored;
+
+DELIMITER $
+CREATE PROCEDURE `assignUnitTutored` (userID_ INT(8), unit_ CHAR(8))
+BEGIN
+	INSERT INTO unitTutored
+	SET tutor = userID_,
+		unit = unit_;
+END $
+DELIMITER ;
