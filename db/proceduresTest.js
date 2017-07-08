@@ -3,7 +3,7 @@ var config      = require(__dirname + '/config');
 
 
 var fakeUser = {
-  userID: 12345678,
+  userID: 99000000,
   firstName: 'John',
   lastName: 'Smith',
   DOB: '1990-01-01',
@@ -50,7 +50,7 @@ describe('Procedures unit tests:', function() {
   // userExists(userID) TESTS
   describe('userExists(userID)', function() {
 
-    // Delete user 12345678 if it exists (hopefull no one has this id)
+    // Delete user 99000000 if it exists (hopefull no one has this id)
     beforeAll(function(done) {
       connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
         if (!!err) console.log(err);
@@ -59,7 +59,7 @@ describe('Procedures unit tests:', function() {
     });
 
     // Section 1: fake user present
-    describe('', function() {
+    describe('when user ' + fakeUser.userID + ' exists', function() {
       // Insert fake user before tests
       beforeEach(function(done) {
         connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
@@ -77,7 +77,7 @@ describe('Procedures unit tests:', function() {
       });
 
       // Check fake user no longer exists
-      it('should return 1 when user ' + fakeUser.userID + ' exists', function(done) {
+      it('should return 1', function(done) {
         connection.query('CALL userExists(?)', [fakeUser.userID], function(err, rows, fields) {
           var userExists = rows[0][0].userExists;
           expect(userExists).toBe(1);
@@ -88,9 +88,9 @@ describe('Procedures unit tests:', function() {
     });
 
     // Section 2: fake user not present
-    describe('', function() {
+    describe('when user ' + fakeUser.userID + ' doesn\'t exist', function() {
       // Check fake user no longer exists
-      it('should return 0 when user ' + fakeUser.userID + ' doesn\'t exist', function(done) {
+      it('should return 0', function(done) {
         connection.query('CALL userExists(?)', [fakeUser.userID], function(err, rows, fields) {
           var userExists = rows[0][0].userExists;
           expect(userExists).toBe(0);
@@ -106,7 +106,7 @@ describe('Procedures unit tests:', function() {
   // createUser(userID, firstName, lastName, DOB, sex, phone, passwordHash, passwordSalt) TEST
   describe('createUser(userID, firstName, lastName, DOB, sex, phone, passwordHash, passwordSalt)', function() {
 
-    // Delete user 12345678 if it exists (hopefull no one has this id)
+    // Delete user 99000000 if it exists (hopefull no one has this id)
     beforeAll(function(done) {
       connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
         if (!!err) console.log(err);
@@ -144,7 +144,7 @@ describe('Procedures unit tests:', function() {
     });
 
     // Section 1: Check user is created properly
-    describe('', function() {
+    describe('when function is called', function() {
       // Check fake user was added
       it('should add user to database', function(done) {
         connection.query('SELECT * FROM user WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
@@ -164,7 +164,7 @@ describe('Procedures unit tests:', function() {
     });
 
     // Section 2: Try adding user with same id to database
-    describe('', function() {
+    describe('when attempting to add user with duplicate userID', function() {
       var secondUser = {firstName: 'BOB'};
       var errorFlag = false;
       beforeEach(function(done) {
@@ -188,12 +188,12 @@ describe('Procedures unit tests:', function() {
       });
 
       // mysql should throw an error when inserting with the same key
-      it('should throw error if user is added with same userID', function() {
+      it('should throw mysql error', function() {
         expect(errorFlag).toBe(true);
       });
 
       // Again, keys should be unique
-      it('should result in only one user in table with userID = ' + fakeUser.userID, function(done) {
+      it('should not add another users', function(done) {
         connection.query('SELECT COUNT(*) FROM user WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
           expect(rows[0]['COUNT(*)']).toBe(1);
           done();
@@ -201,7 +201,7 @@ describe('Procedures unit tests:', function() {
       });
 
       // Check we didn't just overwrite existing user
-      it('should not overwrite user if user already exists', function(done) {
+      it('should not overwrite existing user', function(done) {
         connection.query('SELECT firstName FROM user WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
           expect(rows[0].firstName).toBe(fakeUser.firstName);
           done();
@@ -217,7 +217,7 @@ describe('Procedures unit tests:', function() {
   describe('getUser(userID)', function() {
 
     //Section 1: test when user exists
-    describe('', function() {
+    describe('when user exists', function() {
       // Insert fake user before tests
       beforeAll(function(done) {
         connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
@@ -256,9 +256,9 @@ describe('Procedures unit tests:', function() {
     });
 
     //Section 2: test when user doesn't exist
-    describe('', function() {
+    describe('when user doesn\'t exist', function() {
       // Table should be empty if user doesn't exist
-      it('should return empty table when user does not exist', function(done) {
+      it('should return empty table', function(done) {
         connection.query('CALL getUser(?)', [fakeUser.userID], function(err, rows, fields) {
           expect(rows[0].length).toBe(0);
 
@@ -276,7 +276,7 @@ describe('Procedures unit tests:', function() {
   describe('getUser(userID)', function() {
 
     // Section 1: User is banned
-    describe('', function() {
+    describe('when user is banned', function() {
       // Insert fake user before tests
       beforeAll(function(done) {
         connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
@@ -310,7 +310,7 @@ describe('Procedures unit tests:', function() {
       });
 
       // Check user is banned
-      it('should return 1 when user is banned', function(done) {
+      it('should return 1', function(done) {
         connection.query('CALL isBanned(?)', [fakeUser.userID], function(err, rows, fields) {
           var isBanned = rows[0][0].isBanned;
           expect(isBanned).toBe(1);
@@ -323,7 +323,7 @@ describe('Procedures unit tests:', function() {
     });
 
     // Section 2: User is not banned
-    describe('', function() {
+    describe('when user is not banned', function() {
       // Create fake user
       beforeAll(function(done) {
         connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
@@ -341,7 +341,7 @@ describe('Procedures unit tests:', function() {
       });
 
       // Check user isnt banned
-      it('should return 0 when user isn\'t banned', function(done) {
+      it('should return 0', function(done) {
         connection.query('CALL isBanned(?)', [fakeUser.userID], function(err, rows, fields) {
           var isBanned = rows[0][0].isBanned;
           expect(isBanned).toBe(0);
@@ -353,8 +353,8 @@ describe('Procedures unit tests:', function() {
 
 
     // Section 3: User doesn't exist
-    describe('', function() {
-      it('should return 0 when user doesn\'t exist', function(done) {
+    describe('when user does not exist', function() {
+      it('should return 0', function(done) {
         connection.query('CALL isBanned(?)', [fakeUser.userID], function(err, rows, fields) {
           var isBanned = rows[0][0].isBanned;
           expect(isBanned).toBe(0);
