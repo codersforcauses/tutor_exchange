@@ -365,4 +365,125 @@ describe('Procedures unit tests:', function() {
 
   });
 
+
+  // ---------------------------------------- //
+  // upgradeToTutor(userID)
+  describe('upgradeToTutor(userID)', function() {
+
+    // Section 1: user exists
+    describe('when user exists', function() {
+      // Add fake user and call function
+      beforeAll(function(done) {
+        connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+          if (!!err) console.log(err);
+          connection.query('CALL upgradeToTutor(?)', [fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+
+      // Clean up after test
+      afterAll(function(done) {
+        connection.query('DELETE FROM tutor WHERE userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+
+      // See if user was added to tutors
+      it('should add user to tutor list', function(done) {
+        connection.query('SELECT COUNT(*) FROM tutor WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var isTutor = rows[0]['COUNT(*)'];
+          expect(isTutor).toBe(1);
+          done();
+        });
+      });
+    });
+
+    // Section 2: user doesn't exist
+    describe('when user does not exist', function() {
+      var errorFlag = false;
+
+      // Add fake user and call function
+      beforeAll(function(done) {
+        connection.query('CALL upgradeToTutor(?)', [fakeUser.userID], function(err) {
+          if (!!err) errorFlag = true;
+          done();
+        });
+      });
+
+      // Clean up after test
+      afterAll(function(done) {
+        connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      // See if function threw a mysql error
+      it('should throw a mysql error', function() {
+        expect(errorFlag).toBe(true);
+      });
+
+      // Check user wasn't added to tutors list
+      it('should not add user to tutor list', function(done) {
+        connection.query('SELECT COUNT(*) FROM tutor WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var isTutor = rows[0]['COUNT(*)'];
+          expect(isTutor).toBe(0);
+          done();
+        });
+      });
+    });
+
+    // Section 3: user already is a tutor
+    describe('when user is already a tutor', function() {
+      // Add fake user and call make it a tutir
+      beforeAll(function(done) {
+        connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+          if (!!err) console.log(err);
+          connection.query('INSERT INTO tutor SET ?', [{userID: fakeUser.userID}], function(err) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+
+      // Clean up after test
+      afterAll(function(done) {
+        connection.query('DELETE FROM tutor WHERE userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+
+      // Try calling function anyway
+      beforeEach(function(done) {
+        connection.query('CALL upgradeToTutor(?)', [fakeUser.userID], function(err) {
+          if (!!err) errorFlag = true;
+          done();
+        });
+      });
+
+      // Check user is still there
+      it('should result in only one tutor', function(done) {
+        connection.query('SELECT COUNT(*) FROM tutor WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var isTutor = rows[0]['COUNT(*)'];
+          expect(isTutor).toBe(1);
+          done();
+        });
+      });
+    });
+
+  });
+
 });

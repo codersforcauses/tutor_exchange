@@ -97,3 +97,24 @@ BEGIN
 	WHERE userID = ID;
 END $
 DELIMITER ;
+
+
+# ---------
+# upgradeToTutor(userID)
+# Upgrades an existing user to a tutor account
+# Ignores request if user already is a tutor
+#
+# Param:
+# 	userID - user's student number
+#
+# Throws:
+# 	mysql error when user doesn't exist
+DROP PROCEDURE IF EXISTS upgradeToTutor;
+
+DELIMITER $
+CREATE PROCEDURE `upgradeToTutor` (userID_ INT(8))
+BEGIN
+	INSERT INTO tutor
+	SET userID = userID_;
+END $
+DELIMITER ;
