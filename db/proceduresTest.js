@@ -664,6 +664,182 @@ describe('Procedures unit tests:', function() {
 
   });
 
+
+  // ---------------------------------------- //
+  // assignLanguageTutored(userID, language)
+  describe('assignLanguageTutored(userID, language)', function() {
+
+    // Situation 1: normal insert
+    describe('when user and language exist', function() {
+      var myLang = 'fr';
+
+      // Insert fake user as tutor and then call function
+      beforeAll(function(done) {
+        connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+          if (!!err) console.log(err);
+          connection.query('INSERT INTO tutor SET ?', [{userID: fakeUser.userID}], function(err) {
+            if (!!err) console.log(err);
+            connection.query('CALL assignLanguageTutored(?, ?)', [fakeUser.userID, myLang], function(err) {
+              if (!!err) console.log(err);
+              done();
+            });
+          });
+        });
+      });
+
+      // Clean up when done
+      afterAll(function(done) {
+        connection.query('DELETE FROM languageTutored WHERE tutor = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM tutor WHERE userID = ?', [fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
+              if (!!err) console.log(err);
+              done();
+            });
+          });
+        });
+      });
+
+      // Check if row was put in table
+      it('should insert into database', function(done) {
+        connection.query('SELECT * FROM languageTutored WHERE tutor = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var returnedLang = rows[0].language;
+          expect(returnedLang).toBe(myLang);
+          done();
+        });
+      });
+
+    });
+
+    // Situation 2: user doesn't exist
+    describe('when user doesn\'t exist', function() {
+      var errorFlag = false;
+      var myLang = 'MATH1001';
+
+      // Call function
+      beforeAll(function(done) {
+        connection.query('CALL assignLanguageTutored(?, ?)', [fakeUser.userID, myLang], function(err) {
+          if (!!err) errorFlag = true;
+          done();
+        });
+      });
+
+      // Check mysql error was thrown
+      it('should throw mysql error', function() {
+        expect(errorFlag).toBe(true);
+      });
+
+      // Check nothing was added to table
+      it('should not have added row', function(done) {
+        connection.query('SELECT COUNT(*) FROM languageTutored WHERE tutor = ?', [fakeUser.userID], function(err, rows, fields) {
+          var numLangTutored = rows[0]['COUNT(*)'];
+          expect(numLangTutored).toBe(0);
+          done();
+        });
+      });
+    });
+
+    // Situation 3: language doesn't exist
+    describe('when language doesn\'t exist', function() {
+      var errorFlag = false;
+      var badLang = 'qq';
+
+      // Insert fake user as tutor and then call function
+      beforeAll(function(done) {
+        connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+          if (!!err) console.log(err);
+          connection.query('INSERT INTO tutor SET ?', [{userID: fakeUser.userID}], function(err) {
+            if (!!err) console.log(err);
+            connection.query('CALL assignLanguageTutored(?, ?)', [fakeUser.userID, badLang], function(err) {
+              if (!!err) errorFlag = true;
+              done();
+            });
+          });
+        });
+      });
+
+      // Clean up when done
+      afterAll(function(done) {
+        connection.query('DELETE FROM languageTutored WHERE tutor = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM tutor WHERE userID = ?', [fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
+              if (!!err) console.log(err);
+              done();
+            });
+          });
+        });
+      });
+
+      // Check mysql error was thrown
+      it('should throw mysql error', function() {
+        expect(errorFlag).toBe(true);
+      });
+
+      // Check nothing was added to table
+      it('should not have added row', function(done) {
+        connection.query('SELECT COUNT(*) FROM languageTutored WHERE tutor = ?', [fakeUser.userID], function(err, rows, fields) {
+          var numLangTutored = rows[0]['COUNT(*)'];
+          expect(numLangTutored).toBe(0);
+          done();
+        });
+      });
+    });
+
+    // Situation 4: double insert
+    describe('when attempting to insert duplicate row', function() {
+      var errorFlag = false;
+      var myLang = 'fr';
+
+      // Insert fake user as tutor and then call function
+      beforeAll(function(done) {
+        connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+          if (!!err) console.log(err);
+          connection.query('INSERT INTO tutor SET ?', [{userID: fakeUser.userID}], function(err) {
+            if (!!err) console.log(err);
+            connection.query('INSERT INTO languageTutored (tutor, language) VALUES (?, ?)', [fakeUser.userID, myLang], function(err) {
+              if (!!err) console.log(err);
+              connection.query('CALL assignLanguageTutored(?, ?)', [fakeUser.userID, myLang], function(err) {
+                if (!!err) errorFlag = true;
+                done();
+              });
+            });
+          });
+        });
+      });
+
+      // Clean up when done
+      afterAll(function(done) {
+        connection.query('DELETE FROM languageTutored WHERE tutor = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM tutor WHERE userID = ?', [fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
+              if (!!err) console.log(err);
+              done();
+            });
+          });
+        });
+      });
+
+      // Check error was thrown
+      it('should throw mysql error', function() {
+        expect(errorFlag).toBe(true);
+      });
+
+      // Check no extra rows were added
+      it('should not have added row', function(done) {
+        connection.query('SELECT COUNT(*) FROM languageTutored WHERE tutor = ?', [fakeUser.userID], function(err, rows, fields) {
+          var numLangTutored = rows[0]['COUNT(*)'];
+          expect(numLangTutored).toBe(1);
+          done();
+        });
+      });
+    });
+
   });
 
 });

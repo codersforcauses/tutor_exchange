@@ -131,6 +131,7 @@ DELIMITER ;
 # Throws:
 #	mysql error when user does not exist
 # 	mysql error when unit does not exist
+# 	mysql error when row is duplicated
 DROP PROCEDURE IF EXISTS assignUnitTutored;
 
 DELIMITER $
@@ -139,5 +140,29 @@ BEGIN
 	INSERT INTO unitTutored
 	SET tutor = userID_,
 		unit = unit_;
+END $
+DELIMITER ;
+
+
+# ---------
+# assignLanguageTutored(userID, language)
+# Assigns a tutor to teach a language
+#
+# Param:
+#	userID - user's student number (integer)
+#	language - language taught (string)
+#
+# Throws:
+#	mysql error when user does not exist
+# 	mysql error when language does not exist
+# 	mysql error when row is duplicated
+DROP PROCEDURE IF EXISTS assignLanguageTutored;
+
+DELIMITER $
+CREATE PROCEDURE `assignLanguageTutored` (userID_ INT(8), language_ CHAR(2))
+BEGIN
+	INSERT INTO languageTutored
+	SET tutor = userID_,
+		language = language_;
 END $
 DELIMITER ;
