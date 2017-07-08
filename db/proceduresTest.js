@@ -15,7 +15,7 @@ var fakeUser = {
 
 
 describe('Procedures unit tests:', function() {
-  var success;
+  var successFlag;
   var connection;
 
   beforeAll(function(done) {
@@ -488,8 +488,8 @@ describe('Procedures unit tests:', function() {
 
 
   // ---------------------------------------- //
-  // assignUnitTutored(userID, units)
-  describe('assignUnitTutored(userID, units)', function() {
+  // assignUnitTutored(userID, unit)
+  describe('assignUnitTutored(userID, unit)', function() {
 
     // Situation 1: normal insert
     describe('when user and unit exist', function() {
@@ -610,6 +610,59 @@ describe('Procedures unit tests:', function() {
         });
       });
     });
+
+    // Situation 4: double insert
+    describe('when attempting to insert duplicate row', function() {
+      var errorFlag = false;
+      var myUnit = 'MATH1001';
+
+      // Insert fake user as tutor and then call function
+      beforeAll(function(done) {
+        connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+          if (!!err) console.log(err);
+          connection.query('INSERT INTO tutor SET ?', [{userID: fakeUser.userID}], function(err) {
+            if (!!err) console.log(err);
+            connection.query('INSERT INTO unitTutored (tutor, unit) VALUES (?, ?)', [fakeUser.userID, myUnit], function(err) {
+              if (!!err) console.log(err);
+              connection.query('CALL assignUnitTutored(?, ?)', [fakeUser.userID, myUnit], function(err) {
+                if (!!err) errorFlag = true;
+                done();
+              });
+            });
+          });
+        });
+      });
+
+      // Clean up when done
+      afterAll(function(done) {
+        connection.query('DELETE FROM unitTutored WHERE tutor = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM tutor WHERE userID = ?', [fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
+              if (!!err) console.log(err);
+              done();
+            });
+          });
+        });
+      });
+
+      // Check error was thrown
+      it('should throw mysql error', function() {
+        expect(errorFlag).toBe(true);
+      });
+
+      // Check no extra rows were added
+      it('should not have added row', function(done) {
+        connection.query('SELECT COUNT(*) FROM unitTutored WHERE tutor = ?', [fakeUser.userID], function(err, rows, fields) {
+          var numUnitsTutored = rows[0]['COUNT(*)'];
+          expect(numUnitsTutored).toBe(1);
+          done();
+        });
+      });
+    });
+
+  });
 
   });
 

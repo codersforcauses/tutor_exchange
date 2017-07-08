@@ -121,12 +121,16 @@ DELIMITER ;
 
 
 # ---------
-# assignUnitTutored(userID, units)
-# Assigns a tutor to teach a list of units
+# assignUnitTutored(userID, unit)
+# Assigns a tutor to teach a unit
 #
 # Param:
-#	userID - user's student number
-#	units - list of units tutored
+#	userID - user's student number (integer)
+#	unit - unit taught (string)
+#
+# Throws:
+#	mysql error when user does not exist
+# 	mysql error when unit does not exist
 DROP PROCEDURE IF EXISTS assignUnitTutored;
 
 DELIMITER $
