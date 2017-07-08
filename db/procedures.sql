@@ -13,11 +13,11 @@ use tutorexchange;
 DROP PROCEDURE IF EXISTS userExists;
 
 DELIMITER $
-CREATE PROCEDURE `userExists` (ID INT(8))
+CREATE PROCEDURE `userExists` (userID_ INT(8))
 BEGIN
 	SELECT COUNT(*) AS 'userExists'
 	FROM user
-	WHERE userID = ID;
+	WHERE userID = userID_;
 END $
 DELIMITER ;
 
@@ -70,11 +70,11 @@ DELIMITER ;
 DROP PROCEDURE IF EXISTS getUser;
 
 DELIMITER $
-CREATE PROCEDURE `getUser` (ID INT(8))
+CREATE PROCEDURE `getUser` (userID_ INT(8))
 BEGIN
 	SELECT *
 	FROM user
-	WHERE userID = ID;
+	WHERE userID = userID_;
 END $
 DELIMITER ;
 
@@ -90,11 +90,11 @@ DELIMITER ;
 DROP PROCEDURE IF EXISTS isBanned;
 
 DELIMITER $
-CREATE PROCEDURE `isBanned` (ID INT(8))
+CREATE PROCEDURE `isBanned` (userID_ INT(8))
 BEGIN
 	SELECT COUNT(*) AS `isBanned`
 	FROM bannedUser
-	WHERE userID = ID;
+	WHERE userID = userID_;
 END $
 DELIMITER ;
 
