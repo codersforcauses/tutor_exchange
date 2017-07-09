@@ -277,35 +277,25 @@ describe('Procedures unit tests:', function() {
 
     // Section 1: User is banned
     describe('when user is banned', function() {
-      // Insert fake user before tests
+      // Insert fake user and ban
       beforeAll(function(done) {
         connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
           if (!!err) console.log(err);
-          done();
+          connection.query('INSERT INTO bannedUser VALUES (?, ?)', [fakeUser.userID, 'reason'], function(err) {
+            if (!!err) console.log(err);
+            done();
+          });
         });
       });
 
-      // Ban fake user
-      beforeEach(function(done) {
-        connection.query('INSERT INTO bannedUser VALUES (?, ?)', [fakeUser.userID, 'reason'], function(err) {
-          if (!!err) console.log(err);
-          done();
-        });
-      });
-
-      // unban fake user when done
+      // unban fake user and remove user
       afterEach(function(done) {
         connection.query('DELETE FROM bannedUser WHERE userID = ?', [fakeUser.userID], function(err) {
           if (!!err) console.log(err);
-          done();
-        });
-      });
-
-      // Delete fake user
-      afterAll(function(done) {
-        connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
-          if (!!err) console.log(err);
-          done();
+          connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            done();
+          });
         });
       });
 
@@ -317,9 +307,6 @@ describe('Procedures unit tests:', function() {
           done();
         });
       });
-
-
-
     });
 
     // Section 2: User is not banned
@@ -348,7 +335,6 @@ describe('Procedures unit tests:', function() {
           done();
         });
       });
-
     });
 
 
