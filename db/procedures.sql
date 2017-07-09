@@ -166,3 +166,25 @@ BEGIN
 		language = language_;
 END $
 DELIMITER ;
+
+
+# ---------
+# getPasswordHashAndSalt(userID)
+# returns the password hash and salt for a given user
+#
+# Param:
+#	userID - user's student number (integer)
+#
+# Returns:
+#	A two column table (hash, salt) with one row if user exists, zero rows if user doesn't exist
+DROP PROCEDURE IF EXISTS getPasswordHashAndSalt;
+
+DELIMITER $
+CREATE PROCEDURE `getPasswordHashAndSalt` (userID_ INT(8))
+BEGIN
+	SELECT passwordHash AS `hash`,
+		   passwordSalt AS `salt`
+	FROM user
+	WHERE userID = userID_;
+END $
+DELIMITER ;

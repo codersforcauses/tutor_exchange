@@ -828,4 +828,51 @@ describe('Procedures unit tests:', function() {
 
   });
 
+
+  // ---------------------------------------- //
+  // getPasswordHashAndSalt(userID)
+  describe('getPasswordHashAndSalt(userID)', function() {
+
+    // Case 1: user exists
+    describe('when user exists', function() {
+      beforeAll(function(done) {
+        connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      afterAll(function(done) {
+        connection.query('DELETE FROM user WHERE userID =  ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      it('should return one row with correct info', function(done) {
+        connection.query('CALL getPasswordHashAndSalt(?)', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var hash = rows[0][0].hash;
+          var salt = rows[0][0].salt;
+          expect(rows[0].length).toBe(1);
+          expect(hash).toBe(fakeUser.passwordHash);
+          expect(salt).toBe(fakeUser.passwordSalt);
+          done();
+        });
+      });
+    });
+
+    // Case2: user doesn't exist
+    describe('when user doen\'t exists', function() {
+      it('should return zero rows', function(done) {
+        connection.query('CALL getPasswordHashAndSalt(?)', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          expect(rows[0].length).toBe(0);
+          done();
+        });
+      });
+    });
+
+  });
+
 });
