@@ -188,3 +188,35 @@ BEGIN
 	WHERE userID = userID_;
 END $
 DELIMITER ;
+
+
+# ---------
+# getAccountStatus(userID)
+# returns info used to work out the user's account type
+# 	isEmailVerified: whether user has responded to the account creation email
+#	isBanned: whether the user has been banned or not
+# 	isTutor: whether the user is a tutor or not
+# 	isVetted: whether the tutor has been vetted by VTE or is still pending
+#
+# Param:
+#	userID - user's student number (integer)
+#
+# Returns:
+#	A 4 column table (isEmailVerified, isBanned, isTutor, isVetted) in one row if user exists, zero rows if user doesn't exist
+DROP PROCEDURE IF EXISTS getAccountStatus;
+
+DELIMITER $
+CREATE PROCEDURE `getAccountStatus` (userID_ INT(8))
+BEGIN
+	SELECT isEmailVerified, isBanned, isTutor, isVetted
+	FROM (
+		(SELECT userID, emailVerified AS isEmailVerified FROM user WHERE userID = userID_) AS x
+		JOIN
+		(SELECT userID_ AS userID, COUNT(*) AS isBanned FROM bannedUser WHERE userID = userID_) AS y
+		ON x.userID = y.userID
+		JOIN
+		(SELECT userID_ AS userID, COUNT(*) AS isTutor, IFNULL(verified, 0) AS isVetted FROM tutor WHERE userID = userID_) AS z
+		ON x.userID = z.userID
+	);
+END $
+DELIMITER ;

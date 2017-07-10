@@ -875,4 +875,168 @@ describe('Procedures unit tests:', function() {
 
   });
 
+
+  // ---------------------------------------- //
+  // getAccountStatus(userID)
+  describe('???', function() {
+    beforeAll(function(done) {
+      connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+        if (!!err) console.log(err);
+        done();
+      });
+    });
+
+    afterAll(function(done) {
+      connection.query('DELETE FROM user WHERE userID =  ?', [fakeUser.userID], function(err) {
+        if (!!err) console.log(err);
+        done();
+      });
+    });
+
+    // case 1: user is not email verified
+    describe('when user is not email verified', function() {
+      it('should have 0 entry for isEmailVerified', function(done) {
+        connection.query('CALL getAccountStatus(?)', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var isEmailVerified = rows[0][0].isEmailVerified;
+          expect(isEmailVerified).toBe(0);
+          done();
+        });
+      });
+    });
+
+    // case 2: user is email verified
+    describe('when user is email verified', function() {
+      beforeAll(function(done) {
+        connection.query('UPDATE user SET emailVerified = 1 WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      afterAll(function(done) {
+        connection.query('UPDATE user SET emailVerified = 1 WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      it('should have 1 entry for isEmailVerified', function(done) {
+        connection.query('CALL getAccountStatus(?)', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var isEmailVerified = rows[0][0].isEmailVerified;
+          expect(isEmailVerified).toBe(1);
+          done();
+        });
+      });
+    });
+
+    // case 3: user is not banned
+    describe('when user is not banned', function() {
+      it('should have 0 entry for isBanned', function(done) {
+        connection.query('CALL getAccountStatus(?)', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var isBanned = rows[0][0].isBanned;
+          expect(isBanned).toBe(0);
+          done();
+        });
+      });
+    });
+
+    // case 4: user is banned
+    describe('when user is banned', function() {
+      beforeAll(function(done) {
+        connection.query('INSERT INTO bannedUser SET userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      afterAll(function(done) {
+        connection.query('DELETE FROM bannedUser WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      it('should have 1 entry for isBanned', function(done) {
+        connection.query('CALL getAccountStatus(?)', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var isBanned = rows[0][0].isBanned;
+          expect(isBanned).toBe(1);
+          done();
+        });
+      });
+    });
+
+    // case 5: user is not a tutor
+    describe('when user is not a tutor', function() {
+      it('should have 0 entry for isTutor', function(done) {
+        connection.query('CALL getAccountStatus(?)', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var isTutor= rows[0][0].isTutor;
+          expect(isTutor).toBe(0);
+          done();
+        });
+      });
+    });
+
+    // case 6: user is tutor but not vetted
+    describe('when user is a tutor but not yet vetted', function() {
+      beforeAll(function(done) {
+        connection.query('INSERT INTO tutor SET userID = ?, verified = 0', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      afterAll(function(done) {
+        connection.query('DELETE FROM tutor WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      it('should have 1 entry for isBanned', function(done) {
+        connection.query('CALL getAccountStatus(?)', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var isTutor = rows[0][0].isTutor;
+          var isVetted = rows[0][0].isVetted;
+          expect(isTutor).toBe(1);
+          expect(isVetted).toBe(0);
+          done();
+        });
+      });
+    });
+
+    // case 7: user is tutor and vetted
+    describe('when user is a tutor and vetted', function() {
+      beforeAll(function(done) {
+        connection.query('INSERT INTO tutor SET userID = ?, verified = 1', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      afterAll(function(done) {
+        connection.query('DELETE FROM tutor WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      it('should have 1 entry for isBanned', function(done) {
+        connection.query('CALL getAccountStatus(?)', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var isTutor = rows[0][0].isTutor;
+          var isVetted = rows[0][0].isVetted;
+          expect(isTutor).toBe(1);
+          expect(isVetted).toBe(1);
+          done();
+        });
+      });
+    });
+
+  });
+
 });
