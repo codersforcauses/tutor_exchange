@@ -1039,6 +1039,7 @@ describe('Procedures unit tests:', function() {
 
   });
 
+
   // ---------------------------------------- //
   // getProfile(userID)
   describe('getProfile(userID)', function() {
@@ -1142,6 +1143,50 @@ describe('Procedures unit tests:', function() {
           expect(rows[0].length).toBe(0);
           done();
         });
+      });
+    });
+
+  });
+
+
+  // ---------------------------------------- //
+  // getTutoredUnits(userID)
+  describe('getTutoredUnits(userID)', function() {
+    var myUnits = ['MATH1001', 'MATH1002'];
+
+    beforeAll(function(done) {
+      connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+        if (!!err) console.log(err);
+        connection.query('INSERT INTO tutor SET userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('INSERT INTO unitTutored VALUES (?, ?), (?, ?)', [fakeUser.userID, myUnits[0], fakeUser.userID, myUnits[1]], function(err) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+    });
+
+    afterAll(function(done) {
+      connection.query('DELETE FROM unitTutored WHERE tutor = ?', [fakeUser.userID], function(err, rows, fields) {
+        if (!!err) console.log(err);
+        connection.query('DELETE FROM tutor WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+    });
+
+    it('should return list of units tutored', function(done) {
+      connection.query('CALL getTutoredUnits(?)', [fakeUser.userID], function(err, rows, fields) {
+        if (!!err) console.log(err);
+        var units = rows[0];
+        expect(units[0].unitID).toBe(myUnits[0]);
+        expect(units[1].unitID).toBe(myUnits[1]);
+        done();
       });
     });
 

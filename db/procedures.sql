@@ -252,3 +252,29 @@ BEGIN
 	WHERE u.userID = userID_;
 END $
 DELIMITER ;
+
+
+# ---------
+# getTutoredUnits(userID)
+# gets a list of units tutored by a user
+#
+# Param:
+#	userID - user's student number (integer)
+#
+# Returns:
+#	An 2 column table (unitID, unitName)
+#		each row containing a unique unit tutored
+DROP PROCEDURE IF EXISTS getTutoredUnits;
+
+DELIMITER $
+CREATE PROCEDURE `getTutoredUnits` (userID_ INT(8))
+BEGIN
+	SELECT unitID, unitName
+	FROM tutor
+	JOIN unitTutored
+	ON tutor.userID = unitTutored.tutor
+	JOIN unit
+	ON unitTutored.unit = unit.unitID
+	WHERE tutor.userID = userID_;
+END $
+DELIMITER ;
