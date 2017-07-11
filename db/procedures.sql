@@ -304,3 +304,53 @@ BEGIN
 	WHERE tutor.userID = userID_;
 END $
 DELIMITER ;
+
+
+# ------------------
+# updateUser(userID, firstName, lastName, DOB, sex, phone)
+# Updates an existing user in the database (all fields)
+# 
+# Param:
+# 	userID - student number (integer)
+#	firstName (string)
+#	lastName (string)
+#   DOB - Date of birth (YYYY-MM-DD)
+#	sex - 'M', 'F' or 'O' (char)
+# 	phone - phone number (string)
+#
+# Note: No effect when user doesn't exist
+DROP PROCEDURE IF EXISTS updateUser;
+
+DELIMITER $
+CREATE PROCEDURE `updateUser` (userID_ INT(8), firstName_ VARCHAR(100), lastName_ VARCHAR(100), DOB_ DATE, sex_ CHAR(1), phone_ VARCHAR(20))
+BEGIN
+	UPDATE user
+	SET firstName = firstName_,
+		lastName = lastName_,
+		DOB = DOB_,
+		sex = sex_,
+		phone = phone_
+	WHERE userID = userID_;
+END $
+DELIMITER ;
+
+
+# ------------------
+# updateTutorProfile(userID, bio, visible)
+# Updates an existing tutor's bio and visibility
+# 
+# Param:
+# 	userID - student number (integer)
+#	bio - tutor's short biography (string)
+#	visible - tutor's visibility on tutor lists (1 - true, 0 - false)
+DROP PROCEDURE IF EXISTS updateTutorProfile;
+
+DELIMITER $
+CREATE PROCEDURE `updateTutorProfile` (userID_ INT(8), bio_ TEXT, visible_ INT(1))
+BEGIN
+	UPDATE tutor
+	SET bio = bio_,
+		visible = visible_
+	WHERE userID = userID_;
+END $
+DELIMITER ;

@@ -1236,4 +1236,160 @@ describe('Procedures unit tests:', function() {
 
   });
 
+
+  // ---------------------------------------- //
+  // updateUser(userID, firstName, lastName, DOB, sex, phone)
+  describe('updateUser(userID, firstName, lastName, DOB, sex, phone)', function() {
+    var updatedUser = {
+      userID: fakeUser.userID,
+      firstName: 'Jane',
+      lastName: 'Smithe',
+      DOB: '1990-01-02',
+      sex: 'F',
+      phone: '0432000112',
+    };
+
+    // case 1: user exists
+    describe('when user exists', function() {
+      var errorFlag = false;
+
+      beforeAll(function(done) {
+        connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+          if (!!err) console.log(err);
+          connection.query('CALL updateUser(?, ?, ?, ?, ?, ?)', [updatedUser.userID, updatedUser.firstName, updatedUser.lastName, updatedUser.DOB, updatedUser.sex, updatedUser.phone], function(err) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+
+      afterAll(function(done) {
+        connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      it('should update database appropriately', function(done) {
+        connection.query('SELECT * FROM user WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var profile = rows[0];
+          expect(profile.firstName).toBe(updatedUser.firstName);
+          expect(profile.lastName).toBe(updatedUser.lastName);
+          expect(Date(profile.DOB)).toBe(Date(updatedUser.DOB));
+          expect(profile.sex).toBe(updatedUser.sex);
+          expect(profile.phone).toBe(updatedUser.phone);
+          done();
+        });
+      });
+    });
+
+    // case 2: user doesn't exist
+    describe('when user does not exist', function() {
+      var errorFlag = false;
+
+      beforeAll(function(done) {
+        connection.query('CALL updateUser(?, ?, ?, ?, ?, ?)', [updatedUser.userID, updatedUser.firstName, updatedUser.lastName, updatedUser.DOB, updatedUser.sex, updatedUser.phone], function(err) {
+          if (!!err) errorFlag = true;
+          done();
+        });
+      });
+
+      it('should not throw a mysql error', function() {
+        expect(errorFlag).toBe(false);
+      });
+
+      it('should not have added a user', function(done) {
+        connection.query('SELECT COUNT(*) FROM user WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          expect(rows[0]['COUNT(*)']).toBe(0);
+          done();
+        });
+      });
+    });
+
+  });
+
+
+  // ---------------------------------------- //
+  // updateTutorProfile(userID, bio, visible)
+  describe('updateTutorProfile(userID, bio, visible)', function() {
+    var oldBio = 'old bio';
+    var oldVisible = 0;
+
+    var newBio = 'new bio';
+    var newVisible = 1;
+
+    beforeAll(function(done) {
+      connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+        if (!!err) console.log(err);
+        done();
+      });
+    });
+
+    afterAll(function(done) {
+      connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+        if (!!err) console.log(err);
+        done();
+      });
+    });
+
+
+    // case 1: user is tutor
+    describe('when user is a tutor', function() {
+      beforeAll(function(done) {
+        connection.query('INSERT INTO tutor SET userID = ?, bio = ?, visible = ?', [fakeUser.userID, oldBio, oldVisible], function(err) {
+          if (!!err) console.log(err);
+          connection.query('CALL updateTutorProfile(?, ?, ?)', [fakeUser.userID, newBio, newVisible], function(err) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+
+      afterAll(function(done) {
+        connection.query('DELETE FROM tutor WHERE userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      it('should update tutor details', function(done) {
+        connection.query('SELECT * FROM tutor WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var bio = rows[0].bio;
+          var visible = rows[0].visible;
+          expect(bio).toBe(newBio);
+          expect(visible).toBe(newVisible);
+          done();
+        });
+      });
+    });
+
+    // case 2: user is not a tutor
+    describe('when user is not a tutor', function() {
+      var errorFlag = false;
+
+      beforeAll(function(done) {
+        connection.query('CALL updateTutorProfile(?, ?, ?)', [fakeUser.userID, newBio, newVisible], function(err) {
+          if (!!err) errorFlag = true;
+          done();
+        });
+      });
+
+      it('should not throw an error', function() {
+        expect(errorFlag).toBe(false);
+      });
+
+      it('should not upgrade user to tutor', function(done) {
+        connection.query('SELECT COUNT(*) FROM tutor WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          expect(rows[0]['COUNT(*)']).toBe(0);
+          done();
+        });
+      });
+    });
+
+  });
+
 });
