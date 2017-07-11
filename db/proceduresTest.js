@@ -1192,4 +1192,48 @@ describe('Procedures unit tests:', function() {
 
   });
 
+
+  // ---------------------------------------- //
+  // getTutoredLanguages(userID)
+  describe('getTutoredLanguages(userID)', function() {
+    var myLangs = ['es', 'fr'];
+
+    beforeAll(function(done) {
+      connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+        if (!!err) console.log(err);
+        connection.query('INSERT INTO tutor SET userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('INSERT INTO languageTutored VALUES (?, ?), (?, ?)', [fakeUser.userID, myLangs[0], fakeUser.userID, myLangs[1]], function(err) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+    });
+
+    afterAll(function(done) {
+      connection.query('DELETE FROM languageTutored WHERE tutor = ?', [fakeUser.userID], function(err, rows, fields) {
+        if (!!err) console.log(err);
+        connection.query('DELETE FROM tutor WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+    });
+
+    it('should return list of languages tutored', function(done) {
+      connection.query('CALL getTutoredLanguages(?)', [fakeUser.userID], function(err, rows, fields) {
+        if (!!err) console.log(err);
+        var langs = rows[0];
+        expect(langs[0].languageCode).toBe(myLangs[0]);
+        expect(langs[1].languageCode).toBe(myLangs[1]);
+        done();
+      });
+    });
+
+  });
+
 });

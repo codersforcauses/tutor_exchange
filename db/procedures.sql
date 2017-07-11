@@ -278,3 +278,29 @@ BEGIN
 	WHERE tutor.userID = userID_;
 END $
 DELIMITER ;
+
+
+# ---------
+# getTutoredLanguages(userID)
+# gets a list of languages tutored by a user
+#
+# Param:
+#	userID - user's student number (integer)
+#
+# Returns:
+#	An 2 column table (languageCode, languageName)
+#		each row containing a unique language tutored
+DROP PROCEDURE IF EXISTS getTutoredLanguages;
+
+DELIMITER $
+CREATE PROCEDURE `getTutoredLanguages` (userID_ INT(8))
+BEGIN
+	SELECT languageCode, languageName
+	FROM tutor
+	JOIN languageTutored
+	ON tutor.userID = languageTutored.tutor
+	JOIN language
+	ON languageTutored.language = language.languageCode
+	WHERE tutor.userID = userID_;
+END $
+DELIMITER ;
