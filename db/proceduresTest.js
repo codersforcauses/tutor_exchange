@@ -878,7 +878,7 @@ describe('Procedures unit tests:', function() {
 
   // ---------------------------------------- //
   // getAccountStatus(userID)
-  describe('???', function() {
+  describe('getAccountStatus(userID)', function() {
     beforeAll(function(done) {
       connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
         if (!!err) console.log(err);
@@ -1032,6 +1032,114 @@ describe('Procedures unit tests:', function() {
           var isVetted = rows[0][0].isVetted;
           expect(isTutor).toBe(1);
           expect(isVetted).toBe(1);
+          done();
+        });
+      });
+    });
+
+  });
+
+  // ---------------------------------------- //
+  // getProfile(userID)
+  describe('getProfile(userID)', function() {
+
+    // Case 1: user is a student
+    describe('when user is a student', function() {
+      beforeAll(function(done) {
+        connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      afterAll(function(done) {
+        connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      it('should return correct user profile', function(done) {
+        connection.query('CALL getProfile(?)', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var details = rows[0][0];
+          expect(details.userID).toBe(fakeUser.userID);
+          expect(details.firstName).toBe(fakeUser.firstName);
+          expect(details.lastName).toBe(fakeUser.lastName);
+          expect(Date(details.DOB)).toBe(Date(fakeUser.DOB));
+          expect(details.sex).toBe(fakeUser.sex);
+          expect(details.phone).toBe(fakeUser.phone);
+          done();
+        });
+      });
+
+      it('should return null on tutor fields', function(done) {
+        connection.query('CALL getProfile(?)', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var details = rows[0][0];
+          expect(details.bio).toBe(null);
+          expect(details.visible).toBe(null);
+          done();
+        });
+      });
+    });
+
+    // Case 2: user is a tutor
+    describe('when user is a tutor', function() {
+      var bio = 'bio';
+      var visible = 1;
+
+      beforeAll(function(done) {
+        connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+          if (!!err) console.log(err);
+          connection.query('INSERT INTO tutor SET userID = ?, bio = ?, visible = ?', [fakeUser.userID, bio, visible], function(err) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+
+      afterAll(function(done) {
+        connection.query('DELETE FROM tutor WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+
+      it('should return correct user profile', function(done) {
+        connection.query('CALL getProfile(?)', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var details = rows[0][0];
+          expect(details.userID).toBe(fakeUser.userID);
+          expect(details.firstName).toBe(fakeUser.firstName);
+          expect(details.lastName).toBe(fakeUser.lastName);
+          expect(Date(details.DOB)).toBe(Date(fakeUser.DOB));
+          expect(details.sex).toBe(fakeUser.sex);
+          expect(details.phone).toBe(fakeUser.phone);
+          done();
+        });
+      });
+
+      it('should return correct tutor details', function(done) {
+        connection.query('CALL getProfile(?)', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var details = rows[0][0];
+          expect(details.bio).toBe(bio);
+          expect(details.visible).toBe(visible);
+          done();
+        });
+      });
+    });
+
+    // Case 3: user doesn't exist
+    describe('when user does not exist', function() {
+      it('should return zero rows', function(done) {
+        connection.query('CALL getProfile(?)', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          expect(rows[0].length).toBe(0);
           done();
         });
       });

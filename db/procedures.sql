@@ -220,3 +220,35 @@ BEGIN
 	);
 END $
 DELIMITER ;
+
+
+# ---------
+# getProfile(userID)
+# returns user profile for a specified user
+#
+# Param:
+#	userID - user's student number (integer)
+#
+# Returns:
+#	An 8 column table (userID, firstName, lastName, DOB, sex, phone, bio, visible)
+#		one row if user exists, zero rows if user doesn't exist
+#		bio and visible are null if user is not a tutor
+DROP PROCEDURE IF EXISTS getProfile;
+
+DELIMITER $
+CREATE PROCEDURE `getProfile` (userID_ INT(8))
+BEGIN
+	SELECT u.userID,
+		u.firstName,
+		u.lastName,
+		u.DOB,
+		u.sex,
+		u.phone,
+		t.bio,
+		t.visible
+	FROM user AS u
+	LEFT JOIN tutor AS t
+	ON u.userID = t.userID
+	WHERE u.userID = userID_;
+END $
+DELIMITER ;
