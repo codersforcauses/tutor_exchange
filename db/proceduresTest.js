@@ -1496,4 +1496,210 @@ describe('Procedures unit tests:', function() {
     });
   });
 
+
+  // ---------------------------------------- //
+  // searchTutors(unitID, languageCode)
+  describe('searchTutors(unitID, languageCode)', function() {
+    var myUnits = ['MATH1001', 'MATH1002'];
+    var myLangs = ['fr', 'es'];
+    var myBio = 'bio';
+
+    beforeAll(function(done) {
+      connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+        if (!!err) console.log(err);
+        connection.query('UPDATE user SET emailVerified = 1 WHERE userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('INSERT INTO tutor SET userID = ?, visible = 1, verified = 1, bio = ?', [fakeUser.userID, myBio], function(err) {
+            if (!!err) console.log(err);
+            connection.query('INSERT INTO unitTutored VALUES (?, ?), (?, ?)', [fakeUser.userID, myUnits[0], fakeUser.userID, myUnits[1]], function(err) {
+              if (!!err) console.log(err);
+              connection.query('INSERT INTO languageTutored VALUES (?, ?), (?, ?)', [fakeUser.userID, myLangs[0], fakeUser.userID, myLangs[1]], function(err) {
+                if (!!err) console.log(err);
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+    afterAll(function(done) {
+      connection.query('DELETE FROM languageTutored WHERE tutor = ?', [fakeUser.userID], function(err) {
+        if (!!err) console.log(err);
+        connection.query('DELETE FROM unitTutored WHERE tutor = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM tutor WHERE userID = ?', [fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
+              if (!!err) console.log(err);
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    // Case 1 search for unit and language
+    describe('when unit and language are searched', function() {
+      it('should return list of tutors containing fake user', function(done) {
+        connection.query('CALL searchTutors(?, ?)', [myUnits[0], 'french'], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var tutor = rows[0].find(function(x) {return x.userID == fakeUser.userID;});
+          expect(tutor.firstName).toBe(fakeUser.firstName);
+          expect(tutor.lastName).toBe(fakeUser.lastName);
+          expect(tutor.bio).toBe(myBio);
+          done();
+        });
+      });
+    });
+
+    // Case 2 search unit only
+    describe('when only unit is searched', function() {
+      it('should return list of tutors containing fake user', function(done) {
+        connection.query('CALL searchTutors(?, ?)', [myUnits[0], ''], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var tutor = rows[0].find(function(x) {return x.userID == fakeUser.userID;});
+          expect(tutor.firstName).toBe(fakeUser.firstName);
+          expect(tutor.lastName).toBe(fakeUser.lastName);
+          expect(tutor.bio).toBe(myBio);
+          done();
+        });
+      });
+    });
+
+    // Case 3 search language only
+    describe('when only language is searched', function() {
+      it('should return list of tutors containing fake user', function(done) {
+        connection.query('CALL searchTutors(?, ?)', ['', 'french'], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var tutor = rows[0].find(function(x) {return x.userID == fakeUser.userID;});
+          expect(tutor.firstName).toBe(fakeUser.firstName);
+          expect(tutor.lastName).toBe(fakeUser.lastName);
+          expect(tutor.bio).toBe(myBio);
+          done();
+        });
+      });
+    });
+
+    // Case 4 no search query
+    describe('when both arguments are empty strings', function() {
+      it('should return list of all tutors (contains fake user)', function(done) {
+        connection.query('CALL searchTutors(?, ?)', ['', ''], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var tutor = rows[0].find(function(x) {return x.userID == fakeUser.userID;});
+          expect(tutor.firstName).toBe(fakeUser.firstName);
+          expect(tutor.lastName).toBe(fakeUser.lastName);
+          expect(tutor.bio).toBe(myBio);
+          done();
+        });
+      });
+    });
+
+    // Case 5 user is not visible
+    describe('when user is not visible', function() {
+      beforeAll(function(done) {
+        connection.query('UPDATE tutor SET visible = 0 WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      afterAll(function(done) {
+        connection.query('UPDATE tutor SET visible = 1 WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      it('should return list that does not contain fakeUser', function(done) {
+        connection.query('CALL searchTutors(?, ?)', [myUnits[0], 'french'], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var tutor = rows[0].find(function(x) {return x.userID == fakeUser.userID;});
+          expect(tutor).not.toBeDefined();
+          done();
+        });
+      });
+    });
+
+    // Case 6 user has not confirmed identity
+    describe('when user has not confirmed by email', function() {
+      beforeAll(function(done) {
+        connection.query('UPDATE user SET emailVerified = 0 WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      afterAll(function(done) {
+        connection.query('UPDATE user SET emailVerified = 1 WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      it('should return list that does not contain fakeUser', function(done) {
+        connection.query('CALL searchTutors(?, ?)', [myUnits[0], 'french'], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var tutor = rows[0].find(function(x) {return x.userID == fakeUser.userID;});
+          expect(tutor).not.toBeDefined();
+          done();
+        });
+      });
+    });
+
+    // Case 7 user is not vetted
+    describe('when user has not been vetted by VTE', function() {
+      beforeAll(function(done) {
+        connection.query('UPDATE tutor SET verified = 0 WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      afterAll(function(done) {
+        connection.query('UPDATE tutor SET verified = 0 WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      it('should return list that does not contain fakeUser', function(done) {
+        connection.query('CALL searchTutors(?, ?)', [myUnits[0], 'french'], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var tutor = rows[0].find(function(x) {return x.userID == fakeUser.userID;});
+          expect(tutor).not.toBeDefined();
+          done();
+        });
+      });
+    });
+
+    // Case 8 user is banned
+    describe('when user has not been banned', function() {
+      beforeAll(function(done) {
+        connection.query('INSERT INTO bannedUser SET userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      afterAll(function(done) {
+        connection.query('DELETE FROM bannedUser WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      it('should return list that does not contain fakeUser', function(done) {
+        connection.query('CALL searchTutors(?, ?)', [myUnits[0], 'french'], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var tutor = rows[0].find(function(x) {return x.userID == fakeUser.userID;});
+          expect(tutor).not.toBeDefined();
+          done();
+        });
+      });
+    });
+  });
+
+
+
 });

@@ -391,3 +391,51 @@ BEGIN
 	AND language = language_;
 END $
 DELIMITER ;
+
+
+# ---------
+# searchTutors(unitID, languageCode)
+# Get a list of tutors that teach a unit in a language
+#
+# Param:
+#	unitID - unit tutors teach (string)
+#	languageCode - language tutors teach in (string)
+DROP PROCEDURE IF EXISTS searchTutors;
+
+DELIMITER $
+CREATE PROCEDURE `searchTutors` (unitID_ CHAR(8), languageName_ VARCHAR(20))
+BEGIN
+	SELECT GROUP_CONCAT(DISTINCT languageName) AS languageName,
+		GROUP_CONCAT(DISTINCT unitID) AS unitID,
+		tutor.userID,
+		firstName,
+		lastName,
+		phone,
+		bio,
+		visible,
+		emailVerified,
+		verified,
+		isBanned
+	FROM tutor
+	JOIN languageTutored
+		ON tutor.userID = languageTutored.tutor
+	JOIN language
+		ON languageTutored.language = language.languageCode
+	JOIN unitTutored
+		ON unitTutored.tutor = tutor.userID
+	JOIN unit
+		ON unitTutored.unit = unit.unitID
+	JOIN user
+		ON user.userID = tutor.userID
+	LEFT JOIN (SELECT userID, COUNT(*) AS isBanned FROM bannedUser GROUP BY userID) AS banned
+		ON user.userID = banned.userID
+	WHERE visible = 1
+		AND emailVerified = 1
+		AND verified = 1
+		AND isBanned IS NULL
+	GROUP BY tutor.userID
+	HAVING unitID LIKE CONCAT('%', IFNULL(unitID_, ''), '%')
+		AND languageName LIKE CONCAT('%', IFNULL(languageName_, ''), '%');
+END $
+DELIMITER ;
+
