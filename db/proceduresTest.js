@@ -1392,4 +1392,108 @@ describe('Procedures unit tests:', function() {
 
   });
 
+
+  // ---------------------------------------- //
+  // removeUnitTutored(userID, unit)
+  describe('removeUnitTutored(userID, unit)', function() {
+    var myUnits = ['MATH1001', 'MATH1002'];
+
+    beforeAll(function(done) {
+      connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+        if (!!err) console.log(err);
+        connection.query('INSERT INTO tutor SET userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('INSERT INTO unitTutored VALUES (?, ?), (?, ?)', [fakeUser.userID, myUnits[0], fakeUser.userID, myUnits[1]], function(err) {
+            if (!!err) console.log(err);
+            connection.query('CALL removeUnitTutored(?, ?)', [fakeUser.userID, myUnits[0]], function(err) {
+              if (!!err) console.log(err);
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    afterAll(function(done) {
+      connection.query('DELETE FROM unitTutored WHERE tutor = ?', [fakeUser.userID], function(err) {
+        if (!!err) console.log(err);
+        connection.query('DELETE FROM tutor WHERE userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+    });
+
+    it('unit list should now have ' + myUnits.length -1 + ' units', function(done) {
+      connection.query('SELECT COUNT(*) FROM unitTutored WHERE tutor = ?', [fakeUser.userID], function(err, rows, fields) {
+        if (!!err) console.log(err);
+        expect(rows[0]['COUNT(*)']).toBe(myUnits.length -1);
+        done();
+      });
+    });
+
+    it('should return the non-deleted unit', function(done) {
+      connection.query('SELECT unit FROM unitTutored WHERE tutor = ?', [fakeUser.userID], function(err, rows, fields) {
+        if (!!err) console.log(err);
+        expect(rows[0].unit).toBe(myUnits[1]);
+        done();
+      });
+    });
+  });
+
+
+  // ---------------------------------------- //
+  // removeLanguageTutored(userID, language)
+  describe('removeLanguageTutored(userID, language)', function() {
+    var myLangs = ['fr', 'es'];
+
+    beforeAll(function(done) {
+      connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+        if (!!err) console.log(err);
+        connection.query('INSERT INTO tutor SET userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('INSERT INTO languageTutored VALUES (?, ?), (?, ?)', [fakeUser.userID, myLangs[0], fakeUser.userID, myLangs[1]], function(err) {
+            if (!!err) console.log(err);
+            connection.query('CALL removeLanguageTutored(?, ?)', [fakeUser.userID, myLangs[0]], function(err) {
+              if (!!err) console.log(err);
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    afterAll(function(done) {
+      connection.query('DELETE FROM languageTutored WHERE tutor = ?', [fakeUser.userID], function(err) {
+        if (!!err) console.log(err);
+        connection.query('DELETE FROM tutor WHERE userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM user WHERE userID = ?', [fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+    });
+
+    it('unit list should now have ' + myLangs.length -1 + ' languages', function(done) {
+      connection.query('SELECT COUNT(*) FROM languageTutored WHERE tutor = ?', [fakeUser.userID], function(err, rows, fields) {
+        if (!!err) console.log(err);
+        expect(rows[0]['COUNT(*)']).toBe(myLangs.length -1);
+        done();
+      });
+    });
+
+    it('should return the non-deleted unit', function(done) {
+      connection.query('SELECT language FROM languageTutored WHERE tutor = ?', [fakeUser.userID], function(err, rows, fields) {
+        if (!!err) console.log(err);
+        expect(rows[0].language).toBe(myLangs[1]);
+        done();
+      });
+    });
+  });
+
 });

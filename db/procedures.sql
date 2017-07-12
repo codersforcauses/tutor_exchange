@@ -354,3 +354,40 @@ BEGIN
 	WHERE userID = userID_;
 END $
 DELIMITER ;
+
+# ---------
+# removeUnitTutored(userID, unit)
+# Unassigns a tutor from teaching a unit
+#
+# Param:
+#	userID - user's student number (integer)
+#	unit - unit to be dropped (string)
+DROP PROCEDURE IF EXISTS removeUnitTutored;
+
+DELIMITER $
+CREATE PROCEDURE `removeUnitTutored` (userID_ INT(8), unit_ CHAR(8))
+BEGIN
+	DELETE FROM unitTutored
+	WHERE tutor = userID_
+	AND unit = unit_;
+END $
+DELIMITER ;
+
+
+# ---------
+# removeLanguageTutored(userID, language)
+# Unassigns a tutor to teach from teaching in a language
+#
+# Param:
+#	userID - user's student number (integer)
+#	language - language taught (string)
+DROP PROCEDURE IF EXISTS removeLanguageTutored;
+
+DELIMITER $
+CREATE PROCEDURE `removeLanguageTutored` (userID_ INT(8), language_ CHAR(2))
+BEGIN
+	DELETE FROM languageTutored
+	WHERE tutor = userID_
+	AND language = language_;
+END $
+DELIMITER ;
