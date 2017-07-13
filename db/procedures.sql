@@ -723,3 +723,22 @@ BEGIN
 		AND sessionStatus = 0;
 END $
 DELIMITER ;
+
+
+# ---------
+# cancelAppointment(sessionID)
+# Cancels a session appointment.
+#
+# Param:
+#	sessionID - a session id (integer)
+DROP PROCEDURE IF EXISTS cancelAppointment;
+
+DELIMITER $
+CREATE PROCEDURE `cancelAppointment` (sessionID_ INT(11))
+BEGIN
+	UPDATE session
+	SET sessionStatus = 3
+	WHERE sessionID = sessionID_
+		AND sessionStatus = 1;
+END $
+DELIMITER ;
