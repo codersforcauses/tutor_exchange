@@ -706,3 +706,22 @@ BEGIN
 		AND (tutee = userID_ OR tutor = userID_);
 END $
 DELIMITER ;
+
+
+# ---------
+# rejectRequest(sessionID, userID)
+# Rejects a session request.
+#
+# Param:
+#	sessionID - a session id (integer)
+#	userID - userID of one of the users involved (integer)
+DROP PROCEDURE IF EXISTS rejectRequest;
+
+DELIMITER $
+CREATE PROCEDURE `rejectRequest` (sessionID_ INT(11), userID_ INT(8))
+BEGIN
+	DELETE FROM session
+	WHERE sessionID = sessionID_
+		AND (tutee = userID_ OR tutor = userID_);
+END $
+DELIMITER ;

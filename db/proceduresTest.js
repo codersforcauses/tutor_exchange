@@ -2271,4 +2271,71 @@ describe('Procedures unit tests:', function() {
   });
 
 
+  // ---------------------------------------- //
+  // rejectRequest(sessionID, userID)
+  describe('rejectRequest(sessionID, userID)', function() {
+    var myUnit = 'MATH1001';
+
+    beforeAll(function(done) {
+      connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+        if (!!err) console.log(err);
+        connection.query('INSERT INTO user SET ?', [otherUser], function(err) {
+          if (!!err) console.log(err);
+          connection.query('INSERT INTO tutor SET userID = ?', [fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            connection.query('INSERT INTO unitTutored VALUES (?, ?)', [fakeUser.userID, myUnit], function(err) {
+              if (!!err) console.log(err);
+              connection.query('INSERT INTO session SET tutor = ?, tutee = ?, unit = ?, sessionStatus = 0, confirmationStatus = 0, hoursAwarded = 0', [fakeUser.userID, otherUser.userID, myUnit], function(err) {
+                if (!!err) console.log(err);
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+    afterAll(function(done) {
+      connection.query('DELETE FROM session WHERE tutor = ? OR tutor = ?', [fakeUser.userID, otherUser.userID], function(err) {
+        if (!!err) console.log(err);
+        connection.query('DELETE FROM unitTutored WHERE tutor = ? OR tutor = ?', [fakeUser.userID, otherUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM tutor WHERE userID = ? OR userID = ?', [fakeUser.userID, otherUser.userID], function(err) {
+            if (!!err) console.log(err);
+            connection.query('DELETE FROM user WHERE userID = ? OR userID = ?', [fakeUser.userID, otherUser.userID], function(err) {
+              if (!!err) console.log(err);
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    // Case 1: general case
+    describe('when function is called', function() {
+      var mySession;
+
+      beforeAll(function(done) {
+        connection.query('SELECT * FROM session WHERE tutor = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          mySession = rows[0];
+          connection.query('CALL rejectRequest(?, ?)', [mySession.sessionID, fakeUser.userID], function() {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+
+      it('should remove session from sessions list', function(done) {
+        connection.query('SELECT COUNT(*) FROM session WHERE tutor = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          expect(rows[0]['COUNT(*)']).toBe(0);
+          done();
+        });
+      });
+    });
+  });
+
+  
+
 });
