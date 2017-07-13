@@ -488,3 +488,56 @@ BEGIN
 		AND tutor = userID_);
 END $
 DELIMITER ;
+
+
+# ---------
+# getAppointments(userID)
+# Gets list of session appointments for a given user (as student or tutor)
+#
+# Param:
+#	userID - user's student number (integer)
+#
+# Returns:
+# 	An 9 column table (sessionID, role, unit, time, comment, firstName, lastName, phone, isCancelled)
+#		one row per session.
+#		- role is either 'STUDENT' or 'TUTOR', depending on user's role in that session.
+#		- firstName, lastName and phone belong to the other student.
+#		- isCancelled is 1 if appointment has been cancelled and 0 otherwise.
+DROP PROCEDURE IF EXISTS getAppointments;
+
+DELIMITER $
+CREATE PROCEDURE `getAppointments` (userID_ INT(8))
+BEGIN
+	(SELECT session.sessionID,
+		'STUDENT' AS role,
+		session.unit,
+		session.time,
+		session.comments,
+		user.firstName,
+		user.lastName,
+		user.phone,
+		IF(sessionStatus = 3, 1, 0) AS isCancelled
+	FROM session
+	JOIN user
+		ON session.tutor = user.userID
+	WHERE (sessionStatus = 1 OR sessionStatus = 3)
+		AND tutee = userID_)
+
+	UNION
+
+	(SELECT session.sessionID,
+		'TUTOR' AS role,
+		session.unit,
+		session.time,
+		session.comments,
+		user.firstName,
+		user.lastName,
+		user.phone,
+		IF(sessionStatus = 3, 1, 0) AS isCancelled
+	FROM session
+	JOIN user
+		ON session.tutee = user.userID
+	WHERE (sessionStatus = 1 OR sessionStatus = 3)
+		AND tutor = userID_);
+END $
+DELIMITER ;

@@ -1791,4 +1791,95 @@ describe('Procedures unit tests:', function() {
     });
   });
 
+  // ---------------------------------------- //
+  // getAppointments(userID)
+  describe('getAppointments(userID)', function() {
+    var myUnit = 'MATH1001';
+
+    beforeAll(function(done) {
+      connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+        if (!!err) console.log(err);
+        connection.query('INSERT INTO user SET ?', [otherUser], function(err) {
+          if (!!err) console.log(err);
+          connection.query('INSERT INTO tutor SET userID = ?', [fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            connection.query('INSERT INTO tutor SET userID = ?', [otherUser.userID], function(err) {
+              if (!!err) console.log(err);
+              connection.query('INSERT INTO unitTutored VALUES (?, ?), (?, ?)', [fakeUser.userID, myUnit, otherUser.userID, myUnit], function(err) {
+                if (!!err) console.log(err);
+                connection.query('INSERT INTO session SET tutor = ?, tutee = ?, unit = ?, sessionStatus = 1, confirmationStatus = 0, hoursAwarded = 0', [fakeUser.userID, otherUser.userID, myUnit], function(err) {
+                  if (!!err) console.log(err);
+                  connection.query('INSERT INTO session SET tutor = ?, tutee = ?, unit = ?, sessionStatus = 3, confirmationStatus = 0, hoursAwarded = 0', [otherUser.userID, fakeUser.userID, myUnit], function(err) {
+                    if (!!err) console.log(err);
+                    done();
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+
+    afterAll(function(done) {
+      connection.query('DELETE FROM session WHERE tutor = ? OR tutor = ?', [fakeUser.userID, otherUser.userID], function(err) {
+        if (!!err) console.log(err);
+        connection.query('DELETE FROM unitTutored WHERE tutor = ? OR tutor = ?', [fakeUser.userID, otherUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM tutor WHERE userID = ? OR userID = ?', [fakeUser.userID, otherUser.userID], function(err) {
+            if (!!err) console.log(err);
+            connection.query('DELETE FROM user WHERE userID = ? OR userID = ?', [fakeUser.userID, otherUser.userID], function(err) {
+              if (!!err) console.log(err);
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    // Case 1: when user is student
+    describe('when user takes a student role', function() {
+      it('should return list of appointments containing one where fakeUser is the student', function(done) {
+        connection.query('CALL getAppointments(?)', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var session = rows[0].find(function(x) {return x.role == 'STUDENT';});
+          expect(session).toBeDefined();
+          expect(session.unit).toBe(myUnit);
+          expect(session.firstName).toBe(otherUser.firstName);
+          expect(session.lastName).toBe(otherUser.lastName);
+          expect(session.phone).toBe(otherUser.phone);
+          done();
+        });
+      });
+    });
+
+    // Case 2: when user is tutor
+    describe('when user takes a tutoring role', function() {
+      it('should return list of appointments containing one where fakeUser is the tutor', function(done) {
+        connection.query('CALL getAppointments(?)', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var session = rows[0].find(function(x) {return x.role == 'TUTOR';});
+          expect(session).toBeDefined();
+          expect(session.unit).toBe(myUnit);
+          expect(session.firstName).toBe(otherUser.firstName);
+          expect(session.lastName).toBe(otherUser.lastName);
+          expect(session.phone).toBe(otherUser.phone);
+          done();
+        });
+      });
+    });
+
+    // Case 3: when session has been cancelled
+    describe('when user takes a tutoring role', function() {
+      it('should return list of appointments containing that has been cancelled', function(done) {
+        connection.query('CALL getAppointments(?)', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var session = rows[0].find(function(x) {return x.isCancelled == 1;});
+          expect(session).toBeDefined();
+          done();
+        });
+      });
+    });
+  });
+
 });
