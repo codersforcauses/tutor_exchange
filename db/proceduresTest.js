@@ -2128,6 +2128,74 @@ describe('Procedures unit tests:', function() {
   });
 
 
-  
+  // ---------------------------------------- //
+  // getSession(sessionID)
+  describe('getSession(sessionID)', function() {
+    var myUnit = 'MATH1001';
+
+    beforeAll(function(done) {
+      connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+        if (!!err) console.log(err);
+        connection.query('INSERT INTO user SET ?', [otherUser], function(err) {
+          if (!!err) console.log(err);
+          connection.query('INSERT INTO tutor SET userID = ?', [fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            connection.query('INSERT INTO unitTutored VALUES (?, ?)', [fakeUser.userID, myUnit], function(err) {
+              if (!!err) console.log(err);
+              connection.query('INSERT INTO session SET tutor = ?, tutee = ?, unit = ?, sessionStatus = 0, confirmationStatus = 0, hoursAwarded = 0', [fakeUser.userID, otherUser.userID, myUnit], function(err) {
+                if (!!err) console.log(err);
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+    afterAll(function(done) {
+      connection.query('DELETE FROM session WHERE tutor = ? OR tutor = ?', [fakeUser.userID, otherUser.userID], function(err) {
+        if (!!err) console.log(err);
+        connection.query('DELETE FROM unitTutored WHERE tutor = ? OR tutor = ?', [fakeUser.userID, otherUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM tutor WHERE userID = ? OR userID = ?', [fakeUser.userID, otherUser.userID], function(err) {
+            if (!!err) console.log(err);
+            connection.query('DELETE FROM user WHERE userID = ? OR userID = ?', [fakeUser.userID, otherUser.userID], function(err) {
+              if (!!err) console.log(err);
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    // Case 1: general case
+    describe('when funciton is calles', function() {
+      var mySession;
+
+      beforeAll(function(done) {
+        connection.query('SELECT * FROM session WHERE tutor = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          mySession = rows[0];
+          done();
+        });
+      });
+
+      it('should return session details back again', function(done) {
+        connection.query('CALL getSession(?)', [mySession.sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var returnedSession = rows[0][0];
+
+          expect(returnedSession.tutor).toBe(mySession.tutor);
+          expect(returnedSession.student).toBe(mySession.tutee);
+          expect(returnedSession.unit).toBe(mySession.unit);
+          expect(Date(returnedSession.time)).toBe(Date(mySession.time));
+          expect(returnedSession.sessionStatus).toBe(mySession.sessionStatus);
+          expect(returnedSession.confirmationStatus).toBe(mySession.confirmationStatus);
+          done();
+        });
+      });
+    });
+  });
+
 
 });

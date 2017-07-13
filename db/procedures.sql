@@ -658,3 +658,31 @@ BEGIN
 		hoursAwarded = 0;
 END $
 DELIMITER ;
+
+
+# ---------
+# getSession(sessionID)
+# Returns session (request, appointment or openSession) details of session with the specified sessionID
+#
+# Param:
+#	sessionID - a session id (integer)
+#
+# Returns:
+#	A 7 column table (tutor, student, unit, time, comments, sessionStatus, confirmationStatus),
+#		one row since session ids are unique
+DROP PROCEDURE IF EXISTS getSession;
+
+DELIMITER $
+CREATE PROCEDURE `getSession` (sessionID_ INT(11))
+BEGIN
+	SELECT tutor,
+		tutee AS student,
+		unit,
+		time,
+		comments,
+		sessionStatus,
+		confirmationStatus
+	FROM session
+	WHERE sessionID = sessionID_;
+END $
+DELIMITER ;
