@@ -630,3 +630,31 @@ BEGIN
 	WHERE (tutor = tutorID_ OR tutee = tutorID_) AND sessionStatus = 1;
 END $
 DELIMITER ;
+
+
+# ---------
+# createRequest(studentID, tutorID, unitID, time, comments)
+# Creates a session request
+#
+# Param:
+#	studentID - student's student number (integer)
+#	tutorID - tutor's student number (integer)
+#	unitID - unit that will be tutored (string)
+#	time - session start time (string, 'YYYY-MM-DD hh:mm:ss')
+#	comments - additional information (string)
+DROP PROCEDURE IF EXISTS createRequest;
+
+DELIMITER $
+CREATE PROCEDURE `createRequest` (studentID_ INT(8), tutorID_ INT(8), unitID_ CHAR(8), time_ TIMESTAMP, comments_ TEXT)
+BEGIN
+	INSERT INTO session
+	SET tutee = studentID_,
+		tutor = tutorID_,
+		unit = unitID_,
+		time = time_,
+		comments = comments_,
+		sessionStatus = 0,
+		confirmationStatus = 0,
+		hoursAwarded = 0;
+END $
+DELIMITER ;
