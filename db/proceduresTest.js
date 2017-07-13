@@ -1882,4 +1882,111 @@ describe('Procedures unit tests:', function() {
     });
   });
 
+
+  // ---------------------------------------- //
+  // getOpenSessions(userID)
+  describe('getOpenSessions(userID)', function() {
+    var myUnit = 'MATH1001';
+
+    beforeAll(function(done) {
+      connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+        if (!!err) console.log(err);
+        connection.query('INSERT INTO user SET ?', [otherUser], function(err) {
+          if (!!err) console.log(err);
+          connection.query('INSERT INTO tutor SET userID = ?', [fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            connection.query('INSERT INTO tutor SET userID = ?', [otherUser.userID], function(err) {
+              if (!!err) console.log(err);
+              connection.query('INSERT INTO unitTutored VALUES (?, ?), (?, ?)', [fakeUser.userID, myUnit, otherUser.userID, myUnit], function(err) {
+                if (!!err) console.log(err);
+                connection.query('INSERT INTO session SET tutor = ?, tutee = ?, unit = ?, sessionStatus = 2, confirmationStatus = 0, hoursAwarded = 0', [fakeUser.userID, otherUser.userID, myUnit], function(err) {
+                  if (!!err) console.log(err);
+                  connection.query('INSERT INTO session SET tutor = ?, tutee = ?, unit = ?, sessionStatus = 2, confirmationStatus = 0, hoursAwarded = 0', [otherUser.userID, fakeUser.userID, myUnit], function(err) {
+                    if (!!err) console.log(err);
+                    connection.query('INSERT INTO session SET tutor = ?, tutee = ?, unit = ?, sessionStatus = 2, confirmationStatus = 2, hoursAwarded = 0', [fakeUser.userID, otherUser.userID, myUnit], function(err) {
+                      if (!!err) console.log(err);
+                      connection.query('INSERT INTO session SET tutor = ?, tutee = ?, unit = ?, sessionStatus = 2, confirmationStatus = 1, hoursAwarded = 0', [otherUser.userID, fakeUser.userID, myUnit], function(err) {
+                        if (!!err) console.log(err);
+                        connection.query('INSERT INTO session SET tutor = ?, tutee = ?, unit = ?, sessionStatus = 2, confirmationStatus = 3, hoursAwarded = 0', [fakeUser.userID, otherUser.userID, myUnit], function(err) {
+                          if (!!err) console.log(err);
+                          done();
+                        });
+                      });
+                    });
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+
+    afterAll(function(done) {
+      connection.query('DELETE FROM session WHERE tutor = ? OR tutor = ?', [fakeUser.userID, otherUser.userID], function(err) {
+        if (!!err) console.log(err);
+        connection.query('DELETE FROM unitTutored WHERE tutor = ? OR tutor = ?', [fakeUser.userID, otherUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM tutor WHERE userID = ? OR userID = ?', [fakeUser.userID, otherUser.userID], function(err) {
+            if (!!err) console.log(err);
+            connection.query('DELETE FROM user WHERE userID = ? OR userID = ?', [fakeUser.userID, otherUser.userID], function(err) {
+              if (!!err) console.log(err);
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    // Case 1: general case
+    describe('when function is called', function() {
+      it('should return a list of 4 open sessions', function(done) {
+        connection.query('CALL getOpenSessions(?)', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          expect(rows[0].length).toBe(4);
+          done();
+        });
+      });
+
+      it('should return list of completed sessions with correct details', function(done) {
+        connection.query('CALL getAppointments(?)', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          rows[0].forEach(function(session) {
+            expect(session.unit).toBe(myUnit);
+            expect(session.firstName).toBe(otherUser.firstName);
+            expect(session.lastName).toBe(otherUser.lastName);
+            expect(session.phone).toBe(otherUser.phone);
+          });
+          done();
+        });
+      });
+    });
+
+    // Case 2: when user is student
+    describe('when user takes a student role', function() {
+      it('should return a list that includes 2 open sessions where user is student', function(done) {
+        connection.query('CALL getOpenSessions(?)', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var sessions = rows[0].filter(function(x) {return x.role == 'STUDENT';});
+          expect(sessions.length).toBe(2);
+          done();
+        });
+      });
+    });
+
+    // Case 3: when user is tutor
+    describe('when user takes a tutor role', function() {
+      it('should return a list that includes 2 open sessions where user is tutor', function(done) {
+        connection.query('CALL getOpenSessions(?)', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var sessions = rows[0].filter(function(x) {return x.role == 'TUTOR';});
+          expect(sessions.length).toBe(2);
+          done();
+        });
+      });
+    });
+  });
+
+
+
 });
