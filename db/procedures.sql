@@ -689,39 +689,37 @@ DELIMITER ;
 
 
 # ---------
-# acceptRequest(sessionID, userID)
+# acceptRequest(sessionID)
 # Accepts a session request.  Changes request to appointment
 #
 # Param:
 #	sessionID - a session id (integer)
-#	userID - userID of one of the users involved (integer)
 DROP PROCEDURE IF EXISTS acceptRequest;
 
 DELIMITER $
-CREATE PROCEDURE `acceptRequest` (sessionID_ INT(11), userID_ INT(8))
+CREATE PROCEDURE `acceptRequest` (sessionID_ INT(11))
 BEGIN
 	UPDATE session
 	SET sessionStatus = 1
 	WHERE sessionID = sessionID_
-		AND (tutee = userID_ OR tutor = userID_);
+		AND sessionStatus = 0;
 END $
 DELIMITER ;
 
 
 # ---------
-# rejectRequest(sessionID, userID)
+# rejectRequest(sessionID)
 # Rejects a session request.
 #
 # Param:
 #	sessionID - a session id (integer)
-#	userID - userID of one of the users involved (integer)
 DROP PROCEDURE IF EXISTS rejectRequest;
 
 DELIMITER $
-CREATE PROCEDURE `rejectRequest` (sessionID_ INT(11), userID_ INT(8))
+CREATE PROCEDURE `rejectRequest` (sessionID_ INT(11))
 BEGIN
 	DELETE FROM session
 	WHERE sessionID = sessionID_
-		AND (tutee = userID_ OR tutor = userID_);
+		AND sessionStatus = 0;
 END $
 DELIMITER ;

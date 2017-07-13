@@ -2199,8 +2199,8 @@ describe('Procedures unit tests:', function() {
 
 
   // ---------------------------------------- //
-  // acceptRequest(sessionID, userID)
-  describe('acceptRequest(sessionID, userID)', function() {
+  // acceptRequest(sessionID)
+  describe('acceptRequest(sessionID)', function() {
     var myUnit = 'MATH1001';
 
     beforeAll(function(done) {
@@ -2246,7 +2246,7 @@ describe('Procedures unit tests:', function() {
         connection.query('SELECT * FROM session WHERE tutor = ?', [fakeUser.userID], function(err, rows, fields) {
           if (!!err) console.log(err);
           mySession = rows[0];
-          connection.query('CALL acceptRequest(?, ?)', [mySession.sessionID, fakeUser.userID], function() {
+          connection.query('CALL acceptRequest(?)', [mySession.sessionID], function() {
             if (!!err) console.log(err);
             done();
           });
@@ -2272,8 +2272,8 @@ describe('Procedures unit tests:', function() {
 
 
   // ---------------------------------------- //
-  // rejectRequest(sessionID, userID)
-  describe('rejectRequest(sessionID, userID)', function() {
+  // rejectRequest(sessionID)
+  describe('rejectRequest(sessionID)', function() {
     var myUnit = 'MATH1001';
 
     beforeAll(function(done) {
@@ -2319,7 +2319,7 @@ describe('Procedures unit tests:', function() {
         connection.query('SELECT * FROM session WHERE tutor = ?', [fakeUser.userID], function(err, rows, fields) {
           if (!!err) console.log(err);
           mySession = rows[0];
-          connection.query('CALL rejectRequest(?, ?)', [mySession.sessionID, fakeUser.userID], function() {
+          connection.query('CALL rejectRequest(?)', [mySession.sessionID], function() {
             if (!!err) console.log(err);
             done();
           });
