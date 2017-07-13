@@ -1988,5 +1988,72 @@ describe('Procedures unit tests:', function() {
   });
 
 
+  // ---------------------------------------- //
+  // getSessionTimes(studentID, tutorID)
+  describe('getSessionTimes(studentID, tutorID)', function() {
+    var myUnit = 'MATH1001';
+
+    var myTimes = ['2017-01-01 12:00:00', '2017-01-01 13:00:00'];
+
+    beforeAll(function(done) {
+      connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+        if (!!err) console.log(err);
+        connection.query('INSERT INTO user SET ?', [otherUser], function(err) {
+          if (!!err) console.log(err);
+          connection.query('INSERT INTO tutor SET userID = ?', [fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            connection.query('INSERT INTO tutor SET userID = ?', [otherUser.userID], function(err) {
+              if (!!err) console.log(err);
+              connection.query('INSERT INTO unitTutored VALUES (?, ?), (?, ?)', [fakeUser.userID, myUnit, otherUser.userID, myUnit], function(err) {
+                if (!!err) console.log(err);
+                connection.query('INSERT INTO session SET tutor = ?, tutee = ?, unit = ?, time = ?, sessionStatus = 1, confirmationStatus = 0, hoursAwarded = 0', [fakeUser.userID, otherUser.userID, myUnit, myTimes[0]], function(err) {
+                  if (!!err) console.log(err);
+                  connection.query('INSERT INTO session SET tutor = ?, tutee = ?, unit = ?, time = ?, sessionStatus = 1, confirmationStatus = 0, hoursAwarded = 0', [otherUser.userID, fakeUser.userID, myUnit, myTimes[1]], function(err) {
+                    if (!!err) console.log(err);
+                    done();
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+
+    afterAll(function(done) {
+      connection.query('DELETE FROM session WHERE tutor = ? OR tutor = ?', [fakeUser.userID, otherUser.userID], function(err) {
+        if (!!err) console.log(err);
+        connection.query('DELETE FROM unitTutored WHERE tutor = ? OR tutor = ?', [fakeUser.userID, otherUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM tutor WHERE userID = ? OR userID = ?', [fakeUser.userID, otherUser.userID], function(err) {
+            if (!!err) console.log(err);
+            connection.query('DELETE FROM user WHERE userID = ? OR userID = ?', [fakeUser.userID, otherUser.userID], function(err) {
+              if (!!err) console.log(err);
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    // Case 1: general case
+    describe('when function is called', function() {
+      it('should return a list of 4 sessions, two for each user', function(done) {
+        connection.query('CALL getSessionTimes(?, ?)', [fakeUser.userID, otherUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          expect(rows[0].length).toBe(4);
+
+          var fakeSessions = rows[0].filter(function(x) {return x.userID == fakeUser.userID;});
+          expect(fakeSessions.length).toBe(2);
+
+          var otherSessions = rows[0].filter(function(x) {return x.userID == otherUser.userID;});
+          expect(fakeSessions.length).toBe(2);
+
+          done();
+        });
+      });
+    });
+
+  });
 
 });

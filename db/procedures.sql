@@ -595,3 +595,38 @@ BEGIN
 		AND tutor = userID_);
 END $
 DELIMITER ;
+
+
+# ---------
+# getSessionTimes(studentID, tutorID)
+# Gets list of upcoming session times for both student and tutor
+# Used to check for timetable clashes
+#
+# Param:
+#	studentID - student's student number (integer)
+#	tutorID - tutor's student number (integer)
+#
+# Returns:
+# 	An 3 column table (userID, role, time), one row per session.
+#		- userID is either studentID or tutorID
+#		- role is either 'STUDENT' or 'TUTOR', depending on user's role in that session.
+DROP PROCEDURE IF EXISTS getSessionTimes;
+
+DELIMITER $
+CREATE PROCEDURE `getSessionTimes` (studentID_ INT(8), tutorID_ INT(8))
+BEGIN
+	SELECT studentID_ AS userID,
+		'STUDENT' AS role,
+		session.time
+	FROM session
+	WHERE(tutor = studentID_ OR tutee = studentID_) AND sessionStatus = 1
+
+	UNION
+
+	SELECT tutorID_ as userID,
+		'tutor' AS role,
+		session.time
+	FROM session
+	WHERE (tutor = tutorID_ OR tutee = tutorID_) AND sessionStatus = 1;
+END $
+DELIMITER ;
