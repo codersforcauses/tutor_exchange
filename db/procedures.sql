@@ -439,3 +439,52 @@ BEGIN
 END $
 DELIMITER ;
 
+
+# ---------
+# getRequests(userID)
+# Gets list of session requests for a given user (as student or tutor)
+#
+# Param:
+#	userID - user's student number (integer)
+#
+# Returns:
+# 	An 8 column table (sessionID, role, unit, time, comment, firstName, lastName, phone)
+#		one row per session.
+#		- role is either 'STUDENT' or 'TUTOR', depending on user's role in that session.
+#		- firstName, lastName and phone belong to the other student.
+DROP PROCEDURE IF EXISTS getRequests;
+
+DELIMITER $
+CREATE PROCEDURE `getRequests` (userID_ INT(8))
+BEGIN
+	(SELECT session.sessionID,
+		'STUDENT' AS role,
+		session.unit,
+		session.time,
+		session.comments,
+		user.firstName,
+		user.lastName,
+		user.phone
+	FROM session
+	JOIN user
+		ON session.tutor = user.userID
+	WHERE sessionStatus = 0
+		AND tutee = userID_)
+
+	UNION
+
+	(SELECT session.sessionID,
+		'TUTOR' AS role,
+		session.unit,
+		session.time,
+		session.comments,
+		user.firstName,
+		user.lastName,
+		user.phone
+	FROM session
+	JOIN user
+		ON session.tutee = user.userID
+	WHERE sessionStatus = 0
+		AND tutor = userID_);
+END $
+DELIMITER ;
