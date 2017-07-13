@@ -686,3 +686,23 @@ BEGIN
 	WHERE sessionID = sessionID_;
 END $
 DELIMITER ;
+
+
+# ---------
+# acceptRequest(sessionID, userID)
+# Accepts a session request.  Changes request to appointment
+#
+# Param:
+#	sessionID - a session id (integer)
+#	userID - userID of one of the users involved (integer)
+DROP PROCEDURE IF EXISTS acceptRequest;
+
+DELIMITER $
+CREATE PROCEDURE `acceptRequest` (sessionID_ INT(11), userID_ INT(8))
+BEGIN
+	UPDATE session
+	SET sessionStatus = 1
+	WHERE sessionID = sessionID_
+		AND (tutee = userID_ OR tutor = userID_);
+END $
+DELIMITER ;
