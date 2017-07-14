@@ -742,3 +742,43 @@ BEGIN
 		AND sessionStatus = 1;
 END $
 DELIMITER ;
+
+
+# ---------
+# closeSession(sessionID, userID)
+# Closes off an open session by the supplied user.
+#
+# Param:
+#	sessionID - a session id (integer)
+#	userID - student number of user closing off on the session (intger) 
+DROP PROCEDURE IF EXISTS closeSession;
+
+DELIMITER $
+CREATE PROCEDURE `closeSession` (sessionID_ INT(11), userID_ INT(8))
+BEGIN
+
+	DECLARE sessionStatus_ INT(1);
+	DECLARE confirmationStatus_ INT(1);
+	DECLARE tutor_ INT(8);
+	DECLARE tutee_ INT(8);
+
+	SELECT sessionStatus , confirmationStatus, tutor, tutee
+	INTO sessionStatus_ , confirmationStatus_, tutor_, tutee_
+	FROM session
+	WHERE sessionID = sessionID_;
+
+	IF tutee_ = userID_ AND (confirmationStatus_ = 0 OR confirmationStatus_ = 1) AND sessionStatus_ = 2
+	THEN
+		SET confirmationStatus_ = confirmationStatus_ + 2;
+	END IF;
+
+	IF tutor_ = userID_ AND (confirmationStatus_ = 0 OR confirmationStatus_ = 2) AND sessionStatus_ = 2
+	THEN
+		SET confirmationStatus_ = confirmationStatus_ + 1;
+	END IF;
+
+	UPDATE session
+	SET confirmationStatus = confirmationStatus_
+	WHERE sessionID = sessionID_;
+END $
+DELIMITER ;
