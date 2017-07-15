@@ -2452,7 +2452,7 @@ describe('Procedures unit tests:', function() {
       var sessionID;
 
       beforeAll(function(done) {
-        connection.query('INSERT INTO session SET tutee = ?, tutor = ?, unit = ?, sessionStatus = 2, confirmationStatus = 0, hoursAwarded = 0', [fakeUser.userID, otherUser.userID, myUnit], function(err) {
+        connection.query('INSERT INTO session SET tutee = ?, tutor = ?, unit = ?, sessionStatus = 2, confirmationStatus = 0, hoursAwarded = 1', [fakeUser.userID, otherUser.userID, myUnit], function(err) {
           if (!!err) console.log(err);
           connection.query('SELECT * FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err, rows, fields) {
             if (!!err) console.log(err);
@@ -2465,7 +2465,7 @@ describe('Procedures unit tests:', function() {
       });
 
       afterAll(function(done) {
-        connection.query('DELETE FROM session WHERE tutor = ? OR tutor = ?', [fakeUser.userID, otherUser.userID], function(err) {
+        connection.query('DELETE FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err) {
           if (!!err) console.log(err);
           done();
         });
@@ -2500,7 +2500,7 @@ describe('Procedures unit tests:', function() {
       });
 
       afterAll(function(done) {
-        connection.query('DELETE FROM session WHERE tutor = ? OR tutor = ?', [fakeUser.userID, otherUser.userID], function(err) {
+        connection.query('DELETE FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err) {
           if (!!err) console.log(err);
           done();
         });
@@ -2534,7 +2534,7 @@ describe('Procedures unit tests:', function() {
       });
 
       afterAll(function(done) {
-        connection.query('DELETE FROM session WHERE tutor = ? OR tutor = ?', [fakeUser.userID, otherUser.userID], function(err) {
+        connection.query('DELETE FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err) {
           if (!!err) console.log(err);
           done();
         });
@@ -2568,7 +2568,7 @@ describe('Procedures unit tests:', function() {
       });
 
       afterAll(function(done) {
-        connection.query('DELETE FROM session WHERE tutor = ? OR tutor = ?', [fakeUser.userID, otherUser.userID], function(err) {
+        connection.query('DELETE FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err) {
           if (!!err) console.log(err);
           done();
         });
@@ -2602,7 +2602,7 @@ describe('Procedures unit tests:', function() {
       });
 
       afterAll(function(done) {
-        connection.query('DELETE FROM session WHERE tutor = ? OR tutor = ?', [fakeUser.userID, otherUser.userID], function(err) {
+        connection.query('DELETE FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err) {
           if (!!err) console.log(err);
           done();
         });
@@ -2637,7 +2637,7 @@ describe('Procedures unit tests:', function() {
       });
 
       afterAll(function(done) {
-        connection.query('DELETE FROM session WHERE tutor = ? OR tutor = ?', [fakeUser.userID, otherUser.userID], function(err) {
+        connection.query('DELETE FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err) {
           if (!!err) console.log(err);
           done();
         });
@@ -2672,7 +2672,7 @@ describe('Procedures unit tests:', function() {
       });
 
       afterAll(function(done) {
-        connection.query('DELETE FROM session WHERE tutor = ? OR tutor = ?', [fakeUser.userID, otherUser.userID], function(err) {
+        connection.query('DELETE FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err) {
           if (!!err) console.log(err);
           done();
         });
@@ -2707,7 +2707,7 @@ describe('Procedures unit tests:', function() {
       });
 
       afterAll(function(done) {
-        connection.query('DELETE FROM session WHERE tutor = ? OR tutor = ?', [fakeUser.userID, otherUser.userID], function(err) {
+        connection.query('DELETE FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err) {
           if (!!err) console.log(err);
           done();
         });
@@ -2718,6 +2718,503 @@ describe('Procedures unit tests:', function() {
           if (!!err) console.log(err);
           var confirmationStatus = rows[0].confirmationStatus;
           expect(confirmationStatus).toBe(3);
+          done();
+        });
+      });
+    });
+
+  });
+
+
+  // ---------------------------------------- //
+  // appealSession(sessionID, userID, reason)
+  describe('appealSession(sessionID, userID, reason)', function() {
+    var myUnit = 'MATH1001';
+    var myReason = 'myReason';
+
+    beforeAll(function(done) {
+      connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+        if (!!err) console.log(err);
+        connection.query('INSERT INTO user SET ?', [otherUser], function(err) {
+          if (!!err) console.log(err);
+          connection.query('INSERT INTO tutor SET userID = ?', [fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            connection.query('INSERT INTO tutor SET userID = ?', [otherUser.userID], function(err) {
+              if (!!err) console.log(err);
+              connection.query('INSERT INTO unitTutored VALUES (?, ?), (?, ?)', [fakeUser.userID, myUnit, otherUser.userID, myUnit], function(err) {
+                if (!!err) console.log(err);
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+    afterAll(function(done) {
+      connection.query('DELETE FROM unitTutored WHERE tutor = ? OR tutor = ?', [fakeUser.userID, otherUser.userID], function(err) {
+        if (!!err) console.log(err);
+        connection.query('DELETE FROM tutor WHERE userID = ? OR userID = ?', [fakeUser.userID, otherUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM user WHERE userID = ? OR userID = ?', [fakeUser.userID, otherUser.userID], function(err) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+    });
+
+    // Case 1: fakeUser is a student, confirmationStatus = 0
+    describe('when user is the student and session is completely unconfirmed', function() {
+      var sessionID;
+
+      beforeAll(function(done) {
+        connection.query('INSERT INTO session SET tutee = ?, tutor = ?, unit = ?, sessionStatus = 2, confirmationStatus = 0, hoursAwarded = 0', [fakeUser.userID, otherUser.userID, myUnit], function(err) {
+          if (!!err) console.log(err);
+          connection.query('SELECT * FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err, rows, fields) {
+            if (!!err) console.log(err);
+            sessionID = rows[0].sessionID;
+            connection.query('CALL appealSession(?, ?, ?)', [sessionID, fakeUser.userID, myReason], function(err) {
+              done();
+            });
+          });
+        });
+      });
+
+      afterAll(function(done) {
+        connection.query('DELETE FROM sessionComplaint WHERE userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+
+      it('should increase confirmationStatus from 0 to 2', function(done) {
+        connection.query('SELECT * FROM session WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var confirmationStatus = rows[0].confirmationStatus;
+          expect(confirmationStatus).toBe(2);
+          done();
+        });
+      });
+
+      it('should revoke hours awared', function(done) {
+        connection.query('SELECT * FROM session WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var hoursAwarded = rows[0].hoursAwarded;
+          expect(hoursAwarded).toBe(0);
+          done();
+        });
+      });
+
+      it('should add row to sessionComplaints', function(done) {
+        connection.query('SELECT * FROM sessionComplaint WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var complaint = rows[0];
+          expect(complaint).toBeDefined();
+          expect(complaint.userID).toBe(fakeUser.userID);
+          expect(complaint.reason).toBe(myReason);
+          done();
+        });
+      });
+    });
+
+    // Case 2: fakeUser is a student, confirmationStatus = 1
+    describe('when user is the student and session is confirmed by tutor', function() {
+      var sessionID;
+
+      beforeAll(function(done) {
+        connection.query('INSERT INTO session SET tutee = ?, tutor = ?, unit = ?, sessionStatus = 2, confirmationStatus = 1, hoursAwarded = 0', [fakeUser.userID, otherUser.userID, myUnit], function(err) {
+          if (!!err) console.log(err);
+          connection.query('SELECT * FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err, rows, fields) {
+            if (!!err) console.log(err);
+            sessionID = rows[0].sessionID;
+            connection.query('CALL appealSession(?, ?, ?)', [sessionID, fakeUser.userID, myReason], function(err) {
+              done();
+            });
+          });
+        });
+      });
+
+      afterAll(function(done) {
+        connection.query('DELETE FROM sessionComplaint WHERE userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+
+      it('should increase confirmationStatus from 1 to 3', function(done) {
+        connection.query('SELECT * FROM session WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var confirmationStatus = rows[0].confirmationStatus;
+          expect(confirmationStatus).toBe(3);
+          done();
+        });
+      });
+
+      it('should revoke hours awared', function(done) {
+        connection.query('SELECT * FROM session WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var hoursAwarded = rows[0].hoursAwarded;
+          expect(hoursAwarded).toBe(0);
+          done();
+        });
+      });
+
+      it('should add row to sessionComplaints', function(done) {
+        connection.query('SELECT * FROM sessionComplaint WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var complaint = rows[0];
+          expect(complaint).toBeDefined();
+          expect(complaint.userID).toBe(fakeUser.userID);
+          expect(complaint.reason).toBe(myReason);
+          done();
+        });
+      });
+    });
+
+    // Case 3: fakeUser is a student, confirmationStatus = 2
+    describe('when user is the student and session already confirmed by user', function() {
+      var sessionID;
+
+      beforeAll(function(done) {
+        connection.query('INSERT INTO session SET tutee = ?, tutor = ?, unit = ?, sessionStatus = 2, confirmationStatus = 2, hoursAwarded = 0', [fakeUser.userID, otherUser.userID, myUnit], function(err) {
+          if (!!err) console.log(err);
+          connection.query('SELECT * FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err, rows, fields) {
+            if (!!err) console.log(err);
+            sessionID = rows[0].sessionID;
+            connection.query('CALL appealSession(?, ?, ?)', [sessionID, fakeUser.userID, myReason], function(err) {
+              done();
+            });
+          });
+        });
+      });
+
+      afterAll(function(done) {
+        connection.query('DELETE FROM sessionComplaint WHERE userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+
+      it('should not change confirmationStatus from 2', function(done) {
+        connection.query('SELECT * FROM session WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var confirmationStatus = rows[0].confirmationStatus;
+          expect(confirmationStatus).toBe(2);
+          done();
+        });
+      });
+
+      it('should revoke hours awared', function(done) {
+        connection.query('SELECT * FROM session WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var hoursAwarded = rows[0].hoursAwarded;
+          expect(hoursAwarded).toBe(0);
+          done();
+        });
+      });
+
+      it('should add row to sessionComplaints', function(done) {
+        connection.query('SELECT * FROM sessionComplaint WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var complaint = rows[0];
+          expect(complaint).toBeDefined();
+          expect(complaint.userID).toBe(fakeUser.userID);
+          expect(complaint.reason).toBe(myReason);
+          done();
+        });
+      });
+    });
+
+    // Case 4: fakeUser is a student, confirmationStatus = 3
+    describe('when user is the student and session already fully confirmed', function() {
+      var sessionID;
+
+      beforeAll(function(done) {
+        connection.query('INSERT INTO session SET tutee = ?, tutor = ?, unit = ?, sessionStatus = 2, confirmationStatus = 3, hoursAwarded = 0', [fakeUser.userID, otherUser.userID, myUnit], function(err) {
+          if (!!err) console.log(err);
+          connection.query('SELECT * FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err, rows, fields) {
+            if (!!err) console.log(err);
+            sessionID = rows[0].sessionID;
+            connection.query('CALL appealSession(?, ?, ?)', [sessionID, fakeUser.userID, myReason], function(err) {
+              done();
+            });
+          });
+        });
+      });
+
+      afterAll(function(done) {
+        connection.query('DELETE FROM sessionComplaint WHERE userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+
+      it('should not change confirmationStatus from 3', function(done) {
+        connection.query('SELECT * FROM session WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var confirmationStatus = rows[0].confirmationStatus;
+          expect(confirmationStatus).toBe(3);
+          done();
+        });
+      });
+
+      it('should revoke hours awared', function(done) {
+        connection.query('SELECT * FROM session WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var hoursAwarded = rows[0].hoursAwarded;
+          expect(hoursAwarded).toBe(0);
+          done();
+        });
+      });
+
+      it('should add row to sessionComplaints', function(done) {
+        connection.query('SELECT * FROM sessionComplaint WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var complaint = rows[0];
+          expect(complaint).toBeDefined();
+          expect(complaint.userID).toBe(fakeUser.userID);
+          expect(complaint.reason).toBe(myReason);
+          done();
+        });
+      });
+    });
+
+    // Case 5: fakeUser is a tutor, confirmationStatus = 0
+    describe('when user is the tutor and session completely unconfirmed', function() {
+      var sessionID;
+
+      beforeAll(function(done) {
+        connection.query('INSERT INTO session SET tutor = ?, tutee = ?, unit = ?, sessionStatus = 2, confirmationStatus = 0, hoursAwarded = 0', [fakeUser.userID, otherUser.userID, myUnit], function(err) {
+          if (!!err) console.log(err);
+          connection.query('SELECT * FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err, rows, fields) {
+            if (!!err) console.log(err);
+            sessionID = rows[0].sessionID;
+            connection.query('CALL appealSession(?, ?, ?)', [sessionID, fakeUser.userID, myReason], function(err) {
+              done();
+            });
+          });
+        });
+      });
+
+      afterAll(function(done) {
+        connection.query('DELETE FROM sessionComplaint WHERE userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+
+      it('should increase confirmationStatus from 0 to 1', function(done) {
+        connection.query('SELECT * FROM session WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var confirmationStatus = rows[0].confirmationStatus;
+          expect(confirmationStatus).toBe(1);
+          done();
+        });
+      });
+
+      it('should revoke hours awared', function(done) {
+        connection.query('SELECT * FROM session WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var hoursAwarded = rows[0].hoursAwarded;
+          expect(hoursAwarded).toBe(0);
+          done();
+        });
+      });
+
+      it('should add row to sessionComplaints', function(done) {
+        connection.query('SELECT * FROM sessionComplaint WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var complaint = rows[0];
+          expect(complaint).toBeDefined();
+          expect(complaint.userID).toBe(fakeUser.userID);
+          expect(complaint.reason).toBe(myReason);
+          done();
+        });
+      });
+    });
+
+    // Case 6: fakeUser is a tutor, confirmationStatus = 1
+    describe('when user is the tutor and session already confirmed by user', function() {
+      var sessionID;
+
+      beforeAll(function(done) {
+        connection.query('INSERT INTO session SET tutor = ?, tutee = ?, unit = ?, sessionStatus = 2, confirmationStatus = 1, hoursAwarded = 0', [fakeUser.userID, otherUser.userID, myUnit], function(err) {
+          if (!!err) console.log(err);
+          connection.query('SELECT * FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err, rows, fields) {
+            if (!!err) console.log(err);
+            sessionID = rows[0].sessionID;
+            connection.query('CALL appealSession(?, ?, ?)', [sessionID, fakeUser.userID, myReason], function(err) {
+              done();
+            });
+          });
+        });
+      });
+
+      afterAll(function(done) {
+        connection.query('DELETE FROM sessionComplaint WHERE userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+
+      it('should not change confirmationStatus from 1', function(done) {
+        connection.query('SELECT * FROM session WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var confirmationStatus = rows[0].confirmationStatus;
+          expect(confirmationStatus).toBe(1);
+          done();
+        });
+      });
+
+      it('should revoke hours awared', function(done) {
+        connection.query('SELECT * FROM session WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var hoursAwarded = rows[0].hoursAwarded;
+          expect(hoursAwarded).toBe(0);
+          done();
+        });
+      });
+
+      it('should add row to sessionComplaints', function(done) {
+        connection.query('SELECT * FROM sessionComplaint WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var complaint = rows[0];
+          expect(complaint).toBeDefined();
+          expect(complaint.userID).toBe(fakeUser.userID);
+          expect(complaint.reason).toBe(myReason);
+          done();
+        });
+      });
+    });
+
+    // Case 7: fakeUser is a tutor, confirmationStatus = 2
+    describe('when user is the tutor and session confirmed by student', function() {
+      var sessionID;
+
+      beforeAll(function(done) {
+        connection.query('INSERT INTO session SET tutor = ?, tutee = ?, unit = ?, sessionStatus = 2, confirmationStatus = 2, hoursAwarded = 0', [fakeUser.userID, otherUser.userID, myUnit], function(err) {
+          if (!!err) console.log(err);
+          connection.query('SELECT * FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err, rows, fields) {
+            if (!!err) console.log(err);
+            sessionID = rows[0].sessionID;
+            connection.query('CALL appealSession(?, ?, ?)', [sessionID, fakeUser.userID, myReason], function(err) {
+              done();
+            });
+          });
+        });
+      });
+
+      afterAll(function(done) {
+        connection.query('DELETE FROM sessionComplaint WHERE userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+
+      it('should increase confirmationStatus from 2 to 3', function(done) {
+        connection.query('SELECT * FROM session WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var confirmationStatus = rows[0].confirmationStatus;
+          expect(confirmationStatus).toBe(3);
+          done();
+        });
+      });
+
+      it('should revoke hours awared', function(done) {
+        connection.query('SELECT * FROM session WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var hoursAwarded = rows[0].hoursAwarded;
+          expect(hoursAwarded).toBe(0);
+          done();
+        });
+      });
+
+      it('should add row to sessionComplaints', function(done) {
+        connection.query('SELECT * FROM sessionComplaint WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var complaint = rows[0];
+          expect(complaint).toBeDefined();
+          expect(complaint.userID).toBe(fakeUser.userID);
+          expect(complaint.reason).toBe(myReason);
+          done();
+        });
+      });
+    });
+
+    // Case 8: fakeUser is a tutor, confirmationStatus = 3
+    describe('when user is the tutor and session already completely confirmed', function() {
+      var sessionID;
+
+      beforeAll(function(done) {
+        connection.query('INSERT INTO session SET tutor = ?, tutee = ?, unit = ?, sessionStatus = 2, confirmationStatus = 3, hoursAwarded = 0', [fakeUser.userID, otherUser.userID, myUnit], function(err) {
+          if (!!err) console.log(err);
+          connection.query('SELECT * FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err, rows, fields) {
+            if (!!err) console.log(err);
+            sessionID = rows[0].sessionID;
+            connection.query('CALL appealSession(?, ?, ?)', [sessionID, fakeUser.userID, myReason], function(err) {
+              done();
+            });
+          });
+        });
+      });
+
+      afterAll(function(done) {
+        connection.query('DELETE FROM sessionComplaint WHERE userID = ?', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          connection.query('DELETE FROM session WHERE tutor = ? OR tutee = ?', [fakeUser.userID, fakeUser.userID], function(err) {
+            if (!!err) console.log(err);
+            done();
+          });
+        });
+      });
+
+      it('should not change confirmationStatus from 3', function(done) {
+        connection.query('SELECT * FROM session WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var confirmationStatus = rows[0].confirmationStatus;
+          expect(confirmationStatus).toBe(3);
+          done();
+        });
+      });
+
+      it('should revoke hours awared', function(done) {
+        connection.query('SELECT * FROM session WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var hoursAwarded = rows[0].hoursAwarded;
+          expect(hoursAwarded).toBe(0);
+          done();
+        });
+      });
+
+      it('should add row to sessionComplaints', function(done) {
+        connection.query('SELECT * FROM sessionComplaint WHERE sessionID = ?', [sessionID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var complaint = rows[0];
+          expect(complaint).toBeDefined();
+          expect(complaint.userID).toBe(fakeUser.userID);
+          expect(complaint.reason).toBe(myReason);
           done();
         });
       });

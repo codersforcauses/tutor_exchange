@@ -767,15 +767,10 @@ BEGIN
 		ROLLBACK;
 	END;
 
-	DECLARE CONTINUE HANDLER FOR SQLWARNING
-	BEGIN
-		ROLLBACK;
-	END;
-
 	START TRANSACTION;
 
-		SELECT sessionStatus , confirmationStatus, tutor, tutee
-		INTO sessionStatus_ , confirmationStatus_, tutor_, tutee_
+		SELECT sessionStatus, confirmationStatus, tutor, tutee
+		INTO sessionStatus_, confirmationStatus_, tutor_, tutee_
 		FROM session
 		WHERE sessionID = sessionID_;
 
@@ -792,6 +787,43 @@ BEGIN
 		UPDATE session
 		SET confirmationStatus = confirmationStatus_
 		WHERE sessionID = sessionID_;
+
+	COMMIT;
+END $
+DELIMITER ;
+
+
+# ---------
+# appealSession(sessionID, userID, reason)
+# Closes an open session by creating an appeal.
+#
+# Param:
+#	sessionID - a session id (integer)
+#	userID - student number of user making the appeal (integer)
+#	reason - reason for making the appeal (string)
+DROP PROCEDURE IF EXISTS appealSession;
+
+DELIMITER $
+CREATE PROCEDURE `appealSession` (sessionID_ INT(11), userID_ INT(8), reason_ TEXT)
+BEGIN
+
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		ROLLBACK;
+	END;
+
+	START TRANSACTION;
+
+		CALL closeSession(sessionID_, userID_);
+
+		UPDATE session
+		SET hoursAwarded = 0
+		WHERE sessionID = sessionID_;
+
+		INSERT INTO sessionComplaint
+		SET sessionID = sessionID_,
+			userID = userID_,
+			reason = reason_;
 
 	COMMIT;
 END $
