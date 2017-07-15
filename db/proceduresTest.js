@@ -3334,7 +3334,7 @@ describe('Procedures unit tests:', function() {
       });
     });
 
-    // Case 1: genral case
+    // Case 1: general case
     describe('when funciton is called', function() {
       beforeAll(function(done) {
         connection.query('CALL setPasswordHashAndSalt(?, ?, ?)', [fakeUser.userID, myHash, mySalt], function(err) {
@@ -3379,7 +3379,7 @@ describe('Procedures unit tests:', function() {
       });
     });
 
-    // Case 1: genral case
+    // Case 1: general case
     describe('when funciton is called', function() {
       beforeAll(function(done) {
         connection.query('CALL setResetPasswordHashAndSalt(?, ?, ?)', [fakeUser.userID, myHash, mySalt], function(err) {
@@ -3397,6 +3397,48 @@ describe('Procedures unit tests:', function() {
           var salt = rows[0].resetPasswordSalt;
           expect(hash).toBe(myHash);
           expect(salt).toBe(mySalt);
+          done();
+        });
+      });
+    });
+  });
+
+
+  // ---------------------------------------- //
+  // setVerifyCode(userID, verifyCode)
+  describe('setVerifyCode(userID, verifyCode)', function() {
+    var myCode = 'verifyCode';
+
+    beforeAll(function(done) {
+      connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+        if (!!err) console.log(err);
+        done();
+      });
+    });
+
+    afterAll(function(done) {
+      connection.query('DELETE FROM user WHERE userID =  ?', [fakeUser.userID], function(err) {
+        if (!!err) console.log(err);
+        done();
+      });
+    });
+
+    // Case 1: general case
+    describe('when funciton is called', function() {
+      beforeAll(function(done) {
+        connection.query('CALL setVerifyCode(?, ?)', [fakeUser.userID, myCode], function(err) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      it('should return one row with correct info', function(done) {
+        connection.query('SELECT * FROM user WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          expect(rows.length).toBe(1);
+
+          var verifyCode = rows[0].verifyCode;
+          expect(verifyCode).toBe(myCode);
           done();
         });
       });

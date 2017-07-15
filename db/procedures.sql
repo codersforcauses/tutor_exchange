@@ -910,3 +910,22 @@ BEGIN
 	WHERE userID = userID_;
 END $
 DELIMITER ;
+
+
+# ---------
+# setVerifyCode(userID, verifyCode)
+# Sets the verify code for a given user
+#
+# Param:
+#	userID - user's student number (integer)
+#	verifyCode - new verifyCode
+DROP PROCEDURE IF EXISTS setVerifyCode;
+
+DELIMITER $
+CREATE PROCEDURE `setVerifyCode` (userID_ INT(8), verifyCode_ VARCHAR(255))
+BEGIN
+	UPDATE user
+	SET verifyCode = verifyCode_
+	WHERE userID = userID_;
+END $
+DELIMITER ;
