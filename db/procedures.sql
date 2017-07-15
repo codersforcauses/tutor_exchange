@@ -750,7 +750,7 @@ DELIMITER ;
 #
 # Param:
 #	sessionID - a session id (integer)
-#	userID - student number of user closing off on the session (intger) 
+#	userID - student number of user closing off on the session (integer) 
 DROP PROCEDURE IF EXISTS closeSession;
 
 DELIMITER $
@@ -762,23 +762,37 @@ BEGIN
 	DECLARE tutor_ INT(8);
 	DECLARE tutee_ INT(8);
 
-	SELECT sessionStatus , confirmationStatus, tutor, tutee
-	INTO sessionStatus_ , confirmationStatus_, tutor_, tutee_
-	FROM session
-	WHERE sessionID = sessionID_;
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		ROLLBACK;
+	END;
 
-	IF tutee_ = userID_ AND (confirmationStatus_ = 0 OR confirmationStatus_ = 1) AND sessionStatus_ = 2
-	THEN
-		SET confirmationStatus_ = confirmationStatus_ + 2;
-	END IF;
+	DECLARE CONTINUE HANDLER FOR SQLWARNING
+	BEGIN
+		ROLLBACK;
+	END;
 
-	IF tutor_ = userID_ AND (confirmationStatus_ = 0 OR confirmationStatus_ = 2) AND sessionStatus_ = 2
-	THEN
-		SET confirmationStatus_ = confirmationStatus_ + 1;
-	END IF;
+	START TRANSACTION;
 
-	UPDATE session
-	SET confirmationStatus = confirmationStatus_
-	WHERE sessionID = sessionID_;
+		SELECT sessionStatus , confirmationStatus, tutor, tutee
+		INTO sessionStatus_ , confirmationStatus_, tutor_, tutee_
+		FROM session
+		WHERE sessionID = sessionID_;
+
+		IF tutee_ = userID_ AND (confirmationStatus_ = 0 OR confirmationStatus_ = 1) AND sessionStatus_ = 2
+		THEN
+			SET confirmationStatus_ = confirmationStatus_ + 2;
+		END IF;
+
+		IF tutor_ = userID_ AND (confirmationStatus_ = 0 OR confirmationStatus_ = 2) AND sessionStatus_ = 2
+		THEN
+			SET confirmationStatus_ = confirmationStatus_ + 1;
+		END IF;
+
+		UPDATE session
+		SET confirmationStatus = confirmationStatus_
+		WHERE sessionID = sessionID_;
+
+	COMMIT;
 END $
 DELIMITER ;
