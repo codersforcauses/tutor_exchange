@@ -846,3 +846,25 @@ BEGIN
 	WHERE userID = userID_;
 END $
 DELIMITER ;
+
+
+# ---------
+# getResetPasswordHashAndSalt(userID)
+# returns the reset password hash and salt for a given user
+#
+# Param:
+#	userID - user's student number (integer)
+#
+# Returns:
+#	A two column table (resetHash, resetSalt) with one row if user exists, zero rows if user doesn't exist
+DROP PROCEDURE IF EXISTS getResetPasswordHashAndSalt;
+
+DELIMITER $
+CREATE PROCEDURE `getResetPasswordHashAndSalt` (userID_ INT(8))
+BEGIN
+	SELECT resetPasswordHash AS `resetHash`,
+		   resetPasswordSalt AS `resetSalt`
+	FROM user
+	WHERE userID = userID_;
+END $
+DELIMITER ;
