@@ -868,3 +868,45 @@ BEGIN
 	WHERE userID = userID_;
 END $
 DELIMITER ;
+
+
+# ---------
+# setPasswordHashAndSalt(userID, hash, salt)
+# returns the reset password hash and salt for a given user
+#
+# Param:
+#	userID - user's student number (integer)
+#	hash - hash of chosen password
+#	salt - salt added to password
+DROP PROCEDURE IF EXISTS setPasswordHashAndSalt;
+
+DELIMITER $
+CREATE PROCEDURE `setPasswordHashAndSalt` (userID_ INT(8), hash_ VARCHAR(255), salt_ VARCHAR(255))
+BEGIN
+	UPDATE user
+	SET passwordHash = hash_,
+		passwordSalt = salt_
+	WHERE userID = userID_;
+END $
+DELIMITER ;
+
+
+# ---------
+# setResetPasswordHashAndSalt(userID, resetHash, resetSalt)
+# returns the reset password hash and salt for a given user
+#
+# Param:
+#	userID - user's student number (integer)
+#	resetHash - hash of chosen password
+#	resetSalt - salt added to password
+DROP PROCEDURE IF EXISTS setResetPasswordHashAndSalt;
+
+DELIMITER $
+CREATE PROCEDURE `setResetPasswordHashAndSalt` (userID_ INT(8), resetHash_ VARCHAR(255), resetSalt_ VARCHAR(255))
+BEGIN
+	UPDATE user
+	SET resetPasswordHash = resetHash_,
+		resetPasswordSalt = resetSalt_
+	WHERE userID = userID_;
+END $
+DELIMITER ;

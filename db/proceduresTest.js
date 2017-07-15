@@ -3311,8 +3311,96 @@ describe('Procedures unit tests:', function() {
         });
       });
     });
-
   });
 
+
+  // ---------------------------------------- //
+  // setPasswordHashAndSalt(userID, hash, salt)
+  describe('setPasswordHashAndSalt(userID, hash, salt)', function() {
+    var myHash = 'new' + fakeUser.passwordHash;
+    var mySalt = 'new' + fakeUser.passwordSalt;
+
+    beforeAll(function(done) {
+      connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+        if (!!err) console.log(err);
+        done();
+      });
+    });
+
+    afterAll(function(done) {
+      connection.query('DELETE FROM user WHERE userID =  ?', [fakeUser.userID], function(err) {
+        if (!!err) console.log(err);
+        done();
+      });
+    });
+
+    // Case 1: genral case
+    describe('when funciton is called', function() {
+      beforeAll(function(done) {
+        connection.query('CALL setPasswordHashAndSalt(?, ?, ?)', [fakeUser.userID, myHash, mySalt], function(err) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      it('should return one row with correct info', function(done) {
+        connection.query('SELECT * FROM user WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          expect(rows.length).toBe(1);
+
+          var hash = rows[0].passwordHash;
+          var salt = rows[0].passwordSalt;
+          expect(hash).toBe(myHash);
+          expect(salt).toBe(mySalt);
+          done();
+        });
+      });
+    });
+  });
+
+
+  // ---------------------------------------- //
+  // setResetPasswordHashAndSalt(userID, hash, salt)
+  describe('setResetPasswordHashAndSalt(userID, hash, salt)', function() {
+    var myHash = 'new' + fakeUser.passwordHash;
+    var mySalt = 'new' + fakeUser.passwordSalt;
+
+    beforeAll(function(done) {
+      connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+        if (!!err) console.log(err);
+        done();
+      });
+    });
+
+    afterAll(function(done) {
+      connection.query('DELETE FROM user WHERE userID =  ?', [fakeUser.userID], function(err) {
+        if (!!err) console.log(err);
+        done();
+      });
+    });
+
+    // Case 1: genral case
+    describe('when funciton is called', function() {
+      beforeAll(function(done) {
+        connection.query('CALL setResetPasswordHashAndSalt(?, ?, ?)', [fakeUser.userID, myHash, mySalt], function(err) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      it('should return one row with correct info', function(done) {
+        connection.query('SELECT * FROM user WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          expect(rows.length).toBe(1);
+
+          var hash = rows[0].resetPasswordHash;
+          var salt = rows[0].resetPasswordSalt;
+          expect(hash).toBe(myHash);
+          expect(salt).toBe(mySalt);
+          done();
+        });
+      });
+    });
+  });
 
 });
