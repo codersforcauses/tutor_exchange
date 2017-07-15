@@ -828,3 +828,21 @@ BEGIN
 	COMMIT;
 END $
 DELIMITER ;
+
+
+# ---------
+# confirmEmailVerified(userID)
+# Updates database to show user has responded to authentication email.
+#
+# Param:
+#	userID - user's student number (integer)
+DROP PROCEDURE IF EXISTS confirmEmailVerified;
+
+DELIMITER $
+CREATE PROCEDURE `confirmEmailVerified` (userID_ INT(8))
+BEGIN
+	UPDATE user
+	SET emailVerified = 1
+	WHERE userID = userID_;
+END $
+DELIMITER ;

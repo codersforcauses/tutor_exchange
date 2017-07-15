@@ -3223,4 +3223,42 @@ describe('Procedures unit tests:', function() {
   });
 
 
+  // ---------------------------------------- //
+  // confirmEmailVarified(userID)
+  describe('confirmEmailVarified(userID)', function() {
+
+    beforeAll(function(done) {
+      connection.query('INSERT INTO user SET ?', [fakeUser], function(err) {
+        if (!!err) console.log(err);
+        done();
+      });
+    });
+
+    afterAll(function(done) {
+      connection.query('DELETE FROM user WHERE userID =  ?', [fakeUser.userID], function(err) {
+        if (!!err) console.log(err);
+        done();
+      });
+    });
+
+    describe('when function is called', function() {
+      beforeAll(function(done) {
+        connection.query('CALL confirmEmailVerified(?)', [fakeUser.userID], function(err) {
+          if (!!err) console.log(err);
+          done();
+        });
+      });
+
+      it('should set emailVerified to 1', function(done) {
+        connection.query('SELECT * FROM user WHERE userID = ?', [fakeUser.userID], function(err, rows, fields) {
+          if (!!err) console.log(err);
+          var emailVerified = rows[0].emailVerified;
+          expect(emailVerified).toBe(1);
+          done();
+        });
+      });
+    });
+  });
+
+
 });
