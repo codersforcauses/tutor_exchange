@@ -1,6 +1,6 @@
 var connection = require(__dirname + '/connection');
 
-module.exports.getUnits = function(req, res) {
+var getUnits = function(req, res) {
   connection.query('SELECT * FROM unit;', [], function(err, result, fields) {
     if (err) {
       console.log(err);
@@ -10,8 +10,7 @@ module.exports.getUnits = function(req, res) {
     res.json(result);
   });
 };
-
-module.exports.getLanguages = function(req, res) {
+var getLanguages = function(req, res) {
   connection.query('SELECT * FROM language;', [], function(err, result, fields) {
     if (err) {
       console.log(err);
@@ -20,4 +19,9 @@ module.exports.getLanguages = function(req, res) {
     }
     res.json(result);
   });
+};
+
+module.exports = {
+  getUnits: getUnits,
+  getLanguages: getLanguages,
 };
